@@ -1,0 +1,14 @@
+{
+    "common": {
+
+    },
+    "login": {
+        "platformName": "大模型实训平台",
+        "platformInstruction": "北京邮电大学MAIR团队开发的在线大模型学习与实验系统",
+        "inputPhone": "请输入您的手机号",
+        "inputPassword": "请输入您的密码",
+        "login": "登录",
+        "register": "注册",
+        "frogetPassword": "忘记密码"
+    }
+}

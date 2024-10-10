@@ -1,0 +1,14 @@
+{
+    "common": {
+
+    },
+    "login": {
+        "platformName": "Large Language Model Education Platform",
+        "platformInstruction": "The online large language model learning and experimental system developed by the MAIR team at BUPT.",
+        "inputPhone": "Please enter your phone number",
+        "inputPassword": "Please enter your password",
+        "login": "Login",
+        "register": "Register",
+        "frogetPassword": "Froget Password"
+    }
+}

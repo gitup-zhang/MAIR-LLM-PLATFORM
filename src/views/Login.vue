@@ -38,15 +38,8 @@ const forgetForm = ref({
   verifyCode: ''
 })
 
-
-
-// const registerVisible = ref(false)
-
 const toExperiment = () => {
   router.push('/experiment')
-}
-const toLogin = () => {
-  router.push('/')
 }
 </script>
 

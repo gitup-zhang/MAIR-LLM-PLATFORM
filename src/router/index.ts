@@ -1,22 +1,33 @@
 import { createRouter, createWebHistory } from 'vue-router'
 import Login from '@/views/Login.vue'
+import Register from '@/views/Register.vue'
+import Forget from '@/views/Forget.vue'
+// 实验
+import Experiment from '@/views/experiment/index.vue'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
   routes: [
     {
       path: '/',
-      name: 'login',
+      name: 'newlogin',
       component: Login
     },
-    // {
-    //   path: '/about',
-    //   name: 'about',
-    //   // route level code-splitting
-    //   // this generates a separate chunk (About.[hash].js) for this route
-    //   // which is lazy-loaded when the route is visited.
-    //   component: () => import('../views/AboutView.vue')
-    // }
+    {
+      path: '/register',
+      name: 'register',
+      component: Register
+    },
+    {
+      path: '/forget',
+      name: 'forget',
+      component: Forget
+    },
+    {
+      path: '/experiment',
+      name: 'experiment',
+      component: Experiment
+    }
   ]
 })
 

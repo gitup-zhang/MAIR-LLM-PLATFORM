@@ -1,78 +1,94 @@
 <script setup lang="ts">
-import { ref } from "vue";
-import { RouterLink } from "vue-router"
+import { ref } from 'vue'
+import { RouterLink, useRouter } from "vue-router"
+import { Iphone, Lock } from '@element-plus/icons-vue'
+
 // 引入国际化组件
 import { useI18n } from "vue-i18n";
-
 const { t } = useI18n();
+const router = useRouter();
 
-// 向后端发送的表单数据
 const loginForm = ref({
-  phone: "",
-  password: "",
-});
+  phone:'',
+  password:''
+})
+
+const toLogin = () => {
+  router.push('/experiment')
+}
 </script>
 
 <template>
-  <div class="login-page">
-    <!-- 用户登录输入区 -->
-    <span class="platform-title">{{$t('login.platformName')}}</span>
-    <span class="platform-instruction">{{$t('login.platformInstruction')}}</span>
-    <div class="login-input-container">
-      <a-space direction="vertical" size="large">
-        <!-- 手机号输入 -->
-        <a-input :style="{width:'320px'}" :placeholder="$t('login.inputPhone')" v-model="loginForm.phone">
-          <template #prefix>
-            <icon-phone />
-          </template>
-        </a-input>
-        <!-- 密码输入 -->
-        <a-input-password :style="{width:'320px'}" :placeholder="$t('login.inputPassword')" v-model="loginForm.password">
-          <template #prefix>
-            <icon-stamp />
-          </template>
-        </a-input-password>
-        <!-- 登录按钮  -->
-        <a-button type="primary" size="large" long @click="toLogin">{{$t('login.login')}}</a-button>
-        <RouterLink>注册</RouterLink>
-        <RouterLink>忘记密码</RouterLink>
-      </a-space>
-    </div>
-  </div>
+  <el-row class="login-page">
+    <el-col :lg="16" :md="12" class="login-left">
+      <div>
+        <!-- 平台介绍 -->
+        <div class="platform-name">{{$t('login.platformName')}}</div>
+        <div class="platform-introduction">{{$t('login.platformInstruction')}}</div>
+      </div>
+    </el-col>
+    <el-col :lg="8" :md="12" class="login-right">
+      <h2 class="login-welcome">欢迎回来</h2>
+      <div class="login-notice">
+        <span class="h-[0.15rem] w-16 bg-gray-200"></span>
+          <span>请输入登录信息</span>
+        <span class="h-[0.15rem] w-16 bg-gray-200"></span>
+      </div>
+      <el-form :model="loginForm" class="w-[20rem]">
+        <!-- 输入手机号 -->
+        <el-form-item>
+            <el-input v-model="loginForm.phone" :placeholder="$t('login.inputPhone')">
+              <!-- 图标 -->
+              <template #prefix>
+                <el-icon color="#409efc" class="no-inherit">
+                    <Iphone />
+                </el-icon>
+              </template>
+            </el-input>
+        </el-form-item>
+        <!-- 输入密码 -->
+        <el-form-item>
+          <el-input v-model="loginForm.password" :placeholder="$t('login.inputPassword')">
+            <!-- 图标 -->
+            <template #prefix>
+              <el-icon color="#409efc" class="no-inherit">
+                <Lock />
+              </el-icon>
+            </template>
+          </el-input>
+        </el-form-item>
+        <el-form-item>
+            <el-button class="w-[20rem]" type="primary" round @click="toLogin">{{$t('login.login')}}</el-button>
+        </el-form-item>
+      </el-form>
+       
+    </el-col>
+    </el-row>
 </template>
 
 <style scoped>
 .login-page {
   width: 100vw;
   height: 100vh;
-  text-align: center;
-  box-sizing: border-box;
-  background-color: aliceblue;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  align-items: center;
 }
-.platform-title {
-  font-weight: 1000;
-  font-size: 30px;
-  margin-bottom: 10px;
-  /* 设置字体颜色渐变 */
-  background: linear-gradient(-225deg, #2CD8D5 0%, #C5C1FF 56%, #FFBAC3 100%);
-  background-clip: text;
-  -webkit-text-fill-color: transparent;
+.login-left {
+  background-image: url('../assets/img/background.png');
+  @apply flex items-center justify-center;
 }
-.login-input-container {
-  width: 20vw;
-  height: 30vh;
-  /* background-color: aqua; */
-  /* margin: 0 auto; */
-  padding: 10px;
-  border-radius: 15px;
+.platform-name {
+  @apply font-sans my-4 text-5xl font-bold text-light-100;
 }
-.platform-instruction {
-  font-weight: 1000;
-  font-size: 15px;
-  margin-bottom: 10px;
+.platform-introduction {
+  @apply font-sans text-lg font-bold text-light-100;
+}
+.login-right {
+  background-color: #f9fafb;
+  @apply flex items-center justify-center flex-col;
+}
+.login-welcome {
+  @apply font-bold text-3xl text-gray-800;
+}
+.login-notice {
+  @apply  flex items-center justify-center my-5 text-gray-300 text-2xl space-x-2;
 }
 </style>

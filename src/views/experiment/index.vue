@@ -1,9 +1,17 @@
 <script setup lang="ts">
+import { useRouter } from "vue-router"
 import { DataAnalysis, User } from '@element-plus/icons-vue'
+
+const router = useRouter();
+
+// 退出系统
+const quit = () => {
+  router.push('/')
+}
 </script>
 
 <template>
-  <el-row>
+<el-row>
     <!-- 侧边栏 -->
     <el-col :xs="0" :sm="2" :md="2" :lg="1" :xl="1" class="sider-nav">
       <div class="sider-nav-main">
@@ -31,9 +39,17 @@ import { DataAnalysis, User } from '@element-plus/icons-vue'
           <icon-settings  size="33" strokeWidth="3" class="mt-2"/>
           <div class="icon-text">设置</div>
         </div>
-      </div>
-      <div class="sider-nav-bottom">
+        <!-- 关于 -->
+        <div class="sider-nav-icon">
+          <icon-question-circle  size="33" strokeWidth="3" class="mt-2"/>
+          <div class="icon-text">关于</div>
+        </div>
 
+        <!-- 退出 -->
+        <div class="sider-nav-icon-bottom" @click="quit">
+          <icon-export  size="33" strokeWidth="3" class="mt-2"/>
+          <div class="icon-text">退出</div>
+        </div>
       </div>
 
     </el-col>
@@ -55,7 +71,9 @@ import { DataAnalysis, User } from '@element-plus/icons-vue'
                 </div>
             </el-row>
         </el-col>
-    </el-row>
+</el-row>
+
+
 </template>
 
 <style scoped>
@@ -63,11 +81,13 @@ import { DataAnalysis, User } from '@element-plus/icons-vue'
     width: 100vw;
     height: 100vh;
     box-sizing: border-box;
-    @apply bg-light-500 flex-col pt-1 pl-1 pb-1;
+    @apply bg-light-500 flex-col pt-1 pl-2 pr-1 pb-2;
 }
 .sider-nav-main {
     width: 100%;
     height: 100%;
+    position: relative;
+    box-shadow: 1px 1px 2px #d1d5db;
     @apply bg-light-50 flex flex-col items-center rounded-md p-1;
 }
 .sider-nav-icon {
@@ -80,8 +100,14 @@ import { DataAnalysis, User } from '@element-plus/icons-vue'
 .icon-text {
     @apply mt-1 text-xs font-medium ;
 }
-.sider-nav-bottom {
-
+.sider-nav-icon-bottom {
+  position: absolute;
+  bottom: 10px;
+  width: 100%;
+  @apply mb-3 flex flex-col items-center text-gray-500 rounded-md;
+}
+.sider-nav-icon-bottom:hover{
+    @apply text-blue-500;
 }
 .header-nav {
     width: 100%;

@@ -39,7 +39,7 @@ const forgetForm = ref({
 })
 
 const toExperiment = () => {
-  router.push('/experiment')
+  router.push('/window')
 }
 </script>
 

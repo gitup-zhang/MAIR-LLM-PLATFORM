@@ -3,7 +3,9 @@
 </script>
 
 <template>
-  <div class="experiment-page">实验首页</div>
+  <div class="experiment-page">
+    实验首页
+  </div>
 </template>
 
 <style scoped>

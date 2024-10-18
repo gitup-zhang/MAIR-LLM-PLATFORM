@@ -238,7 +238,7 @@ const courseList = [
               </el-table-column>
             </el-table>
             <!-- 分页 -->
-            <el-pagination layout="prev, pager, next" :total="50" />
+            <el-pagination background layout="prev, pager, next" :total="1000" class="mt-4"/>
           </div>
         </div>
       </el-col>

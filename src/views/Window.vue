@@ -1,8 +1,19 @@
 <script setup lang="ts">
 import { useRouter, RouterView, RouterLink } from "vue-router"
 import { DataAnalysis, User } from '@element-plus/icons-vue'
+import { reactive, toRefs } from "vue";
+
+// 引入模态框组件
+import Setting from '@/components/modal/Setting.vue'
+import About from '@/components/modal/About.vue'
 
 const router = useRouter();
+
+const data = reactive({
+  aboutUsVisible : false,
+  settingVisible : false
+})
+const { aboutUsVisible, settingVisible } = toRefs(data)
 
 // 退出系统
 const quit = () => {
@@ -38,16 +49,19 @@ const quit = () => {
         </RouterLink>
 
         <!-- 设置 -->
-        <RouterLink class="sider-nav-icon" to="/setting">
-          <icon-settings  size="33" strokeWidth="3" class="mt-2"/>
-          <div  class="icon-text">设置</div>
-        </RouterLink>
+        <Setting>
+          <template #default>
+            <icon-settings  size="33" strokeWidth="3" class="mt-2"/>
+            <div class="icon-text">设置</div>
+          </template>
+        </Setting>
 
-        <!-- 关于 -->
-        <RouterLink class="sider-nav-icon" to="/about">
-          <icon-question-circle  size="33" strokeWidth="3" class="mt-2"/>
-          <div class="icon-text">关于</div>
-        </RouterLink>
+        <About>
+          <template #default>
+            <icon-question-circle  size="33" strokeWidth="3" class="mt-2"/>
+            <div class="mt-1 text-xs font-medium">关于</div>
+          </template>
+        </About>
 
         <!-- 退出 -->
         <div class="sider-nav-icon-bottom" @click="quit">
@@ -65,6 +79,11 @@ const quit = () => {
       </div>
     </el-col>
   </el-row>
+
+  <!-- 关于我们框 -->
+  <el-dialog v-model="aboutUsVisible" title="关于我们" width="700">
+    111
+  </el-dialog>
 </template>
 
 <style scoped>
@@ -115,5 +134,11 @@ const quit = () => {
   height: 100%;
   box-shadow: 1px 1px 2px #d1d5db;
   @apply bg-light-50 flex flex-col items-center rounded-md p-1;
+}
+
+/* 设置框 */
+.setting-dialog {
+  width: 100%;
+  @apply flex ;
 }
 </style>

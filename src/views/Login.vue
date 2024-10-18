@@ -2,11 +2,19 @@
 import { reactive, ref, toRefs } from 'vue'
 import { RouterLink, useRouter } from "vue-router"
 import { Iphone, Lock, User, Document } from '@element-plus/icons-vue'
-
+import { ElMessage } from 'element-plus'
+import { getUserData } from '@/apis/login'
+import { registerUserData } from '@/apis/login'
+// 引入 User 状态
+import { useUserStore } from '@/stores/user'
 // 引入国际化组件
 import { useI18n } from "vue-i18n";
+
+
+
 const { t } = useI18n();
 const router = useRouter();
+const userStore = useUserStore();
 
 // 页面运行相关数据
 const data = reactive({
@@ -38,8 +46,114 @@ const forgetForm = ref({
   verifyCode: ''
 })
 
-const toExperiment = () => {
+// 检查手机号格式
+const validatePhone = (phone: string) => {
+  let reg = /^1[3|4|5|6|7|8|9][0-9]{9}$/
+  if(!reg.test(phone)){
+    return false;
+  } else {
+    return true;
+  }
+}
+
+// 检查密码格式
+const validatePassword = (password: string) => {
+  let reg = /^[a-z|A-Z|0-9]*$/
+  if(!reg.test(password)){
+    return false;
+  } else {
+    return true;
+  }
+}
+
+// 检查两次输入密码
+const checkPass = (confirmPassword: string) => {
+  if(confirmPassword != registerForm.value.password){
+    return false;
+  } else {
+    return true;
+  }
+}
+
+// 登录
+const loginSubmit = async () => {
   router.push('/window')
+  // 检查手机号格式
+  if(!validatePhone(loginForm.value.phone)){
+    ElMessage({
+      message: '手机号码格式错误',
+      type: 'warning',
+      plain: true,
+    })
+  } else if (!validatePassword(loginForm.value.password)) {
+    ElMessage({
+      message: '密码格式错误，密码由字母与数字组成',
+      type: 'warning',
+      plain: true,
+    })
+  } else {
+    const userData = await getUserData(
+      loginForm.value.phone,
+      loginForm.value.password
+    );
+    if (userData.status == 0) {
+      ElMessage({
+        message: '登录成功',
+        type: 'success',
+        plain: true,
+      })
+      router.push('/window')
+    }
+    if (userData.data) {
+      // 保存用户的登录信息
+      sessionStorage.userId = userData.data.id;
+      sessionStorage.name = userData.data.name;
+      sessionStorage.email = userData.data.email;
+      sessionStorage.phone = userData.data.phone;
+      sessionStorage.userType = userData.data.type;
+      sessionStorage.userName = userData.data.user_name;
+      sessionStorage.idcard = userData.data.idcard;
+      // 保存用户的登录信息状态
+      userStore.id = userData.data.id;
+      userStore.name = userData.data.name;
+      userStore.email = userData.data.email;
+      userStore.phone = userData.data.phone;
+      userStore.userType = userData.data.type;
+      userStore.userName = userData.data.user_name;
+      userStore.idCard = userData.data.idcard;
+      // 设置登录状态
+      localStorage.setItem('loginflag', 'true');     
+    }
+  }
+}
+
+// 注册
+const registerSubmit = async () => {
+  // 检查手机号格式
+  if(!validatePhone(registerForm.value.phone)){
+    ElMessage({
+      message: '手机号码格式错误',
+      type: 'warning',
+      plain: true,
+    })
+  } else if (!validatePassword(registerForm.value.password)) {
+    ElMessage({
+      message: '密码格式错误，密码由字母与数字组成',
+      type: 'warning',
+      plain: true,
+    })
+  } else if(!checkPass(registerForm.value.confirmPassword)) {
+    ElMessage({
+      message: '两次输入的密码不一致',
+      type: 'warning',
+      plain: true,
+    })
+  } else {
+    console.log('registerForm', registerForm)
+    const newUserData = await registerUserData(registerForm);
+    console.log('!!!!', newUserData)
+    registerVisible.value = false
+  } 
 }
 </script>
 
@@ -85,7 +199,7 @@ const toExperiment = () => {
           </el-input>
         </el-form-item>
         <el-form-item>
-            <el-button class="w-[20rem]" type="primary" round @click="toExperiment">{{$t('login.login')}}</el-button>
+            <el-button class="w-[20rem]" type="primary" round @click="loginSubmit">{{$t('login.login')}}</el-button>
         </el-form-item>
       </el-form>
       <!-- 注册与忘记密码 -->
@@ -175,7 +289,7 @@ const toExperiment = () => {
 
         <!-- 注册按钮 -->
         <el-form-item>
-          <el-button class="w-[20rem]" type="primary" @click="registerVisible = false">注册</el-button>
+          <el-button class="w-[20rem]" type="primary" @click="registerSubmit">注册</el-button>
         </el-form-item>
       </el-form>
       </div>

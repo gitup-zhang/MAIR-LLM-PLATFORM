@@ -1,7 +1,7 @@
 import axios from 'axios'
 
 export const httpInstance = axios.create({
-    baseURL: 'http://8.142.78.0:30027/olexp_server',
+    baseURL: '/system',
     timeout: 5000
 })
 

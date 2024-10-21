@@ -1,10 +1,17 @@
 <script setup lang="ts">
-
+import { ref } from 'vue'
+import StudyExperiment from '@/components/experiment/StudyExperiment.vue'
+const userType = ref(1);
 </script>
 
 <template>
   <div class="experiment-page">
-    实验首页
+    <template v-if="userType === 1">
+      <StudyExperiment />
+    </template>
+    <template v-if="userType === 2">
+      教师和教务
+    </template>
   </div>
 </template>
 

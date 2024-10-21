@@ -79,11 +79,6 @@ const quit = () => {
       </div>
     </el-col>
   </el-row>
-
-  <!-- 关于我们框 -->
-  <el-dialog v-model="aboutUsVisible" title="关于我们" width="700">
-    111
-  </el-dialog>
 </template>
 
 <style scoped>
@@ -134,11 +129,5 @@ const quit = () => {
   height: 100%;
   box-shadow: 1px 1px 2px #d1d5db;
   @apply bg-light-50 flex flex-col items-center rounded-md p-1;
-}
-
-/* 设置框 */
-.setting-dialog {
-  width: 100%;
-  @apply flex ;
 }
 </style>

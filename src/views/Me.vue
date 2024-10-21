@@ -2,6 +2,25 @@
 import { ref } from "vue"
 import { RouterLink, useRouter } from "vue-router"
 import { DataBoard, SetUp, Document } from '@element-plus/icons-vue'
+// 引入 User 状态
+import { useUserStore } from '@/stores/user'
+
+const userStore = useUserStore();
+
+// 获取用户类型
+const getUserTypeName = () => {
+  if (!userStore.userType){
+    return '未知';
+  } else if (userStore.userType === '1') {
+    return '学生'
+  } else if (userStore.userType === '2') {
+    return '教师'
+  } else {
+    return '教务'
+  }
+}
+
+
 
 const user = '123213'
 const course = ref('')
@@ -246,10 +265,10 @@ const courseList = [
     <!-- 右侧 用户信息区 -->
     <el-col :lg="4" class="right-main">
         <div class="username">
-          欢迎 {{user}} 用户登录
+          欢迎 {{ userStore.name }} 用户登录
         </div>
         <div class="usertype">
-          类型：学生用户
+          类型：{{ getUserTypeName() }}
         </div>
 
         <!-- 用户信息概览 -->

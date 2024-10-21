@@ -14,5 +14,17 @@ export default defineConfig({
     alias: {
       '@': fileURLToPath(new URL('./src', import.meta.url))
     }
+  },
+  // 解决跨域问题
+  server: {
+    port: 3000,
+    open: true,
+    proxy: {
+      '/system': {
+        target: 'http://8.142.78.0:30027/olexp_server',
+        changeOrigin: false,
+        rewrite: (path) => path.replace(/^\/system/, '')
+      }
+    }
   }
 })

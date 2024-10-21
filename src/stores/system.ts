@@ -8,7 +8,9 @@ export const useSystemStore = defineStore({
     // 关于我们模态框是否可见
     aboutModalVisible: false,
     // 实验详情模态框是否可见
-    experimentDetailVisible: false
+    experimentDetailVisible: false,
+    // 班级通知模态框是否可见
+    classNotificationVisible: false
   }),
   actions: {
     // 打开设置模态框
@@ -22,6 +24,10 @@ export const useSystemStore = defineStore({
     // 打开实验详情模态框
     openExperimentDetailModal() {
       this.experimentDetailVisible = true
+    },
+    // 打开班级通知模态框
+    openClassNotificationModal() {
+      this.classNotificationVisible = true
     }
   }
 })

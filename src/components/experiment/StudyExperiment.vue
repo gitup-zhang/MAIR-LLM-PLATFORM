@@ -3,15 +3,16 @@ import { onMounted, ref } from 'vue'
 import { getClassList } from '@/apis/experiment'
 
 import CourseList from '@/components/experiment/CourseList.vue'
+import DiscussPlatform from '@/components/experiment/DiscussPlatform.vue';
 
 const classList = ref([])
 const page = 1;
 const count = 6;
 
-onMounted(async () => {
-  const data = await getClassList('study', 1, 6);
-  console.log('@@@', data)
-})
+// onMounted(async () => {
+//   const data = await getClassList('study', 1, 6);
+//   console.log('@@@', data)
+// })
 </script>
 
 <template>
@@ -20,7 +21,7 @@ onMounted(async () => {
       <CourseList />
     </el-col>
     <el-col :span="8" class="discuss-platform">
-        问答论坛
+      <DiscussPlatform />
     </el-col>
   </el-row>
 </template>
@@ -30,13 +31,13 @@ onMounted(async () => {
 .experiment-page {
   width: 100vw;
   height: 100vh;
-  @apply bg-light-50;
 }
 .course-list {
   width: 100%;
   height: 100%;
+  @apply bg-light-500 pr-1;
 }
 .discuss-platform {
-  @apply bg-sky-100 p-2;
+  @apply bg-light-500;
 }
 </style>

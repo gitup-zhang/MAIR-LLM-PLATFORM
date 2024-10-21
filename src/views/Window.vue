@@ -127,7 +127,8 @@ const quit = () => {
 .experiment-left-main {
   width: 100%;
   height: 100%;
-  box-shadow: 1px 1px 2px #d1d5db;
-  @apply bg-light-50 flex flex-col items-center rounded-md p-1;
+  /* box-shadow: 1px 1px 2px #d1d5db; */
+  /* @apply bg-light-50 flex flex-col items-center rounded-md p-1; */
+  @apply flex flex-col items-center;
 }
 </style>

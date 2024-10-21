@@ -72,7 +72,7 @@ const quit = () => {
 
     </el-col>
 
-    <el-col :xs="24" :sm="22" :md="22" :lg="23" :xl="23" class="experiment-left">
+    <el-col :xs="24" :sm="22" :md="22" :lg="23" :xl="23" class="window-main">
       <!-- 主内容区 -->
       <div class="experiment-left-main">
         <RouterView></RouterView>
@@ -120,7 +120,7 @@ const quit = () => {
 }
 
 /* 左侧主页面区 */
-.experiment-left {
+.window-main {
   box-sizing: border-box;
   @apply bg-light-500 flex-col pt-1 pl-1 pr-2 pb-2;
 }

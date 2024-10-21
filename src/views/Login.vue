@@ -10,8 +10,6 @@ import { useUserStore } from '@/stores/user'
 // 引入国际化组件
 import { useI18n } from "vue-i18n";
 
-
-
 const { t } = useI18n();
 const router = useRouter();
 const userStore = useUserStore();

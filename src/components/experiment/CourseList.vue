@@ -4,6 +4,19 @@ import { getClassList } from '@/apis/experiment'
 import ExperimentDetail from '@/components/modal/ExperimentDetail.vue'
 import { useSystemStore } from '@/stores/system'
 
+import { useRouter, RouterView, RouterLink } from "vue-router"
+const router = useRouter();
+
+// 进入实验
+const openExperiment = () => {
+  router.push("/experimentConduct")
+}
+// 进入学生课程报告页面
+const openStuReport = () => {
+  router.push("/stuCourseReport")
+}
+
+
 const systemStore = useSystemStore()
 const classList = ref([])
 const page = 1;
@@ -112,9 +125,9 @@ const notificationData = [
         <!-- 右侧固定列 展示详情信息 -->
         <el-table-column fixed="right" label="操作" min-width="60">
           <template #default>
-            <el-button link type="primary" size="small">进入实验</el-button>
+            <el-button link type="primary" size="small" @click="openExperiment()">进入实验</el-button>
             <el-button link type="primary" size="small">课堂交流</el-button>
-            <el-button link type="primary" size="small">学习报告</el-button>
+            <el-button link type="primary" size="small" @click="openStuReport()">学习报告</el-button>
           </template>
         </el-table-column>
       </el-table>
@@ -123,7 +136,7 @@ const notificationData = [
 
   <!-- 班级通知框 -->
   <el-dialog v-model="systemStore.classNotificationVisible" title="班级通知" class="experimentDetailModal">
-     <!-- 搜索框 -->
+    <!-- 搜索框 -->
     <div class="notification-header">
       <el-input v-model="testInput" style="width: 240px" class="mr-3" placeholder="请输入内容" />
       <el-button type="primary" class="mr-3">搜索</el-button>

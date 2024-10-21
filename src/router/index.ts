@@ -5,7 +5,9 @@ import Me from '@/views/Me.vue'
 import Course from '@/views/course/index.vue'
 // 实验
 import Experiment from '@/views/experiment/index.vue'
-
+import ExperimentConduct from '@/views/experiment/ExperimentConduct.vue'
+// 课程报告
+import StuCourseReport from '@/views/course/StuCourseReport.vue'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -24,6 +26,16 @@ const router = createRouter({
           path: '/experiment',
           name: 'experiment',
           component: Experiment
+        },
+        {
+          path: '/experimentConduct',
+          name: 'experimentConduct',
+          component: ExperimentConduct
+        },
+        {
+          path: '/stuCourseReport',
+          name: 'stuCourseReport',
+          component: StuCourseReport
         },
         {
           path: '/me',

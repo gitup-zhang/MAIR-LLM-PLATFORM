@@ -3,7 +3,7 @@
 
 <template>
   <div class="discuss-page"> 
-    wendaluntan
+    问答论坛
   </div>
 </template>
 

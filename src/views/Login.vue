@@ -289,7 +289,7 @@ const registerSubmit = async () => {
         <el-form-item>
           <el-button class="w-[20rem]" type="primary" @click="registerSubmit">注册</el-button>
         </el-form-item>
-      </el-form>
+        </el-form>
       </div>
   </el-dialog>
 

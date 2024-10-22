@@ -1,11 +1,13 @@
 <script setup lang="ts">
 import { ref } from "vue"
 import { RouterLink, useRouter } from "vue-router"
-import { DataBoard, SetUp, Document } from '@element-plus/icons-vue'
-// 引入 User 状态
+import { User, Star, Message, Iphone, Aim, Location, House } from '@element-plus/icons-vue'
+// 引入 User、System 状态
 import { useUserStore } from '@/stores/user'
+import { useSystemStore } from '@/stores/system'
 
 const userStore = useUserStore();
+const systemStore = useSystemStore();
 
 // 获取用户类型
 const getUserTypeName = () => {
@@ -20,286 +22,95 @@ const getUserTypeName = () => {
   }
 }
 
+// 个人信息表单
+const userInfoForm = ref({
+  nickname: 'stuZhang',
+  stuId:'2023110765',
+  email:'zhangSan@163.com',
+  phone: '16322377655',
+  role: '学生',
+  name: '张三',
+  location: '北京邮电大学',
+  personId:'110101200104157756'
+})
 
 
-const user = '123213'
-const course = ref('')
-const apply = ref('')
-const coursesType = [
-  {
-    value: '计算机科学',
-    label: '计算机科学',
-  },
-  {
-    value: '机器学习',
-    label: '机器学习',
-  },
-  {
-    value: '大语言模型',
-    label: '大语言模型',
-  },
-  {
-    value: '深度学习',
-    label: '深度学习',
-  },
-]
-const applyStatus = [
-  {
-    value: '申请成功',
-    label: '申请成功',
-  },
-  {
-    value: '申请失败',
-    label: '申请失败',
-  },
-  {
-    value: '审核中',
-    label: '审核中',
-  }
-]
-const courseList = [
-  {
-    id: '1',
-    className: '大数据1班',
-    courseName: '深度学习基础',
-    teacherName: '张三',
-    studentNumber: '24/36',
-    date: '2024/10/5-2024/10/7',
-    eduName: '计算机学院',
-    applyStatus: '申请成功',
-    operate: '详情',
-  },
-    {
-    id: '2',
-    className: '大数据2班',
-    courseName: '深度学习基础',
-    teacherName: '张三',
-    studentNumber: '24/36',
-    date: '2024/10/5-2024/10/7',
-    eduName: '计算机学院',
-    applyStatus: '申请成功',
-    operate: '详情',
-  },
-    {
-    id: '3',
-    className: '大数据3班',
-    courseName: '深度学习基础',
-    teacherName: '张三',
-    studentNumber: '24/36',
-    date: '2024/10/5-2024/10/7',
-    eduName: '计算机学院',
-    applyStatus: '申请成功',
-    operate: '详情',
-  },
-    {
-    id: '4',
-    className: '大数据4班',
-    courseName: '深度学习基础',
-    teacherName: '张三',
-    studentNumber: '24/36',
-    date: '2024/10/5-2024/10/7',
-    eduName: '计算机学院',
-    applyStatus: '申请成功',
-    operate: '详情',
-  },
-    {
-    id: '5',
-    className: '大数据5班',
-    courseName: '深度学习基础',
-    teacherName: '张三',
-    studentNumber: '24/36',
-    date: '2024/10/5-2024/10/7',
-    eduName: '计算机学院',
-    applyStatus: '申请成功',
-    operate: '详情',
-  },
-    {
-    id: '6',
-    className: '大数据6班',
-    courseName: '深度学习基础',
-    teacherName: '张三',
-    studentNumber: '24/36',
-    date: '2024/10/5-2024/10/7',
-    eduName: '计算机学院',
-    applyStatus: '申请成功',
-    operate: '详情',
-  },
-    {
-    id: '7',
-    className: '大数据7班',
-    courseName: '深度学习基础',
-    teacherName: '张三',
-    studentNumber: '24/36',
-    date: '2024/10/5-2024/10/7',
-    eduName: '计算机学院',
-    applyStatus: '申请成功',
-    operate: '详情',
-  },
-    {
-    id: '8',
-    className: '大数据8班',
-    courseName: '深度学习基础',
-    teacherName: '张三',
-    studentNumber: '24/36',
-    date: '2024/10/5-2024/10/7',
-    eduName: '计算机学院',
-    applyStatus: '申请成功',
-    operate: '详情',
-  },
-    {
-    id: '9',
-    className: '大数据9班',
-    courseName: '深度学习基础',
-    teacherName: '张三',
-    studentNumber: '24/36',
-    date: '2024/10/5-2024/10/7',
-    eduName: '计算机学院',
-    applyStatus: '申请成功',
-    operate: '详情',
-  },
-    {
-    id: '10',
-    className: '大数据10班',
-    courseName: '深度学习基础',
-    teacherName: '张三',
-    studentNumber: '24/36',
-    date: '2024/10/5-2024/10/7',
-    eduName: '计算机学院',
-    applyStatus: '申请成功',
-    operate: '详情',
-  },
-    {
-    id: '11',
-    className: '大数据11班',
-    courseName: '深度学习基础',
-    teacherName: '张三',
-    studentNumber: '24/36',
-    date: '2024/10/5-2024/10/7',
-    eduName: '计算机学院',
-    applyStatus: '申请成功',
-    operate: '详情',
-  },
-    {
-    id: '12',
-    className: '大数据12班',
-    courseName: '深度学习基础',
-    teacherName: '张三',
-    studentNumber: '24/36',
-    date: '2024/10/5-2024/10/7',
-    eduName: '计算机学院',
-    applyStatus: '申请成功',
-    operate: '详情',
-  }
-]
+// 用户信息修改提交
+const userInfoEditSubmit = () => {
+
+}
 
 </script>
 
 <template>
   <el-row class="me-page">
-      <el-col :lg="20" class="left-main">
-        <img src="../assets/img/banner.png" class="banner" alt="大模型实训平台">
-          
-        <!-- 课程搜索框 -->
-        <div class="course-main">
-          <div class="select-course">
-            <!-- 搜索 -->
-            <el-input v-model="input" style="width: 240px" class="mr-3" placeholder="请输入课程名称" />
-            <el-button type="primary" class="mr-3">搜索</el-button>
-            <!-- 筛选课程类型 -->
-            <el-select
-             v-model="course"
-             clearable
-             placeholder="选择课程类型"
-             style="width: 140px"
-             class="mr-3"
-            >
-              <el-option
-               v-for="item in coursesType"
-               :key="item.value"
-               :label="item.label"
-               :value="item.value"
-              />
-            </el-select>
-            <!-- 筛选申请状态 -->
-            <el-select
-             v-model="apply"
-             clearable
-             placeholder="选择申请状态"
-             style="width: 140px"
-            >
-              <el-option
-               v-for="item in applyStatus"
-               :key="item.value"
-               :label="item.label"
-               :value="item.value"
-              />
-            </el-select>
-          </div>
+    <el-col :lg="20" class="left-main">
+      <div class="me-container">
+        <!-- 个人信息展示 -->
+        <el-descriptions border>
+          <el-descriptions-item
+          :rowspan="2"
+          :width="140"
+          label="头像"
+          align="center"
+          >
+            <!-- 头像照片 -->
+            <el-image
+              style="width: 100px; height: 100px"
+              src="https://cube.elemecdn.com/0/88/03b0d39583f48206768a7534e55bcpng.png"
+              @click="systemStore.openUserAvatarEditModal()"
+            />
+            <el-button type="primary" @click="systemStore.openUserInfoEditModal()">修改我的信息</el-button>
+          </el-descriptions-item>
+          <el-descriptions-item label="用户名">张三</el-descriptions-item>
+          <el-descriptions-item label="手机号">18100000000</el-descriptions-item>
+          <el-descriptions-item label="地点">北京</el-descriptions-item>
+          <el-descriptions-item label="标签">
+            <el-tag size="small">北京邮电大学</el-tag>
+          </el-descriptions-item>
+          <el-descriptions-item label="地址">西土城路10号, 海淀区, 北京市</el-descriptions-item>
+        </el-descriptions>
 
-          <!-- 班级列表展示 -->
-          <div class="course-list">
-            <el-table :data="courseList" border style="width: 100%">
-              <el-table-column prop="id" label="ID" width="50" />
-              <el-table-column prop="className" label="班级名"/>
-              <el-table-column prop="courseName" label="课程名"/>
-              <el-table-column prop="teacherName" label="教师名"/>
-              <el-table-column prop="studentNumber" label="学生数量"/>
-              <el-table-column prop="date" label="起止时间"/>
-              <el-table-column prop="eduName" label="教学单位名"/>
-              <el-table-column prop="applyStatus" label="申请状态"/>
-              <!-- 右侧固定列 展示详情信息 -->
-              <el-table-column fixed="right" label="操作" min-width="60">
-                <template #default>
-                  <el-button link type="primary" size="small">
-                    详情
-                  </el-button>
-                </template>
-              </el-table-column>
-            </el-table>
-            <!-- 分页 -->
-            <el-pagination background layout="prev, pager, next" :total="1000" class="mt-4"/>
-          </div>
-        </div>
-      </el-col>
+      </div>
+    </el-col>
 
     <!-- 右侧 用户信息区 -->
     <el-col :lg="4" class="right-main">
-        <div class="username">
-          欢迎 {{ userStore.name }} 用户登录
-        </div>
-        <div class="usertype">
-          类型：{{ getUserTypeName() }}
-        </div>
+      <div class="username">
+        欢迎 {{ userStore.name }} 用户登录
+      </div>
+      <div class="usertype">
+        类型：{{ getUserTypeName() }}
+      </div>
+      <!-- 用户信息概览 -->
+      <el-row class="overview">
+        <!-- 课程数量信息概览 -->
+        <el-col :span="8">
+          <div class="overview-title">
+            课程数量
+          </div>
+          <div class="overview-content">
+            <!-- 图标 -->
+            <el-icon class="no-inherit text-sky-600">
+              <DataBoard />
+            </el-icon>
+            8
+          </div>
+        </el-col>
 
-        <!-- 用户信息概览 -->
-        <el-row class="overview">
-          <!-- 课程数量信息概览 -->
-          <el-col :span="8">
-            <div class="overview-title">
-              课程数量
-            </div>
-            <div class="overview-content">
-              <!-- 图标 -->
-              <el-icon class="no-inherit text-sky-600">
-                <DataBoard />
-              </el-icon>
-              8
-            </div>
-          </el-col>
-
-          <!-- 实验数量信息概览 -->
-          <el-col  :span="8">
-            <div class="overview-title">
-              实验次数
-            </div>
-            <div class="overview-content">
-              <!-- 图标 -->
-              <el-icon class="no-inherit text-sky-600">
-                <SetUp />
-              </el-icon>
-              3
-            </div>
-          </el-col>
+        <!-- 实验数量信息概览 -->
+        <el-col  :span="8">
+          <div class="overview-title">
+            实验次数
+          </div>
+          <div class="overview-content">
+            <!-- 图标 -->
+            <el-icon class="no-inherit text-sky-600">
+              <SetUp />
+            </el-icon>
+            3
+          </div>
+        </el-col>
 
           <el-col  :span="8" class="overview-title">
             <div class="overview-title">
@@ -318,6 +129,119 @@ const courseList = [
         <el-button type="primary" class="font-bold">与大模型对话</el-button>
     </el-col>
   </el-row>
+
+  <!-- 修改头像框 -->
+  <el-dialog v-model="systemStore.userAvatarEditVisible" title="修改个人信息" width="400">
+  </el-dialog>
+
+  <!-- 修改个人信息框 -->
+  <el-dialog v-model="systemStore.userInfoEditVisible" title="修改个人信息" width="400">
+    <div class="edit-dialog">
+      <el-form :model="userInfoForm" class="w-[20rem]">
+        
+        <!-- 昵称 -->
+        <el-form-item>
+          <el-input v-model="userInfoForm.nickname" placeholder="请输入昵称">
+          <!-- 图标 -->
+            <template #prefix>
+              <el-icon color="#409efc" class="no-inherit">
+                <User />
+              </el-icon>
+            </template>
+          </el-input>
+        </el-form-item>
+
+        <!-- 学号 -->
+        <el-form-item>
+          <el-input v-model="userInfoForm.stuId" placeholder="请输入学号" disabled>
+          <!-- 图标 -->
+            <template #prefix>
+              <el-icon color="#409efc" class="no-inherit">
+                <Star />
+              </el-icon>
+            </template>
+          </el-input>
+        </el-form-item>
+
+        <!-- 邮箱 -->
+        <el-form-item>
+          <el-input v-model="userInfoForm.email" placeholder="请输入邮箱">
+            <!-- 图标 -->
+            <template #prefix>
+              <el-icon color="#409efc" class="no-inherit">
+                <Message />
+              </el-icon>
+            </template>
+          </el-input>
+        </el-form-item>
+
+        <!-- 手机号 -->
+        <el-form-item>
+          <el-input v-model="userInfoForm.phone" placeholder="请输入手机号">
+            <!-- 图标 -->
+            <template #prefix>
+              <el-icon color="#409efc" class="no-inherit">
+                <Iphone />
+              </el-icon>
+            </template>
+          </el-input>
+        </el-form-item>
+
+        <!-- 角色 -->
+        <el-form-item>
+          <el-input v-model="userInfoForm.role" placeholder="角色" disabled>
+            <!-- 图标 -->
+            <template #prefix>
+              <el-icon color="#409efc" class="no-inherit">
+                <Aim />
+              </el-icon>
+            </template>
+          </el-input>
+        </el-form-item>
+
+        <!-- 真实姓名 -->
+        <el-form-item>
+          <el-input v-model="userInfoForm.name" placeholder="请输入真实姓名">
+            <!-- 图标 -->
+            <template #prefix>
+              <el-icon color="#409efc" class="no-inherit">
+                <User />
+              </el-icon>
+            </template>
+          </el-input>
+        </el-form-item>
+
+        <!-- 所属地区 -->
+        <el-form-item>
+          <el-input v-model="userInfoForm.location" placeholder="请输入您的所属地区">
+            <!-- 图标 -->
+            <template #prefix>
+              <el-icon color="#409efc" class="no-inherit">
+                <Location />
+              </el-icon>
+            </template>
+          </el-input>
+        </el-form-item>
+
+        <!-- 所属地区 -->
+        <el-form-item>
+          <el-input v-model="userInfoForm.personId" placeholder="请输入您的身份证号">
+            <!-- 图标 -->
+            <template #prefix>
+              <el-icon color="#409efc" class="no-inherit">
+                <House />
+              </el-icon>
+            </template>
+          </el-input>
+        </el-form-item>
+
+        <!-- 注册按钮 -->
+        <el-form-item>
+          <el-button class="w-[20rem]" type="primary" @click="userInfoEditSubmit">提交修改</el-button>
+        </el-form-item>
+      </el-form>
+    </div>
+  </el-dialog>
 </template>
 
 <style scoped>
@@ -325,35 +249,25 @@ const courseList = [
 .me-page {
   width: 100%;
   height: 100%;
-  @apply bg-light-50 p-1;
 }
-
 /* 左侧区域 */
 .left-main {
   width: 100%;
   height: 100%;
+  @apply bg-light-500 pr-1;
 }
-.banner {
-  width: 70%;
-  height: 20%;
-  border-radius: 15px;
+.me-container {
+  width: 100%;
+  height: 100%;
+  box-shadow: 1px 1px 2px #d1d5db;
+  @apply bg-light-50 p-3 rounded-md;
 }
-.course-main {
-  @apply flex flex-col mt-3;
-}
-.select-course {
-  @apply flex flex-row;
-}
-.course-list {
-  @apply flex flex-col mt-4 mr-2;
-}
-
-
 /* 右侧区域 */
 .right-main {
   width: 100%;
   height: 100%;
-  @apply bg-sky-50 flex flex-col p-3;
+  box-shadow: 1px 1px 2px #d1d5db;
+  @apply bg-sky-50 flex flex-col p-3 rounded-md;
 }
 .username {
   @apply text-xl font-semibold text-sky-400;
@@ -370,5 +284,9 @@ const courseList = [
 }
 .overview-content{
   @apply text-sky-600 text-xl;
+}
+/* 模态框 */
+.edit-dialog {
+  @apply flex items-center justify-center flex-col;
 }
 </style>

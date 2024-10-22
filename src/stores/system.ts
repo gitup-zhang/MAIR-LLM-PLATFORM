@@ -10,7 +10,11 @@ export const useSystemStore = defineStore({
     // 实验详情模态框是否可见
     experimentDetailVisible: false,
     // 班级通知模态框是否可见
-    classNotificationVisible: false
+    classNotificationVisible: false,
+    // 个人信息修改模态框是否可见
+    userInfoEditVisible: false,
+    // 个人头像修改模态框是否可见
+    userAvatarEditVisible: false
   }),
   actions: {
     // 打开设置模态框
@@ -28,6 +32,13 @@ export const useSystemStore = defineStore({
     // 打开班级通知模态框
     openClassNotificationModal() {
       this.classNotificationVisible = true
+    },
+    // 打开个人信息修改模态框
+    openUserInfoEditModal() {
+      this.userInfoEditVisible = true
+    },
+    openUserAvatarEditModal() {
+      this.userAvatarEditVisible = true
     }
   }
 })

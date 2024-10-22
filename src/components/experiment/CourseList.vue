@@ -9,10 +9,12 @@ const router = useRouter();
 
 // 进入实验
 const openExperiment = () => {
+  systemStore.experimentDetailVisible = false
   router.push("/experimentConduct")
 }
 // 进入学生课程报告页面
 const openStuReport = () => {
+  systemStore.experimentDetailVisible = false
   router.push("/stuCourseReport")
 }
 
@@ -168,6 +170,10 @@ const notificationData = [
 .course-card {
   width: 300px;
   margin-top: 2rem;
+  transition: all .2s;
+}
+.course-card:hover {
+  transform: scale(1.05);
 }
 .course-card-main {
   text-align: center;

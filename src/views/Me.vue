@@ -21,6 +21,26 @@ const getUserTypeName = () => {
     return '教务'
   }
 }
+// 角色类型
+const userRoleOptions = ref([
+  {
+    value: '学生',
+    label: '学生'
+  },
+  {
+    value: '教务',
+    label: '教务'
+  },
+  {
+    value: '教师',
+    label: '教师'
+  },
+])
+
+
+
+
+
 
 // 个人信息表单
 const userInfoForm = ref({
@@ -34,6 +54,23 @@ const userInfoForm = ref({
   personId:'110101200104157756'
 })
 
+const myRole = ref('')
+const applyData = ref([
+  {
+    id: '1',
+    role: '教师',
+    time: '无',
+    status: '待审核',
+    operation: '操作'
+  },
+  {
+    id: '2',
+    role: '教师',
+    time: '无',
+    status: '待审核',
+    operation: '操作'
+  },
+])
 
 // 用户信息修改提交
 const userInfoEditSubmit = () => {
@@ -70,6 +107,32 @@ const userInfoEditSubmit = () => {
           </el-descriptions-item>
           <el-descriptions-item label="地址">西土城路10号, 海淀区, 北京市</el-descriptions-item>
         </el-descriptions>
+
+        <!-- 角色申请记录 -->
+        <el-row class="role-apply">
+          <el-col :span="12" class="role-apply-display">
+            <el-select v-model="myRole" placeholder="请选择角色" style="width: 240px" class="mb-3 mr-2">
+              <el-option
+                v-for="item in userRoleOptions"
+                :key="item.value"
+                :label="item.label"
+                :value="item.value"
+              />
+            </el-select>
+            <el-button type="primary" class="mb-3">申请</el-button>
+            <!-- 角色申请记录 -->
+            <el-table :data="applyData" border style="width: 100%">
+              <el-table-column prop="id" label="学号" width="60" />
+              <el-table-column prop="role" label="申请角色"/>
+              <el-table-column prop="time" label="时间"/>
+              <el-table-column prop="status" label="审核状态"/>
+              <el-table-column prop="operation" label="操作" />
+            </el-table>
+          </el-col>
+          <el-col :span="12">
+
+          </el-col>
+        </el-row>
 
       </div>
     </el-col>
@@ -261,6 +324,13 @@ const userInfoEditSubmit = () => {
   height: 100%;
   box-shadow: 1px 1px 2px #d1d5db;
   @apply bg-light-50 p-3 rounded-md;
+}
+.role-apply {
+  width: 100%;
+  @apply mt-3;
+}
+.role-apply-display {
+  @apply pr-2;
 }
 /* 右侧区域 */
 .right-main {

@@ -120,7 +120,7 @@ const loginSubmit = async () => {
       userStore.userName = userData.data.user_name;
       userStore.idCard = userData.data.idcard;
       // 设置登录状态
-      localStorage.setItem('loginflag', 'true');     
+      localStorage.setItem('loginflag', 'true');
     }
   }
 }

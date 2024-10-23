@@ -1,82 +1,211 @@
 <script setup lang="ts">
-import { ref } from "vue"
+import { onMounted, reactive, ref, toRefs } from "vue"
 import { RouterLink, useRouter } from "vue-router"
-import { User, Star, Message, Iphone, Aim, Location, House } from '@element-plus/icons-vue'
+import { User, Star, Message, Iphone, Aim, Location, House, Lock } from '@element-plus/icons-vue'
+import { ElMessage } from 'element-plus'
 // 引入 User、System 状态
 import { useUserStore } from '@/stores/user'
 import { useSystemStore } from '@/stores/system'
+import { getUserInfo, editUserInfo, getApplyRoleList, submitModifyPassword } from '@/apis/user'
 
 const userStore = useUserStore();
 const systemStore = useSystemStore();
+const data = reactive({
+  // 申请新的身份类型
+  newType: userStore.roleId,
+  // 申请记录
+  applicationList: [],
+  // 用户修改密码
+  modifyPassword: {
+    oldPassword: '',
+    newPassowrd: '',
+    checkPassword: ''
+  },
+  page: 1,
+  count: 10,
+  total: 0
+})
+const { newType, applicationList, page, count, total } = toRefs(data)
+
+
+// 角色类型
+const userRoleOptions = ref([
+  {
+    value: 1,
+    label: '学生'
+  },
+  {
+    value: 2,
+    label: '教师'
+  },
+  {
+    value: 3,
+    label: '教务'
+  }
+])
+
+const userInfoForm = reactive({
+  id: 0,
+  user_name: '',
+  id_number: '',
+  name: '',
+  email: '',
+  phone: '',
+  type: '',
+  idcard: '',
+  create_time: 0,
+  modify_time: 0,
+  area_id: 0
+})
+
+const { 
+  id, 
+  user_name, 
+  id_number, 
+  name, 
+  email, 
+  phone, 
+  type, 
+  idcard, 
+  create_time,
+  modify_time,
+  area_id 
+} = toRefs(userInfoForm)
+
+
+
 
 // 获取用户类型
-const getUserTypeName = () => {
-  if (!userStore.userType){
+const getUserType = (userType: number) => {
+  if (!userType){
     return '未知';
-  } else if (userStore.userType === '1') {
+  } else if (userType === 1) {
     return '学生'
-  } else if (userStore.userType === '2') {
+  } else if (userType === 2) {
     return '教师'
   } else {
     return '教务'
   }
 }
-// 角色类型
-const userRoleOptions = ref([
-  {
-    value: '学生',
-    label: '学生'
-  },
-  {
-    value: '教务',
-    label: '教务'
-  },
-  {
-    value: '教师',
-    label: '教师'
-  },
-])
 
+// 获取用户信息，并存储到状态中
+const getAndStoreUserData = async () => {
+  // 获取用户数据
+  const userData = await getUserInfo();
+  userInfoForm.id = userData.data.id;
+  userInfoForm.user_name = userData.data.user_name;
+  userInfoForm.id_number = userData.data.id_number;
+  userInfoForm.name = userData.data.name;
+  userInfoForm.email = userData.data.email;
+  userInfoForm.phone = userData.data.phone;
+  userInfoForm.type = userData.data.type;
+  userInfoForm.idcard = userData.data.idcard;
+  userInfoForm.create_time = userData.data.create_time;
+  userInfoForm.modify_time = userData.data.modify_time;
+  userInfoForm.area_id = userData.data.area_id;
 
-
-
-
-
-// 个人信息表单
-const userInfoForm = ref({
-  nickname: 'stuZhang',
-  stuId:'2023110765',
-  email:'zhangSan@163.com',
-  phone: '16322377655',
-  role: '学生',
-  name: '张三',
-  location: '北京邮电大学',
-  personId:'110101200104157756'
-})
-
-const myRole = ref('')
-const applyData = ref([
-  {
-    id: '1',
-    role: '教师',
-    time: '无',
-    status: '待审核',
-    operation: '操作'
-  },
-  {
-    id: '2',
-    role: '教师',
-    time: '无',
-    status: '待审核',
-    operation: '操作'
-  },
-])
-
-// 用户信息修改提交
-const userInfoEditSubmit = () => {
-
+  userStore.id = userData.data.id;
+  userStore.nickname = userData.data.user_name;
+  userStore.stuId = userData.data.id_number;
+  userStore.name = userData.data.name;
+  userStore.avatar = '';
+  userStore.email = userData.data.email;
+  userStore.phone = userData.data.phone;
+  userStore.role = getUserType(userData.data.type);
+  userStore.personId = userData.data.idcard;
+  userStore.createTime = userData.data.create_time;
+  userStore.modifyTime = userData.data.modify_time;
+  userStore.areaId = userData.data.area_id;
 }
 
+// 提交修改
+const userInfoEditSubmit = async () => {
+  const res = await editUserInfo(userInfoForm, userStore.id);
+  if(res.status === 0){
+    ElMessage({
+      message: '修改成功',
+      type: 'success',
+      plain: true,
+    })
+    // 关闭模态框
+    systemStore.userInfoEditVisible = false
+    // 刷新数据
+    getAndStoreUserData()
+  } else {
+    ElMessage({
+      message: '修改失败',
+      type: 'warning',
+      plain: true,
+    })
+  }
+}
+
+// 获取角色申请记录列表
+const getUserApplyRoleList = async () => {
+  const res = await getApplyRoleList();
+  data.applicationList = res.data.list;
+}
+
+// 检查密码格式
+const validatePassword = (password: string) => {
+  let reg = /^[a-z|A-Z|0-9]*$/
+  if(!reg.test(password)){
+    return false;
+  } else {
+    return true;
+  }
+}
+
+// 检查两次输入密码
+const checkPassword = (newPassword: string, confirmPassword: string) => {
+  if(confirmPassword != newPassword){
+    return false;
+  } else {
+    return true;
+  }
+}
+
+// 提交密码修改
+const modifyPassword = async () => {
+  // 检查非空
+  if(data.modifyPassword.oldPassword === '' || data.modifyPassword.newPassowrd === '' || data.modifyPassword.checkPassword ===''){
+    ElMessage({
+      message: '请输入密码',
+      type: 'warning',
+      plain: true,
+    })
+  }else if(!validatePassword(data.modifyPassword.oldPassword) || !validatePassword(data.modifyPassword.newPassowrd) || !validatePassword(data.modifyPassword.checkPassword)){
+    // 检查类型
+    ElMessage({
+      message: '密码由字母与数字组成',
+      type: 'warning',
+      plain: true,
+    })
+  }else if(!checkPassword(data.modifyPassword.newPassowrd, data.modifyPassword.checkPassword)){
+    // 检查两次输入是否一致
+    ElMessage({
+      message: '两次输入密码不一致',
+      type: 'warning',
+      plain: true,
+    })
+  }else {
+    const newForm = {
+      old_password: data.modifyPassword.oldPassword,
+      new_password: data.modifyPassword.newPassowrd,
+      check_password: data.modifyPassword.checkPassword
+    }
+    console.log(newForm)
+    const res = await submitModifyPassword(newForm);
+    console.log(res)
+  }
+}
+
+onMounted(() => {
+  // 挂载用户数据
+  getAndStoreUserData();
+  // 获取角色申请记录列表
+  getUserApplyRoleList();
+})
 </script>
 
 <template>
@@ -99,9 +228,10 @@ const userInfoEditSubmit = () => {
             />
             <el-button type="primary" @click="systemStore.openUserInfoEditModal()">修改我的信息</el-button>
           </el-descriptions-item>
-          <el-descriptions-item label="用户名">张三</el-descriptions-item>
-          <el-descriptions-item label="手机号">18100000000</el-descriptions-item>
-          <el-descriptions-item label="地点">北京</el-descriptions-item>
+          <el-descriptions-item label="用户名">{{ userStore.nickname }}</el-descriptions-item>
+          <el-descriptions-item label="手机号">{{ userStore.phone }}</el-descriptions-item>
+          <el-descriptions-item label="邮箱">{{ userStore.email }}</el-descriptions-item>
+          <el-descriptions-item label="学号">{{ userStore.stuId }}</el-descriptions-item>
           <el-descriptions-item label="标签">
             <el-tag size="small">北京邮电大学</el-tag>
           </el-descriptions-item>
@@ -111,7 +241,8 @@ const userInfoEditSubmit = () => {
         <!-- 角色申请记录 -->
         <el-row class="role-apply">
           <el-col :span="12" class="role-apply-display">
-            <el-select v-model="myRole" placeholder="请选择角色" style="width: 240px" class="mb-3 mr-2">
+            <!-- 选择新角色 -->
+            <el-select v-model="data.newType" placeholder="请选择角色" style="width: 240px" class="mb-3 mr-2">
               <el-option
                 v-for="item in userRoleOptions"
                 :key="item.value"
@@ -120,14 +251,56 @@ const userInfoEditSubmit = () => {
               />
             </el-select>
             <el-button type="primary" class="mb-3">申请</el-button>
+            
             <!-- 角色申请记录 -->
-            <el-table :data="applyData" border style="width: 100%">
-              <el-table-column prop="id" label="学号" width="60" />
-              <el-table-column prop="role" label="申请角色"/>
-              <el-table-column prop="time" label="时间"/>
-              <el-table-column prop="status" label="审核状态"/>
-              <el-table-column prop="operation" label="操作" />
+            <el-table :data="data.applicationList" border style="width: 100%">
+              <el-table-column prop="user_id_number" label="号码" />
+              <el-table-column prop="user_name" label="昵称" width="80"/>
+              <el-table-column prop="new_type_desc" label="申请角色" width="90"/>
+              <el-table-column prop="create_time" label="时间"/>
+              <el-table-column prop="status_desc" label="审核状态"/>
             </el-table>
+            
+            <!-- 密码修改 -->
+            <el-form :model="data.modifyPassword" class="w-[45rem] mt-2 flex flex-row">
+              <!-- 输入原密码 -->
+              <el-form-item class="mr-1">
+                <el-input v-model="data.modifyPassword.oldPassword" placeholder="请输入原始密码">
+                  <!-- 图标 -->
+                  <template #prefix>
+                    <el-icon color="#409efc" class="no-inherit">
+                      <Lock />
+                    </el-icon>
+                  </template>
+                </el-input>
+              </el-form-item>
+              <!-- 输入新密码 -->
+              <el-form-item class="mr-1">
+                <el-input v-model="data.modifyPassword.newPassowrd" placeholder="请输入新密码">
+                  <!-- 图标 -->
+                  <template #prefix>
+                    <el-icon color="#409efc" class="no-inherit">
+                      <Lock />
+                    </el-icon>
+                  </template>
+                </el-input>
+              </el-form-item>
+              <!-- 确认新密码 -->
+              <el-form-item class="mr-1">
+                <el-input v-model="data.modifyPassword.checkPassword" placeholder="请确认新密码">
+                  <!-- 图标 -->
+                  <template #prefix>
+                    <el-icon color="#409efc" class="no-inherit">
+                      <Lock />
+                    </el-icon>
+                  </template>
+                </el-input>
+              </el-form-item>
+              <!-- 确认按钮 -->
+              <el-form-item>
+                <el-button class="w-[5rem]" type="primary" @click="modifyPassword()">确认修改</el-button>
+              </el-form-item>
+            </el-form>
           </el-col>
           <el-col :span="12">
 
@@ -143,7 +316,7 @@ const userInfoEditSubmit = () => {
         欢迎 {{ userStore.name }} 用户登录
       </div>
       <div class="usertype">
-        类型：{{ getUserTypeName() }}
+        类型：{{ userStore.role }}
       </div>
       <!-- 用户信息概览 -->
       <el-row class="overview">
@@ -204,7 +377,7 @@ const userInfoEditSubmit = () => {
         
         <!-- 昵称 -->
         <el-form-item>
-          <el-input v-model="userInfoForm.nickname" placeholder="请输入昵称">
+          <el-input v-model="userInfoForm.name" placeholder="请输入昵称">
           <!-- 图标 -->
             <template #prefix>
               <el-icon color="#409efc" class="no-inherit">
@@ -216,7 +389,7 @@ const userInfoEditSubmit = () => {
 
         <!-- 学号 -->
         <el-form-item>
-          <el-input v-model="userInfoForm.stuId" placeholder="请输入学号" disabled>
+          <el-input v-model="userInfoForm.id_number" placeholder="请输入学号" disabled>
           <!-- 图标 -->
             <template #prefix>
               <el-icon color="#409efc" class="no-inherit">
@@ -252,7 +425,7 @@ const userInfoEditSubmit = () => {
 
         <!-- 角色 -->
         <el-form-item>
-          <el-input v-model="userInfoForm.role" placeholder="角色" disabled>
+          <el-input v-model="userInfoForm.type" placeholder="角色" disabled>
             <!-- 图标 -->
             <template #prefix>
               <el-icon color="#409efc" class="no-inherit">
@@ -264,7 +437,7 @@ const userInfoEditSubmit = () => {
 
         <!-- 真实姓名 -->
         <el-form-item>
-          <el-input v-model="userInfoForm.name" placeholder="请输入真实姓名">
+          <el-input v-model="userInfoForm.user_name" placeholder="请输入真实姓名">
             <!-- 图标 -->
             <template #prefix>
               <el-icon color="#409efc" class="no-inherit">
@@ -276,7 +449,7 @@ const userInfoEditSubmit = () => {
 
         <!-- 所属地区 -->
         <el-form-item>
-          <el-input v-model="userInfoForm.location" placeholder="请输入您的所属地区">
+          <el-input v-model="userInfoForm.area_id" placeholder="请输入您的所属地区">
             <!-- 图标 -->
             <template #prefix>
               <el-icon color="#409efc" class="no-inherit">
@@ -288,7 +461,7 @@ const userInfoEditSubmit = () => {
 
         <!-- 所属地区 -->
         <el-form-item>
-          <el-input v-model="userInfoForm.personId" placeholder="请输入您的身份证号">
+          <el-input v-model="userInfoForm.idcard" placeholder="请输入您的身份证号">
             <!-- 图标 -->
             <template #prefix>
               <el-icon color="#409efc" class="no-inherit">
@@ -300,7 +473,7 @@ const userInfoEditSubmit = () => {
 
         <!-- 注册按钮 -->
         <el-form-item>
-          <el-button class="w-[20rem]" type="primary" @click="userInfoEditSubmit">提交修改</el-button>
+          <el-button class="w-[20rem]" type="primary" @click="userInfoEditSubmit()">提交修改</el-button>
         </el-form-item>
       </el-form>
     </div>

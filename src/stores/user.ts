@@ -5,13 +5,18 @@ export const useUserStore = defineStore({
   id: 'user',
   state: () => ({
     // 用户信息
-    id: '',
+    id: 0,
+    nickname: '',
     avatar: '',
+    stuId: '',
     name: '',
     email: '',
     phone: '',
-    userType: '',
-    userName: '',
-    idCard: ''
+    roleId: 1,
+    role: '',
+    personId: '',
+    areaId: 1,
+    createTime: 1,
+    modifyTime: 1,
   }),
 })

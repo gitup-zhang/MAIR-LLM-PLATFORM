@@ -75,7 +75,7 @@ const checkPass = (confirmPassword: string) => {
 
 // 登录
 const loginSubmit = async () => {
-  router.push('/window')
+  // router.push('/window')
   // 检查手机号格式
   if(!validatePhone(loginForm.value.phone)){
     ElMessage({
@@ -111,14 +111,6 @@ const loginSubmit = async () => {
       sessionStorage.userType = userData.data.type;
       sessionStorage.userName = userData.data.user_name;
       sessionStorage.idcard = userData.data.idcard;
-      // 保存用户的登录信息状态
-      userStore.id = userData.data.id;
-      userStore.name = userData.data.name;
-      userStore.email = userData.data.email;
-      userStore.phone = userData.data.phone;
-      userStore.userType = userData.data.type;
-      userStore.userName = userData.data.user_name;
-      userStore.idCard = userData.data.idcard;
       // 设置登录状态
       localStorage.setItem('loginflag', 'true');
     }

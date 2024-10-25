@@ -1,18 +1,6 @@
 <script setup lang="ts">
-import { onMounted, ref } from 'vue'
-import { getClassList } from '@/apis/experiment'
-
 import CourseList from '@/components/experiment/CourseList.vue'
 import DiscussPlatform from '@/components/experiment/DiscussPlatform.vue';
-
-const classList = ref([])
-const page = 1;
-const count = 6;
-
-// onMounted(async () => {
-//   const data = await getClassList('study', 1, 6);
-//   console.log('@@@', data)
-// })
 </script>
 
 <template>

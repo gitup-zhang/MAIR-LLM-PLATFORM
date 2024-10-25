@@ -6,6 +6,7 @@ import { reactive, toRefs } from "vue";
 // 引入模态框组件
 import Setting from '@/components/modal/Setting.vue'
 import About from '@/components/modal/About.vue'
+import ChatMain from "@/components/chat/ChatMain.vue";
 
 const router = useRouter();
 
@@ -55,6 +56,14 @@ const quit = () => {
             <div class="icon-text">设置</div>
           </template>
         </Setting>
+
+        <!-- 与大模型对话 -->
+        <ChatMain>
+          <template #default>
+            <icon-robot size="33" strokeWidth="3" class="mt-2"/>
+            <div class="icon-text">对话</div>
+          </template>
+        </ChatMain>
 
         <About>
           <template #default>

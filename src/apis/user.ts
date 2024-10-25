@@ -25,6 +25,21 @@ export const editUserInfo = (userForm:any, id:number) => {
   })
 }
 
+// 角色申请
+export const applyRole = (role: number) => {
+  return httpInstance({
+    url:'/user_application/',
+    method: "POST",
+    data: {
+      new_type: role
+    },
+    headers: {
+      "content-type": "application/json",
+    },
+    withCredentials: true
+  })
+}
+
 // 角色申请记录
 export const getApplyRoleList = () => {
   return httpInstance({

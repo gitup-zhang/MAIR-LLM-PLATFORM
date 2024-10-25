@@ -14,7 +14,9 @@ export const useSystemStore = defineStore({
     // 个人信息修改模态框是否可见
     userInfoEditVisible: false,
     // 个人头像修改模态框是否可见
-    userAvatarEditVisible: false
+    userAvatarEditVisible: false,
+    // 聊天模态框是否可见
+    chatWindowVisible: false
   }),
   actions: {
     // 打开设置模态框
@@ -37,8 +39,13 @@ export const useSystemStore = defineStore({
     openUserInfoEditModal() {
       this.userInfoEditVisible = true
     },
+    // 打开用户头像修改模态框
     openUserAvatarEditModal() {
       this.userAvatarEditVisible = true
+    },
+    // 打开聊天模态框
+    openChatWindowModal() {
+      this.chatWindowVisible = true
     }
   }
 })

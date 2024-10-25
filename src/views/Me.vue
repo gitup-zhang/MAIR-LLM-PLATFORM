@@ -6,7 +6,7 @@ import { ElMessage } from 'element-plus'
 // 引入 User、System 状态
 import { useUserStore } from '@/stores/user'
 import { useSystemStore } from '@/stores/system'
-import { getUserInfo, editUserInfo, getApplyRoleList, submitModifyPassword } from '@/apis/user'
+import { getUserInfo, editUserInfo, getApplyRoleList, submitModifyPassword, applyRole } from '@/apis/user'
 
 const userStore = useUserStore();
 const systemStore = useSystemStore();
@@ -27,23 +27,7 @@ const data = reactive({
 })
 const { newType, applicationList, page, count, total } = toRefs(data)
 
-
-// 角色类型
-const userRoleOptions = ref([
-  {
-    value: 1,
-    label: '学生'
-  },
-  {
-    value: 2,
-    label: '教师'
-  },
-  {
-    value: 3,
-    label: '教务'
-  }
-])
-
+// 用户信息表单
 const userInfoForm = reactive({
   id: 0,
   user_name: '',
@@ -57,7 +41,6 @@ const userInfoForm = reactive({
   modify_time: 0,
   area_id: 0
 })
-
 const { 
   id, 
   user_name, 
@@ -72,7 +55,24 @@ const {
   area_id 
 } = toRefs(userInfoForm)
 
-
+// 角色类型
+const userRoleOptions = ref([
+  {
+    value: 1,
+    label: '学生',
+    disabled: Number(userInfoForm.type) >= 1
+  },
+  {
+    value: 2,
+    label: '教师',
+    disabled: Number(userInfoForm.type) >= 2
+  },
+  {
+    value: 3,
+    label: '教务',
+    disabled: Number(userInfoForm.type) >= 3
+  }
+])
 
 
 // 获取用户类型
@@ -138,6 +138,26 @@ const userInfoEditSubmit = async () => {
       plain: true,
     })
   }
+}
+
+// 提交角色修改
+const submitRoleApply = async () => {
+  const res = await applyRole(data.newType)
+  if(res.status === 0){
+    ElMessage({
+      message: '申请成功',
+      type: 'success',
+      plain: true,
+    })
+    getUserApplyRoleList();
+  } else {
+    ElMessage({
+      message: res.message,
+      type: 'warning',
+      plain: true,
+    })
+  }
+  console.log(res)
 }
 
 // 获取角色申请记录列表
@@ -248,9 +268,10 @@ onMounted(() => {
                 :key="item.value"
                 :label="item.label"
                 :value="item.value"
+                :disabled="item.disabled"
               />
             </el-select>
-            <el-button type="primary" class="mb-3">申请</el-button>
+            <el-button type="primary" class="mb-3" @click="submitRoleApply()">申请</el-button>
             
             <!-- 角色申请记录 -->
             <el-table :data="data.applicationList" border style="width: 100%">
@@ -303,10 +324,9 @@ onMounted(() => {
             </el-form>
           </el-col>
           <el-col :span="12">
-
+            
           </el-col>
         </el-row>
-
       </div>
     </el-col>
 

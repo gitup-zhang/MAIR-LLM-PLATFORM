@@ -1,9 +1,30 @@
 <script setup lang="ts">
-import { ref } from 'vue';
+import { onMounted, reactive, ref } from 'vue';
 // 引入图标
 import { UploadFilled } from '@element-plus/icons-vue'
+import { getUserReportList } from '@/apis/report'
+import { useRoute } from 'vue-router'
 
+const route = useRoute()
 
+const data = reactive({
+  searchText: '',
+  courseReportList: [],
+  courseId: route.query.courseId,
+  subcourseId: route.query.subcourseId,
+  page: 1,
+  count: 10,
+  total: 0
+})
+
+// 获取报告
+const searchUserReport = async () => {
+
+}
+
+onMounted(() => {
+
+})
 
 
 const testInput = ref('')
@@ -26,8 +47,8 @@ const reportData = ref([
       <div class="report-list">
         <!-- 搜索框 -->
         <div class="report-search">
-          <el-input v-model="testInput" style="width: 80%" class="mr-3" placeholder="请输入标题" />
-          <el-button type="primary" class="mr-3">搜索</el-button>
+          <el-input v-model="data.searchText" style="width: 80%" class="mr-3" placeholder="请输入标题" />
+          <el-button type="primary" class="mr-3" @click="searchUserReport()">搜索</el-button>
         </div>
         <!-- 报告展示 -->
         <el-table :data="reportData" border style="width: 100%">

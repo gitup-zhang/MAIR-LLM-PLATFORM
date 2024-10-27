@@ -269,12 +269,11 @@ onMounted(() => {
           </el-descriptions-item>
           <el-descriptions-item label="地址">西土城路10号, 海淀区, 北京市</el-descriptions-item>
         </el-descriptions>
-
-        <!-- 角色申请记录 -->
-        <el-row class="role-apply">
-          <el-col :span="12" class="role-apply-display">
+        
+        <el-row class="edit-info">
+          <el-col :span="8">
             <!-- 选择新角色 -->
-            <el-select v-model="data.newType" placeholder="请选择角色" style="width: 240px" class="mb-3 mr-2">
+            <el-select v-model="data.newType" placeholder="请选择角色" style="width: 240px">
               <el-option
                 v-for="item in userRoleOptions"
                 :key="item.value"
@@ -283,19 +282,11 @@ onMounted(() => {
                 :disabled="item.disabled"
               />
             </el-select>
-            <el-button type="primary" class="mb-3" @click="submitRoleApply()">申请</el-button>
-            
-            <!-- 角色申请记录 -->
-            <el-table :data="data.applicationList" border style="width: 100%">
-              <el-table-column prop="user_id_number" label="号码" />
-              <el-table-column prop="user_name" label="昵称" width="80"/>
-              <el-table-column prop="new_type_desc" label="申请角色" width="90"/>
-              <el-table-column prop="create_time" label="时间"/>
-              <el-table-column prop="status_desc" label="审核状态"/>
-            </el-table>
-            
+            <el-button type="primary" class="ml-2" @click="submitRoleApply()">申请</el-button>
+          </el-col>
+          <el-col :span="16">
             <!-- 密码修改 -->
-            <el-form :model="data.modifyPassword" class="w-[45rem] mt-2 flex flex-row">
+            <el-form :model="data.modifyPassword" class="w-[40rem] flex flex-row">
               <!-- 输入原密码 -->
               <el-form-item class="mr-1">
                 <el-input v-model="data.modifyPassword.oldPassword" placeholder="请输入原始密码">
@@ -335,10 +326,16 @@ onMounted(() => {
               </el-form-item>
             </el-form>
           </el-col>
-          <el-col :span="12">
-            
-          </el-col>
         </el-row>
+
+        <!-- 角色申请记录 -->
+        <el-table :data="data.applicationList" border style="width: 100%">
+          <el-table-column prop="user_id_number" label="号码" />
+          <el-table-column prop="user_name" label="昵称" width="80"/>
+          <el-table-column prop="new_type_desc" label="申请角色" width="90"/>
+          <el-table-column prop="create_time" label="时间"/>
+          <el-table-column prop="status_desc" label="审核状态"/>
+        </el-table>
       </div>
     </el-col>
 
@@ -517,6 +514,9 @@ onMounted(() => {
 .me-page {
   width: 100%;
   height: 100%;
+}
+.edit-info {
+  @apply mt-3;
 }
 /* 左侧区域 */
 .left-main {

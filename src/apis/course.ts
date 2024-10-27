@@ -17,7 +17,7 @@ export const getCourseList = (searchText: string, page: number, count: number) =
     })
   }
 
-  // 查看班级申请记录
+// 查看班级申请记录
   export const getCourseApplyRecord = (userId: number, page: number, count: number) => {
     return httpInstance({
       url:'/course_application/',
@@ -45,3 +45,21 @@ export const getCourseList = (searchText: string, page: number, count: number) =
       withCredentials: true
     })
   }
+
+// 查找教师管理的课程
+export const getManageCourse = (searchText: string, page: number, count: number) => {
+  return httpInstance({
+    url:'/class/',
+    method: "GET",
+    params: {
+      name: searchText,
+      type: 'teach',
+      page: page,
+      count: count
+    },
+    headers: {
+      "content-type": "application/json",
+    },
+    withCredentials: true
+  })
+}

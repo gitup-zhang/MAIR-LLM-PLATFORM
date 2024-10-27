@@ -1,16 +1,18 @@
 <script setup lang="ts">
 import { ref } from 'vue'
 import StudyExperiment from '@/components/experiment/StudyExperiment.vue'
-const userType = ref(1);
+import TeachExperiment from '@/components/experiment/teacher/TeachExperiment.vue';
+
+const userType = ref(sessionStorage.userType);
 </script>
 
 <template>
   <div class="experiment-page">
-    <template v-if="userType === 1">
+    <template v-if="userType === '1'">
       <StudyExperiment />
     </template>
-    <template v-if="userType === 2">
-      教师和教务
+    <template v-if="userType === '2' || userType === '3'">
+      <TeachExperiment />
     </template>
   </div>
 </template>

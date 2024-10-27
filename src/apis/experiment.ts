@@ -1,6 +1,6 @@
 import { httpInstance } from '@/utils/http-util'
 
-// 获取课程列表
+// 获取实验列表
 export const getClassList = (type: string, page: number, count: number) => {
   return httpInstance({
     url:'/class/',

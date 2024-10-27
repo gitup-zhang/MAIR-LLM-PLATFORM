@@ -1,0 +1,47 @@
+import { httpInstance } from '@/utils/http-util'
+
+// 获取课程列表
+export const getCourseList = (searchText: string, page: number, count: number) => {
+    return httpInstance({
+      url:'/class/',
+      method: "GET",
+      params: {
+        name: searchText,
+        page: page,
+        count: count
+      },
+      headers: {
+        "content-type": "application/json",
+      },
+      withCredentials: true
+    })
+  }
+
+  // 查看班级申请记录
+  export const getCourseApplyRecord = (userId: number, page: number, count: number) => {
+    return httpInstance({
+      url:'/course_application/',
+      method: "GET",
+      params: {
+        user_id: userId,
+        page: page,
+        count: count
+      },
+      headers: {
+        "content-type": "application/json",
+      },
+      withCredentials: true
+    })
+  }
+
+  // 删除申请
+  export const deleteCourseApply = (applyId: number) => {
+    return httpInstance({
+      url:'/course_application/' + `${applyId}`,
+      method: "DELETE",
+      headers: {
+        "content-type": "application/json",
+      },
+      withCredentials: true
+    })
+  }

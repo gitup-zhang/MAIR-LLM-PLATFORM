@@ -215,8 +215,8 @@ const modifyPassword = async () => {
       check_password: data.modifyPassword.checkPassword
     }
     const res = await submitModifyPassword(newForm);
-    // 输出密码修改成功或失败提示
-    if(res.status === 0){
+        // 输出密码修改成功或失败提示
+        if(res.status === 0){
       ElMessage({
         message: '密码修改成功',
         type: 'success',

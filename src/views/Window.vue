@@ -12,13 +12,15 @@ const router = useRouter();
 
 const data = reactive({
   aboutUsVisible : false,
-  settingVisible : false
+  settingVisible : false,
+  userType: sessionStorage.userType
 })
 const { aboutUsVisible, settingVisible } = toRefs(data)
 
 // 退出系统
 const quit = () => {
   router.push("/")
+  console.log('data:', typeof(data.userType))
 }
 </script>
 
@@ -31,26 +33,50 @@ const quit = () => {
         <img src="../assets/img/logo.png" alt="大模型实训平台" class="h-10 w-10 mt-2 mb-2">
         <span class="h-[0.15rem] w-14 bg-gray-200 mb-2 mt-2"></span>
 
-        <!-- 个人信息 -->
-        <RouterLink class="sider-nav-icon" to="/me">
+        <!-- 个人信息 学生 -->
+        <RouterLink v-if="data.userType === '1'" class="sider-nav-icon" to="/me">
           <icon-user  size="33" strokeWidth="3" class="mt-2"/>
           <div class="icon-text">我的</div>
         </RouterLink>
 
-        <!-- 课程信息 -->
-        <RouterLink class="sider-nav-icon" to="/course">
+        <!-- 课程信息 学生 -->
+        <RouterLink v-if="data.userType === '1'" class="sider-nav-icon" to="/course">
           <icon-book  size="33" strokeWidth="3" class="mt-2"/>
           <div class="icon-text">课程</div>
         </RouterLink>
 
-        <!-- 实验平台 -->
-        <RouterLink class="sider-nav-icon" to="/experiment">
+        <!-- 个人信息 教师 -->
+        <RouterLink v-if="data.userType === '2'" class="sider-nav-icon" to="/teacherMe">
+          <icon-user  size="33" strokeWidth="3" class="mt-2"/>
+          <div class="icon-text">我的</div>
+        </RouterLink>
+
+        <!-- 课程信息 教师 -->
+        <RouterLink v-if="data.userType === '2'" class="sider-nav-icon" to="/teacherCourse">
+          <icon-book  size="33" strokeWidth="3" class="mt-2"/>
+          <div class="icon-text">课程</div>
+        </RouterLink>
+
+        <!-- 课程信息 教师 -->
+        <RouterLink v-if="data.userType === '2'" class="sider-nav-icon" to="/manageCourse">
+          <icon-bar-chart  size="33" strokeWidth="3" class="mt-2"/>
+          <div class="icon-text">授课</div>
+        </RouterLink>
+
+        <!-- 课程信息 教师 -->
+        <RouterLink v-if="data.userType === '2'" class="sider-nav-icon" to="/experiment">
+          <icon-desktop  size="33" strokeWidth="3" class="mt-2"/>
+          <div class="icon-text">镜像</div>
+        </RouterLink>
+
+        <!-- 实验平台 学生 -->
+        <RouterLink v-if="data.userType === '1'" class="sider-nav-icon" to="/experiment">
           <icon-experiment  size="33" strokeWidth="3" class="mt-2"/>
           <div class="icon-text">实验</div>
         </RouterLink>
 
         <!-- 设置 -->
-        <Setting>
+        <Setting v-if="data.userType === '1'">
           <template #default>
             <icon-settings  size="33" strokeWidth="3" class="mt-2"/>
             <div class="icon-text">设置</div>
@@ -58,7 +84,7 @@ const quit = () => {
         </Setting>
 
         <!-- 与大模型对话 -->
-        <ChatMain>
+        <ChatMain v-if="data.userType === '1'">
           <template #default>
             <icon-robot size="33" strokeWidth="3" class="mt-2"/>
             <div class="icon-text">对话</div>

@@ -13,6 +13,9 @@ import ExperimentConduct from '@/views/experiment/ExperimentConduct.vue'
 import TeachExperiment from '@/views/experiment/TeachExperiment.vue'
 // 课程报告
 import StuCourseReport from '@/views/course/StuCourseReport.vue'
+// 考试
+import ClassExam from '@/views/exam/ClassExam.vue'
+import ExamResult from '@/views/exam/ExamResult.vue'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -71,6 +74,16 @@ const router = createRouter({
           path: '/manageCourse',          
           name: 'manageCourse',
           component: ManageCourse
+        },
+        {
+          path: '/classExam',          
+          name: 'classExam',
+          component: ClassExam
+        },
+        {
+          path: '/examResult',          
+          name: 'examResult',
+          component:ExamResult
         }
       ]
     }

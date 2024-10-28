@@ -229,9 +229,9 @@ const courseList = [
     <div class="course-main">
       <!-- 课程搜索框 -->
       <div class="select-course">
-          <!-- 搜索 -->
-          <el-input v-model="data.searchText" style="width: 240px" class="mr-3" placeholder="请输入课程名称" />
-          <el-button type="primary" class="mr-3" @click="searchCourse()">搜索</el-button>
+        <!-- 搜索 -->
+        <el-input v-model="data.searchText" style="width: 240px" class="mr-3" placeholder="请输入课程名称" />
+        <el-button type="primary" class="mr-3" @click="searchCourse()">搜索</el-button>
           <!-- 筛选课程类型 -->
           <el-select
             v-model="course"

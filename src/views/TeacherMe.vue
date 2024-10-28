@@ -331,8 +331,8 @@ onMounted(() => {
         <!-- 角色申请记录 -->
         <el-table :data="data.applicationList" border style="width: 100%">
           <el-table-column prop="user_id_number" label="号码" />
-          <el-table-column prop="user_name" label="昵称" width="80"/>
-          <el-table-column prop="new_type_desc" label="申请角色" width="90"/>
+          <el-table-column prop="user_name" label="昵称"/>
+          <el-table-column prop="new_type_desc" label="申请角色"/>
           <el-table-column prop="create_time" label="时间"/>
           <el-table-column prop="status_desc" label="审核状态"/>
         </el-table>

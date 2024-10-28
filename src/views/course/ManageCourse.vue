@@ -1,6 +1,9 @@
 <script setup lang="ts">
 import { onMounted, reactive } from 'vue';
 import { getManageCourse } from '@/apis/course'
+import { useRouter } from 'vue-router'
+
+const router = useRouter();
 const data = reactive({
   searchText: '',
   courseList: [],
@@ -27,7 +30,12 @@ const getCourseDetail = (courseDetail: any) => {
 
 // 查看考试安排
 const getExamDetail = (courseDetail: any) => {
-
+  router.push({
+    path: "/classExam",
+    query: {
+      id: courseDetail.id
+    }
+  })
 }
 
 onMounted(() => {

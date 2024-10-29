@@ -244,6 +244,15 @@ onMounted(() => {
   <el-row class="me-page">
     <el-col :lg="20" class="left-main">
       <div class="me-container">
+        <!-- 顶部轮播图 -->
+        <el-carousel indicator-position="outside">
+          <el-carousel-item>
+            <img src="../assets/img/carousel/carousel-1.png"alt="大模型实训平台">
+          </el-carousel-item>
+          <el-carousel-item>
+            <img src="../assets/img/carousel/carousel-2.png"alt="大模型实训平台">
+          </el-carousel-item>
+        </el-carousel>
         <!-- 个人信息展示 -->
         <el-descriptions border>
           <el-descriptions-item

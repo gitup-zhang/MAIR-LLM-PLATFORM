@@ -171,7 +171,7 @@ const registerSubmit = async () => {
             <el-input v-model="loginForm.phone" :placeholder="$t('login.inputPhone')">
               <!-- 图标 -->
               <template #prefix>
-                <el-icon color="#409efc" class="no-inherit">
+                <el-icon color="#0850f8" class="no-inherit">
                     <Iphone />
                 </el-icon>
               </template>
@@ -182,14 +182,14 @@ const registerSubmit = async () => {
           <el-input v-model="loginForm.password" :placeholder="$t('login.inputPassword')">
             <!-- 图标 -->
             <template #prefix>
-              <el-icon color="#409efc" class="no-inherit">
+              <el-icon color="#0850f8" class="no-inherit">
                 <Lock />
               </el-icon>
             </template>
           </el-input>
         </el-form-item>
         <el-form-item>
-            <el-button class="w-[20rem]" type="primary" round @click="loginSubmit">{{$t('login.login')}}</el-button>
+            <el-button class="w-[20rem]" color="#0850f8" round @click="loginSubmit">{{$t('login.login')}}</el-button>
         </el-form-item>
       </el-form>
       <!-- 注册与忘记密码 -->
@@ -201,61 +201,56 @@ const registerSubmit = async () => {
   </el-row>
 
   <!-- 注册框 -->
-  <el-dialog v-model="registerVisible" title="请注册" width="400">
-      <div class="register-dialog">
-        <!-- 头像 -->
-        <el-avatar :size="70" shape="square" class="mb-3"> user </el-avatar>
-        <!-- 用户输入 -->
-        <el-form :model="registerForm" class="w-[20rem]">
-
-          <!-- 输入昵称 -->
-          <el-form-item>
-            <el-input v-model="registerForm.name" placeholder="请输入昵称">
+  <el-dialog v-model="registerVisible" width="400" title="注册用户信息" center>
+    <div class="register-dialog">
+      <!-- 头像 -->
+      <!-- <el-avatar :size="70" shape="square" class="mb-3"> user </el-avatar> -->
+      <!-- 用户输入 -->
+      <el-form :model="registerForm" class="w-[20rem]">
+        <!-- 输入昵称 -->
+        <el-form-item>
+          <el-input v-model="registerForm.name" placeholder="请输入昵称">
             <!-- 图标 -->
             <template #prefix>
-              <el-icon color="#409efc" class="no-inherit">
+              <el-icon color="#0850f8" class="no-inherit">
                 <User />
               </el-icon>
             </template>
           </el-input>
         </el-form-item>
-
-          <!-- 输入手机号 -->
-          <el-form-item>
-            <el-input v-model="registerForm.phone" placeholder="请输入手机号">
+        <!-- 输入手机号 -->
+        <el-form-item>
+          <el-input v-model="registerForm.phone" placeholder="请输入手机号">
             <!-- 图标 -->
             <template #prefix>
-              <el-icon color="#409efc" class="no-inherit">
+              <el-icon color="#0850f8" class="no-inherit">
                 <Iphone />
               </el-icon>
             </template>
           </el-input>
         </el-form-item>
-
         <!-- 输入密码 -->
         <el-form-item>
           <el-input v-model="registerForm.password" placeholder="请输入密码">
             <!-- 图标 -->
             <template #prefix>
-              <el-icon color="#409efc" class="no-inherit">
+              <el-icon color="#0850f8" class="no-inherit">
                 <Lock />
               </el-icon>
             </template>
           </el-input>
         </el-form-item>
-
         <!-- 确认密码 -->
         <el-form-item>
           <el-input v-model="registerForm.confirmPassword" placeholder="请确认密码">
             <!-- 图标 -->
             <template #prefix>
-              <el-icon color="#409efc" class="no-inherit">
+              <el-icon color="#0850f8" class="no-inherit">
                 <Lock />
               </el-icon>
             </template>
           </el-input>
         </el-form-item>
-
         <!-- 输入验证码 -->
         <el-row :gutter="8">
           <el-col :span="16">
@@ -264,7 +259,7 @@ const registerSubmit = async () => {
               <el-input v-model="registerForm.verifyCode" placeholder="请输入验证码">
                 <!-- 图标 -->
                 <template #prefix>
-                  <el-icon color="#409efc" class="no-inherit">
+                  <el-icon color="#0850f8" class="no-inherit">
                     <Document />
                   </el-icon>
                 </template>
@@ -273,20 +268,19 @@ const registerSubmit = async () => {
           </el-col>
           <!-- 发送验证码按钮 -->
           <el-col :span="8">
-            <el-button type="primary">获取验证码</el-button>
+            <el-button color="#0850f8">获取验证码</el-button>
           </el-col>
         </el-row>
-
         <!-- 注册按钮 -->
         <el-form-item>
-          <el-button class="w-[20rem]" type="primary" @click="registerSubmit">注册</el-button>
+          <el-button class="w-[20rem]" color="#0850f8" @click="registerSubmit">注册</el-button>
         </el-form-item>
         </el-form>
       </div>
   </el-dialog>
 
   <!-- 忘记密码框 -->
-  <el-dialog v-model="forgetVisible" title="请重置密码" width="400">
+  <el-dialog v-model="forgetVisible" title="请重置密码" width="400" center>
       <div class="forget-dialog">
         <!-- 用户输入 -->
         <el-form :model="forgetForm" class="w-[20rem]">
@@ -296,7 +290,7 @@ const registerSubmit = async () => {
             <el-input v-model="forgetForm.phone" placeholder="请输入手机号">
             <!-- 图标 -->
             <template #prefix>
-              <el-icon color="#409efc" class="no-inherit">
+              <el-icon color="#0850f8" class="no-inherit">
                 <Iphone />
               </el-icon>
             </template>
@@ -308,7 +302,7 @@ const registerSubmit = async () => {
           <el-input v-model="forgetForm.password" placeholder="请输入密码">
             <!-- 图标 -->
             <template #prefix>
-              <el-icon color="#409efc" class="no-inherit">
+              <el-icon color="#0850f8" class="no-inherit">
                 <Lock />
               </el-icon>
             </template>
@@ -320,7 +314,7 @@ const registerSubmit = async () => {
           <el-input v-model="forgetForm.confirmPassword" placeholder="请确认密码">
             <!-- 图标 -->
             <template #prefix>
-              <el-icon color="#409efc" class="no-inherit">
+              <el-icon color="#0850f8" class="no-inherit">
                 <Lock />
               </el-icon>
             </template>
@@ -335,7 +329,7 @@ const registerSubmit = async () => {
               <el-input v-model="forgetForm.verifyCode" placeholder="请输入验证码">
                 <!-- 图标 -->
                 <template #prefix>
-                  <el-icon color="#409efc" class="no-inherit">
+                  <el-icon color="#0850f8" class="no-inherit">
                     <Document />
                   </el-icon>
                 </template>
@@ -344,13 +338,13 @@ const registerSubmit = async () => {
           </el-col>
           <!-- 发送验证码按钮 -->
           <el-col :span="8">
-            <el-button type="primary">获取验证码</el-button>
+            <el-button color="#0850f8">获取验证码</el-button>
           </el-col>
         </el-row>
 
         <!-- 密码按钮 -->
         <el-form-item>
-          <el-button class="w-[20rem]" type="primary" @click="forgetVisible = false">密码修改</el-button>
+          <el-button class="w-[20rem]" color="#0850f8" @click="forgetVisible = false">密码修改</el-button>
         </el-form-item>
       </el-form>
       </div>
@@ -388,8 +382,11 @@ const registerSubmit = async () => {
 .login-link-item {
   @apply m-4;
 }
+
+
 .register-dialog {
-  @apply flex items-center justify-center flex-col;
+  width: 100%;
+  @apply flex items-center justify-center flex-col pt-3;
 }
 .forget-dialog {
   @apply flex items-center justify-center flex-col;

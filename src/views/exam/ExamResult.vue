@@ -1,9 +1,10 @@
 <script setup lang="ts">
 import { onMounted, reactive } from 'vue';
-import { useRoute } from 'vue-router'
+import { useRoute, useRouter } from 'vue-router'
 import { getStuExamPaperList } from '@/apis/exam'
 
 const route = useRoute();
+const router = useRouter();
 const data = reactive({
   searchText: '',
   examId: route.query.id,
@@ -23,9 +24,14 @@ const searchStudentExam = async () => {
 const gradeExamPaper = (examPaperDetail: any) => {
 
 }
-
+// 查看试卷
 const checkExamPaper = (examPaperDetail: any) => {
-
+  router.push({
+    path: "/examPaperDetail",
+    query: {
+      id: examPaperDetail.id
+    }
+  })
 }
 
 onMounted(() => {

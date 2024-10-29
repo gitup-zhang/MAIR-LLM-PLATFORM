@@ -16,6 +16,7 @@ import StuCourseReport from '@/views/course/StuCourseReport.vue'
 // 考试
 import ClassExam from '@/views/exam/ClassExam.vue'
 import ExamResult from '@/views/exam/ExamResult.vue'
+import ExamPaperDetail from '@/views/exam/ExamPaperDetail.vue'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -84,6 +85,11 @@ const router = createRouter({
           path: '/examResult',          
           name: 'examResult',
           component:ExamResult
+        },
+        {
+          path: '/examPaperDetail',          
+          name: 'examPaperDetail',
+          component: ExamPaperDetail
         }
       ]
     }

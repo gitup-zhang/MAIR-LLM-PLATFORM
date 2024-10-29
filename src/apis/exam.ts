@@ -35,3 +35,15 @@ export const getStuExamPaperList = (examId: number, stuId: string, page: number,
     withCredentials: true
   })
 }
+
+// 获取试卷详情
+export const getExamPaperInfo = (examPaperId: number) => {
+  return httpInstance({
+    url:'/user_exam/' + examPaperId + '/',
+    method: "GET",
+    headers: {
+      "content-type": "application/json",
+    },
+    withCredentials: true
+  })
+}

@@ -244,6 +244,17 @@ onMounted(() => {
   <el-row class="me-page">
     <el-col :lg="20" class="left-main">
       <div class="me-container">
+        
+        <!-- 顶部轮播图 -->
+        <el-carousel indicator-position="outside">
+          <el-carousel-item>
+            <img src="../assets/img/carousel/carousel-1.png"alt="大模型实训平台">
+          </el-carousel-item>
+          <el-carousel-item>
+            <img src="../assets/img/carousel/carousel-2.png"alt="大模型实训平台">
+          </el-carousel-item>
+        </el-carousel>
+
         <!-- 个人信息展示 -->
         <el-descriptions border>
           <el-descriptions-item
@@ -350,48 +361,48 @@ onMounted(() => {
         类型：{{ userStore.role }}
       </div>
       <!-- 用户信息概览 -->
-      <el-row class="overview">
+      <!-- <el-row class="overview"> -->
         <!-- 课程数量信息概览 -->
-        <el-col :span="8">
+        <!-- <el-col :span="8">
           <div class="overview-title">
             课程数量
           </div>
-          <div class="overview-content">
+          <div class="overview-content"> -->
             <!-- 图标 -->
-            <el-icon class="no-inherit text-sky-600">
+            <!-- <el-icon class="no-inherit text-sky-600">
               <DataBoard />
             </el-icon>
             8
           </div>
-        </el-col>
+        </el-col> -->
 
         <!-- 实验数量信息概览 -->
-        <el-col  :span="8">
+        <!-- <el-col  :span="8">
           <div class="overview-title">
             实验次数
           </div>
-          <div class="overview-content">
+          <div class="overview-content"> -->
             <!-- 图标 -->
-            <el-icon class="no-inherit text-sky-600">
+            <!-- <el-icon class="no-inherit text-sky-600">
               <SetUp />
             </el-icon>
             3
           </div>
-        </el-col>
+        </el-col> -->
 
-          <el-col  :span="8" class="overview-title">
+          <!-- <el-col  :span="8" class="overview-title">
             <div class="overview-title">
               考试数量
             </div>
-            <div class="overview-content">
+            <div class="overview-content"> -->
               <!-- 图标 -->
-              <el-icon class="no-inherit text-sky-600">
+              <!-- <el-icon class="no-inherit text-sky-600">
                 <Document />
               </el-icon>
               2
             </div>
           </el-col>
-        </el-row>
+        </el-row> -->
         <!-- 与大模型对话按钮 -->
         <el-button type="primary" class="font-bold">与大模型对话</el-button>
     </el-col>

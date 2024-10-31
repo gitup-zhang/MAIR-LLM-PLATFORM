@@ -112,6 +112,7 @@ const getAndStoreUserData = async () => {
   userStore.email = userData.data.email;
   userStore.phone = userData.data.phone;
   userStore.role = getUserType(userData.data.type);
+  userStore.roleId = userData.data.type;
   userStore.personId = userData.data.idcard;
   userStore.createTime = userData.data.create_time;
   userStore.modifyTime = userData.data.modify_time;

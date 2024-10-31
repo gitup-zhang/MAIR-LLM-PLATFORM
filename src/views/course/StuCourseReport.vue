@@ -19,11 +19,13 @@ const data = reactive({
 
 // 获取报告
 const searchUserReport = async () => {
-
+  const res = await getUserReportList(Number(data.subcourseId), Number(data.courseId), data.searchText, data.page, data.count);
+  data.courseReportList = res.data.list;
 }
 
 onMounted(() => {
-
+  // 挂载报告列表
+  searchUserReport();
 })
 
 
@@ -46,16 +48,25 @@ const reportData = ref([
     <el-col :span="16" class="page-left">
       <div class="report-list">
         <!-- 搜索框 -->
-        <div class="report-search">
-          <el-input v-model="data.searchText" style="width: 80%" class="mr-3" placeholder="请输入标题" />
-          <el-button type="primary" class="mr-3" @click="searchUserReport()">搜索</el-button>
+        <div class="search-box">
+          <div class="report-title">班级报告</div>
+          <div class="report-search">
+            <el-input v-model="data.searchText" class="w-[20vw] h-[2rem]" placeholder="请输入标题" />
+            <el-button type="primary" class="ml-3" @click="searchUserReport()">搜索</el-button>
+          </div>
         </div>
         <!-- 报告展示 -->
-        <el-table :data="reportData" border style="width: 100%">
+        <el-table :data="data.courseReportList" border style="width: 100%">
           <el-table-column prop="id" label="ID" width="60" />
           <el-table-column prop="title" label="标题" width="60" />
-          <el-table-column prop="file" label="文件"/>
-          <el-table-column prop="time" label="发表时间" />
+          <el-table-column label="文件">
+            <template v-slot="scope" >
+              <template v-for="(file, index) in scope.row.files_info">
+                {{ file.name }}<br>
+            </template>
+            </template>
+          </el-table-column>
+          <el-table-column prop="create_time" label="发表时间" />
           <el-table-column prop="operation" label="操作" />
         </el-table>
       </div>
@@ -111,8 +122,19 @@ const reportData = ref([
   box-shadow: 1px 1px 2px #d1d5db;
   @apply bg-light-50 p-3 rounded-md;
 }
+.search-box {
+  height: 10vh;
+  width: 100%;
+  background-image: linear-gradient(120deg, #a1c4fd 0%, #c2e9fb 100%);
+  @apply flex flex-row items-center justify-center rounded-md mb-3;
+}
+.report-title {
+  position: absolute;
+  left: 2rem;
+  @apply text-2xl italic font-semibold text-light-50;
+}
 .report-search {
-  @apply mb-3;
+  @apply ;
 }
 /* 页面右侧 */
 .create-report {

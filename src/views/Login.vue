@@ -281,13 +281,12 @@ const registerSubmit = async () => {
 
   <!-- 忘记密码框 -->
   <el-dialog v-model="forgetVisible" title="请重置密码" width="400" center>
-      <div class="forget-dialog">
-        <!-- 用户输入 -->
-        <el-form :model="forgetForm" class="w-[20rem]">
-
-          <!-- 输入手机号 -->
-          <el-form-item>
-            <el-input v-model="forgetForm.phone" placeholder="请输入手机号">
+    <div class="forget-dialog">
+      <!-- 用户输入 -->
+      <el-form :model="forgetForm" class="w-[20rem]">
+        <!-- 输入手机号 -->
+        <el-form-item>
+          <el-input v-model="forgetForm.phone" placeholder="请输入手机号">
             <!-- 图标 -->
             <template #prefix>
               <el-icon color="#0850f8" class="no-inherit">
@@ -296,7 +295,6 @@ const registerSubmit = async () => {
             </template>
           </el-input>
         </el-form-item>
-
         <!-- 输入密码 -->
         <el-form-item>
           <el-input v-model="forgetForm.password" placeholder="请输入密码">
@@ -308,7 +306,6 @@ const registerSubmit = async () => {
             </template>
           </el-input>
         </el-form-item>
-
         <!-- 确认密码 -->
         <el-form-item>
           <el-input v-model="forgetForm.confirmPassword" placeholder="请确认密码">
@@ -320,7 +317,6 @@ const registerSubmit = async () => {
             </template>
           </el-input>
         </el-form-item>
-
         <!-- 输入验证码 -->
         <el-row :gutter="8">
           <el-col :span="16">
@@ -341,7 +337,6 @@ const registerSubmit = async () => {
             <el-button color="#0850f8">获取验证码</el-button>
           </el-col>
         </el-row>
-
         <!-- 密码按钮 -->
         <el-form-item>
           <el-button class="w-[20rem]" color="#0850f8" @click="forgetVisible = false">密码修改</el-button>

@@ -75,6 +75,19 @@ const quit = () => {
           <div class="icon-text">实验</div>
         </RouterLink>
 
+        <!-- 个人信息 教务 -->
+        <RouterLink v-if="data.userType === '3'" class="sider-nav-icon" to="/adminMe">
+          <icon-user  size="33" strokeWidth="3" class="mt-2"/>
+          <div class="icon-text">我的</div>
+        </RouterLink>
+
+        <!-- 用户管理 教务 -->
+        <RouterLink v-if="data.userType === '3'" class="sider-nav-icon" to="/userManageWindow">
+          <icon-idcard  size="33" strokeWidth="3" class="mt-2"/>
+          <div class="icon-text">用户</div>
+        </RouterLink>
+
+
         <!-- 设置 -->
         <Setting v-if="data.userType === '1'">
           <template #default>

@@ -10,17 +10,35 @@ const route = useRoute()
 const data = reactive({
   searchText: '',
   courseReportList: [],
+  currentReportDetail:[],
+  // 上传报告表单
+  courseReportForm: {
+    id: -1,
+    title: '',
+    content: '',
+    class_id: -1,
+    files_info: [],
+    status: 1
+  },
   courseId: route.query.courseId,
   subcourseId: route.query.subcourseId,
   page: 1,
   count: 10,
-  total: 0
+  total: 0,
+  reportDetailModalVisible: false
 })
 
 // 获取报告
 const searchUserReport = async () => {
   const res = await getUserReportList(Number(data.subcourseId), Number(data.courseId), data.searchText, data.page, data.count);
   data.courseReportList = res.data.list;
+}
+
+// 查看报告详情
+const getReportDetail = async (reportDetail: any) => {
+  // 打开报告详情模态框
+  data.reportDetailModalVisible = true;
+  data.currentReportDetail = reportDetail;
 }
 
 onMounted(() => {
@@ -31,16 +49,7 @@ onMounted(() => {
 
 const testInput = ref('')
 const textarea = ref('')
-const fileList = ref([])
-const reportData = ref([
-  {
-    id: '1',
-    title: '测试',
-    file: '无',
-    time: '2024-09-20 10:19:54',
-    operation: '无'
-  }
-])
+
 </script>
 
 <template>
@@ -67,15 +76,20 @@ const reportData = ref([
             </template>
           </el-table-column>
           <el-table-column prop="create_time" label="发表时间" />
-          <el-table-column prop="operation" label="操作" />
+          <el-table-column fixed="right" label="操作" min-width="60">
+            <template v-slot="scope">
+              <el-button link type="primary" size="small" @click="getReportDetail(scope.row)">详情</el-button>
+            </template>
+          </el-table-column>
         </el-table>
       </div>
     </el-col>
+
     <!-- 右侧 -->
     <el-col :span="8" class="create-report">
-      <el-input v-model="testInput" placeholder="请输入标题" class="mb-2"></el-input>
+      <el-input v-model="data.courseReportForm.title" placeholder="请输入标题" class="mb-2"></el-input>
       <el-input
-        v-model="textarea"
+        v-model="data.courseReportForm.content"
         :rows="20"
         type="textarea"
         placeholder="请输入内容"
@@ -101,6 +115,24 @@ const reportData = ref([
       <el-button type="primary" class="report-btn mr-3">创建报告</el-button>
     </el-col>
   </el-row>
+
+  <!-- 忘记密码框 -->
+  <el-dialog v-model="data.reportDetailModalVisible" title="报告详情" width="800" center>
+    <el-form :model="data.currentReportDetail" class="w-[40rem]">
+        <!-- 班级名 -->
+        <el-form-item label="班级名:">
+          <span>{{ data.currentReportDetail.class_name }}</span>
+        </el-form-item>
+        <!-- 教师名 -->
+        <el-form-item label="标题:">
+          <span>{{ data.currentReportDetail.content }}</span>
+        </el-form-item>
+        <!-- 课程名: -->
+        <el-form-item label="发表时间">
+          <span>{{ data.currentReportDetail.create_time }}</span>
+        </el-form-item>
+      </el-form>
+  </el-dialog>
 
 </template>
 

@@ -64,3 +64,43 @@ export const submitModifyPassword = (modifyPassword: any) => {
     withCredentials: true
   })
 }
+
+// 搜索用户列表
+export const getUserList = (searchUserName: string, searchUserId: string, page: number, count: number) => {
+  return httpInstance({
+    url:'/user/',
+    method: "GET",
+    data: {
+      type: 0,
+      name: searchUserName,
+      id_number: searchUserId,
+      page: page,
+      count: count
+    },
+    headers: {
+      "content-type": "application/json",
+    },
+    withCredentials: true
+  })
+}
+
+// 搜索教师列表
+export const getTeacherList = (searchUserName: string, searchUserId: string, page: number, count: number) => {
+  return httpInstance({
+    url:'/user/',
+    method: "GET",
+    data: {
+      type: 2,
+      name: searchUserName,
+      id_number: searchUserId,
+      page: page,
+      count: count
+    },
+    headers: {
+      "content-type": "application/json",
+    },
+    withCredentials: true
+  })
+}
+
+// 获取用户角色申请列表

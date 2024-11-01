@@ -3,6 +3,7 @@ import Login from '@/views/Login.vue'
 import Window from '@/views/Window.vue'
 import Me from '@/views/Me.vue'
 import TeacherMe from '@/views/TeacherMe.vue'
+import AdminMe from '@/views/AdminMe.vue'
 // 课程
 import Course from '@/views/course/index.vue'
 import TeacherCourse from '@/views/course/TeacherCourse.vue'
@@ -17,6 +18,8 @@ import StuCourseReport from '@/views/course/StuCourseReport.vue'
 import ClassExam from '@/views/exam/ClassExam.vue'
 import ExamResult from '@/views/exam/ExamResult.vue'
 import ExamPaperDetail from '@/views/exam/ExamPaperDetail.vue'
+// 教务管理
+import UserManageWindow from '@/views/manage/UserManageWindow.vue'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -62,6 +65,11 @@ const router = createRouter({
           component: TeacherMe
         },
         {
+          path: '/adminMe',
+          name: 'adminMe',
+          component: AdminMe
+        },
+        {
           path: '/course',
           name: 'course',
           component: Course
@@ -90,6 +98,11 @@ const router = createRouter({
           path: '/examPaperDetail',          
           name: 'examPaperDetail',
           component: ExamPaperDetail
+        },
+        {
+          path: '/userManageWindow',          
+          name: 'userManageWindow',
+          component: UserManageWindow
         }
       ]
     }

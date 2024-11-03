@@ -20,6 +20,10 @@ import ExamResult from '@/views/exam/ExamResult.vue'
 import ExamPaperDetail from '@/views/exam/ExamPaperDetail.vue'
 // 教务管理
 import UserManageWindow from '@/views/manage/UserManageWindow.vue'
+import EducationWindow from '@/views/education/EducationWindow.vue'
+import ManageCourseWindow from '@/views/course/ManageCourseWindow.vue'
+import ManageExperimentWindow from '@/views/experiment/ManageExperimentWindow.vue'
+import ManageExamWindow from '@/views/exam/ManageExamWindow.vue'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -103,6 +107,26 @@ const router = createRouter({
           path: '/userManageWindow',          
           name: 'userManageWindow',
           component: UserManageWindow
+        },
+        {
+          path: '/educationWindow',          
+          name: 'educationWindow',
+          component: EducationWindow
+        },
+        {
+          path: '/manageCourseWindow',          
+          name: 'manageCourseWindow',
+          component: ManageCourseWindow
+        },
+        {
+          path: '/manageExperimentWindow',          
+          name: 'manageExperimentWindow',
+          component: ManageExperimentWindow
+        },
+        {
+          path: '/manageExamWindow',          
+          name: 'manageExamWindow',
+          component: ManageExamWindow
         }
       ]
     }

@@ -83,8 +83,32 @@ const quit = () => {
 
         <!-- 用户管理 教务 -->
         <RouterLink v-if="data.userType === '3'" class="sider-nav-icon" to="/userManageWindow">
-          <icon-idcard  size="33" strokeWidth="3" class="mt-2"/>
+          <icon-user-group  size="33" strokeWidth="3" class="mt-2"/>
           <div class="icon-text">用户</div>
+        </RouterLink>
+
+        <!-- 教务管理 教务 -->
+        <RouterLink v-if="data.userType === '3'" class="sider-nav-icon" to="/educationWindow">
+          <icon-command size="33" strokeWidth="3" class="mt-2"/>
+          <div class="icon-text">教务</div>
+        </RouterLink>
+
+        <!-- 课程管理 教务 -->
+        <RouterLink v-if="data.userType === '3'" class="sider-nav-icon" to="/manageCourseWindow">
+          <icon-book size="33" strokeWidth="3" class="mt-2"/>
+          <div class="icon-text">课程</div>
+        </RouterLink>
+
+        <!-- 课程管理 教务 -->
+        <RouterLink v-if="data.userType === '3'" class="sider-nav-icon" to="/manageExamWindow">
+          <icon-bar-chart size="33" strokeWidth="3" class="mt-2"/>
+          <div class="icon-text">考试</div>
+        </RouterLink>
+
+        <!-- 实验管理 教务 -->
+        <RouterLink v-if="data.userType === '3'" class="sider-nav-icon" to="/manageExperimentWindow">
+          <icon-experiment size="33" strokeWidth="3" class="mt-2"/>
+          <div class="icon-text">实验</div>
         </RouterLink>
 
 

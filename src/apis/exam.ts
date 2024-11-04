@@ -47,3 +47,20 @@ export const getExamPaperInfo = (examPaperId: number) => {
     withCredentials: true
   })
 }
+
+// 获取考试信息列表
+export const getExamInfoList = (searchText: string, page: number, count: number) => {
+  return httpInstance({
+    url:'/exam/',
+    method: "GET",
+    params: {
+      desc: searchText,
+      page: page,
+      count: count
+    },
+    headers: {
+      "content-type": "application/json",
+    },
+    withCredentials: true
+  })
+}

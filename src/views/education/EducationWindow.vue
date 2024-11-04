@@ -2,28 +2,50 @@
 import { onMounted, reactive } from 'vue';
 import { ElMessage } from 'element-plus'
 import { getLocationList, deleteLocation, getLocationDetail, modifyLocationDetail, createLocation } from '@/apis/location'
+import { getCollegeList, getCollegeDetail, submitCollegeModifyInfo, createCollege, deleteCollege } from '@/apis/college'
+import { getCourseList } from '@/apis/course'
 
 const data = reactive({
   activeName: 'first',
   // 输入框
   inputLocation: '',
-  inputEducation: '',
+  inputCollege: '',
+  inputClass: '',
   // 模态框
   modifyLocationModalVisible: false,
+  modifyCollegeModalVisible: false,
   createLocationModalVisible: false,
+  createCollegeModalVisible: false,
+  createClassModalVisible: false,
   // 表单
   locationForm: {
     id: 0,
     name: '',
     collegeId: 0
   },
+  collegeForm: {},
   // 创建表单
   newLocationForm: {
     name: '',
     parent_id: 0
   },
-  inputClss: '',
+  newCollegeForm: {
+    name: '',
+    area_id: 0
+  },
+  newClassForm: {
+    name: '',
+    teacher_id: undefined,
+    course_id: undefined,
+    capacity: 0,
+    time_range: [],
+    desc: '',
+    cover_image: '',
+    college_id: undefined
+  },
   locationList: [],
+  collegeList: [],
+  classList: [],
   page: 1,
   count: 10,
   total: 0
@@ -33,6 +55,16 @@ const data = reactive({
 const searchLocation = async () => {
   const res = await getLocationList(data.inputLocation, data.page, data.count)
   data.locationList = res.data.list
+}
+// 搜索教学单位
+const searchCollege = async () => {
+  const res = await getCollegeList(data.inputCollege, data.page, data.count);
+  data.collegeList = res.data.list;
+}
+// 搜索班级
+const searchClass = async () => {
+  const res = await getCourseList(data.inputClass, data.page, data.count);
+  data.classList = res.data.list;
 }
 
 // 提交创建
@@ -57,10 +89,25 @@ const submitLocationCreate = async () => {
   }
   searchLocation();
 }
-
-// 取消创建
-const cancelLocationCreate = () => {
-  data.createLocationModalVisible = false;
+// 提交教学单位创建
+const submitCollegeCreate = async () => {
+  data.newCollegeForm.area_id = Number(data.newCollegeForm.area_id);
+  const res = await createCollege(data.newCollegeForm);
+  if(res.status === 0){
+    ElMessage({
+      message: '创建成功',
+      type: 'success',
+      plain: true,
+    })
+    data.createCollegeModalVisible = false;
+  } else {
+    ElMessage({
+      message: '创建失败',
+      type: 'warning',
+      plain: true,
+    })
+  }
+  searchCollege();
 }
 
 // 删除地区
@@ -82,6 +129,24 @@ const removeLocation = async (id: number) => {
     })
   }
 }
+// 删除教学单位
+const removeCollege = async (id: number) => {
+  const res = await deleteCollege(id);
+  if(res.status === 0){
+    ElMessage({
+      message: '删除成功',
+      type: 'success',
+      plain: true,
+    })
+  } else {
+    ElMessage({
+      message: '删除失败',
+      type: 'warning',
+      plain: true,
+    })
+  }
+  searchCollege();
+}
 
 // 修改地区
 const modityLocationDetail = async (id: number) => {
@@ -92,10 +157,12 @@ const modityLocationDetail = async (id: number) => {
   data.locationForm.collegeId = res.data.parent_id;
   data.locationForm.id = res.data.id;
 }
-
-// 取消地区修改
-const modifyLocationCancel = () => {
-    data.modifyLocationModalVisible = false;
+// 修改教学单位
+const modityCollegeDetail = async (id: number) => {
+  // 打开模态框
+  data.modifyCollegeModalVisible = true;
+  const res = await getCollegeDetail(id);
+  data.collegeForm = res.data;
 }
 
 // 提交地区修改
@@ -119,18 +186,41 @@ const submitLocationModify = async () => {
   }
   searchLocation();
 }
+// 提交教学单位修改
+const submitCollegeModify = async () => {
+  const res = await submitCollegeModifyInfo(data.collegeForm.id, data.collegeForm);
+  if(res.status === 0){
+    ElMessage({
+      message: '修改成功',
+      type: 'success',
+      plain: true,
+    })
+    // 刷新数据
+    searchLocation();
+    data.modifyCollegeModalVisible = false;
+  } else {
+    ElMessage({
+      message: '修改失败',
+      type: 'warning',
+      plain: true,
+    })
+  }
+  searchCollege();
+}
 
 onMounted(() => {
   // 挂载地区信息
   searchLocation();
-
+  searchCollege();
+  searchClass();
 })
 
 </script>
 
 <template>
   <div class="education-page">
-    <el-tabs v-model="data.activeName" class="education-tabs" @tab-click="handleClick">
+    <el-tabs v-model="data.activeName" type="border-card" class="education-tabs" @tab-click="handleClick">
+      <!-- 地区管理 -->
       <el-tab-pane label="地区管理" name="first" class="education-pane">
         <div class="search-box">
           <div class="search-title">地区管理</div>
@@ -138,16 +228,16 @@ onMounted(() => {
             <!-- 搜索 -->
             <el-input v-model="data.inputLocation" class="mr-3 w-[30vw] h-[2rem]" placeholder="请输入地区名称" />
             <el-button type="primary" class="mr-3 h-[2rem]" @click="searchLocation()">搜索</el-button>
-            <el-button type="primary" class="mr-3 h-[2rem]" @click="data.createLocationModalVisible = true">创建</el-button>
+            <el-button type="primary" class="mr-3 h-[2rem]"
+              @click="data.createLocationModalVisible = true">创建</el-button>
           </div>
         </div>
-
         <!-- 所有地区信息展示 -->
         <div class="location-list">
           <el-table :data="data.locationList" border style="width: 100%">
-            <el-table-column prop="id" label="ID"/>
-            <el-table-column prop="name" label="地区名"/>
-            <el-table-column prop="parent_name" label="上级地区名"/>
+            <el-table-column prop="id" label="ID" />
+            <el-table-column prop="name" label="地区名" />
+            <el-table-column prop="parent_name" label="上级地区名" />
             <el-table-column fixed="right" label="操作" min-width="60">
               <template v-slot="scope">
                 <el-button link type="primary" size="small" @click="modityLocationDetail(scope.row.id)">修改</el-button>
@@ -156,73 +246,167 @@ onMounted(() => {
             </el-table-column>
           </el-table>
           <!-- 分页 -->
-          <el-pagination background layout="prev, pager, next" :total="1" class="mt-4 mx-auto"/>
+          <el-pagination background layout="prev, pager, next" :total="1" class="mt-4 mx-auto" />
         </div>
-
-
       </el-tab-pane>
-
-    <el-tab-pane label="教学单位" name="second">
-      <div class="search-box">
+      <!-- 教学单位管理 -->
+      <el-tab-pane label="教学单位" name="second">
+        <div class="search-box">
           <div class="search-title">教学单位管理</div>
           <div class="select-exam">
             <!-- 搜索 -->
-            <el-input v-model="data.inputEducation" class="mr-3 w-[30vw] h-[2rem]" placeholder="请输入教学单位名称" />
-            <el-button type="primary" class="mr-3 h-[2rem]" @click="searchExam()">搜索</el-button>
+            <el-input v-model="data.inputCollege" class="mr-3 w-[30vw] h-[2rem]" placeholder="请输入教学单位名称" />
+            <el-button type="primary" class="mr-3 h-[2rem]" @click="searchCollege()">搜索</el-button>
+            <el-button type="primary" class="mr-3 h-[2rem]" @click="data.createCollegeModalVisible = true">创建</el-button>
           </div>
         </div>
-    </el-tab-pane>
-
-    <el-tab-pane label="班级管理" name="third">
-      <div class="search-box">
-        <div class="search-title">班级管理</div>
-        <div class="select-exam">
-          <!-- 搜索 -->
-          <el-input v-model="data.inputClss" class="mr-3 w-[30vw] h-[2rem]" placeholder="请输入班级名称" />
-          <el-button type="primary" class="mr-3 h-[2rem]" @click="searchExam()">搜索</el-button>
+        <!-- 所有教学单位信息展示 -->
+        <div class="college-list">
+          <el-table :data="data.collegeList" border style="width: 100%">
+            <el-table-column prop="id" label="ID" />
+            <el-table-column prop="name" label="教学单位名" />
+            <el-table-column prop="area_name" label="所属地区名" />
+            <el-table-column fixed="right" label="操作" min-width="60">
+              <template v-slot="scope">
+                <el-button link type="primary" size="small" @click="modityCollegeDetail(scope.row.id)">修改</el-button>
+                <el-button link type="primary" size="small" @click="removeCollege(scope.row.id)">删除</el-button>
+              </template>
+            </el-table-column>
+          </el-table>
+          <!-- 分页 -->
+          <el-pagination background layout="prev, pager, next" :total="1" class="mt-4 mx-auto" />
         </div>
-      </div>
-    </el-tab-pane>
-  </el-tabs>
+      </el-tab-pane>
+      <!-- 班级管理 -->
+      <el-tab-pane label="班级管理" name="third">
+        <div class="search-box">
+          <div class="search-title">班级管理</div>
+          <div class="select-exam">
+            <!-- 搜索 -->
+            <el-input v-model="data.inputClass" class="mr-3 w-[30vw] h-[2rem]" placeholder="请输入班级名称" />
+            <el-button type="primary" class="mr-3 h-[2rem]" @click="searchClass()">搜索</el-button>
+            <el-button type="primary" class="mr-3 h-[2rem]" @click="data.createClassModalVisible = true">创建班级</el-button>
+          </div>
+        </div>
+        <!-- 所有班级信息展示 -->
+        <div class="college-list">
+          <el-table :data="data.classList" border style="width: 100%">
+            <el-table-column prop="id" label="ID" width="60"/>
+            <el-table-column prop="name" label="班级名" width="120"/>
+            <el-table-column prop="teacher_name" label="教师名" width="120"/>
+            <el-table-column prop="course_name" label="课程名" width="150"/>
+            <el-table-column label="学生量" width="120">
+              <template v-slot="scope">
+                {{scope.row.student_num}} / {{ scope.row.capacity }}
+              </template>
+            </el-table-column>
+            <el-table-column label="启止时间">
+              <template v-slot="scope">
+                {{ scope.row.start_time + ' -- ' + scope.row.end_time }}
+              </template>
+            </el-table-column>
+            <el-table-column prop="college_name" label="地区名" />
+            <el-table-column fixed="right" label="操作" min-width="120">
+              <template v-slot="scope">
+                <el-button link type="primary" size="small" @click="modityCollegeDetail(scope.row.id)">班级修改</el-button>
+                <el-button link type="primary" size="small" @click="removeCollege(scope.row.id)">考试安排</el-button>
+              </template>
+            </el-table-column>
+          </el-table>
+          <!-- 分页 -->
+          <el-pagination background layout="prev, pager, next" :total="1" class="mt-4 mx-auto" />
+        </div>
+      </el-tab-pane>
+    </el-tabs>
 
   </div>
 
   <!-- 修改地区框 -->
   <el-dialog v-model="data.modifyLocationModalVisible" title="地区修改" width="400">
     <el-form :model="data.locationForm" class="w-[20rem]">
-        <!-- 地区 -->
-        <el-form-item>
-          <el-input v-model="data.locationForm.name" placeholder="请输入地区名称"/>
-        </el-form-item>
-        <!-- 上级地区 -->
-        <el-form-item>
-          <el-input v-model="data.locationForm.collegeId" placeholder="请输入上级地区" disabled />
-        </el-form-item>
-        <!-- 注册按钮 -->
-        <el-form-item>
-          <el-button class="w-[5rem]" type="primary" @click="submitLocationModify()">提交修改</el-button>
-          <el-button class="w-[5rem]" type="primary" @click="modifyLocationCancel()">取消修改</el-button>
-        </el-form-item>
-      </el-form>
+      <!-- 地区 -->
+      <el-form-item>
+        <el-input v-model="data.locationForm.name" placeholder="请输入地区名称" />
+      </el-form-item>
+      <!-- 上级地区 -->
+      <el-form-item>
+        <el-input v-model="data.locationForm.collegeId" placeholder="请输入上级地区" disabled />
+      </el-form-item>
+      <!-- 注册按钮 -->
+      <el-form-item>
+        <el-button class="w-[5rem]" type="primary" @click="submitLocationModify()">提交修改</el-button>
+      </el-form-item>
+    </el-form>
+  </el-dialog>
+  <!-- 修改教学单位框 -->
+  <el-dialog v-model="data.modifyCollegeModalVisible" title="教学单位修改" width="400">
+    <el-form :model="data.collegeForm" class="w-[20rem]">
+      <!-- 地区 -->
+      <el-form-item>
+        <el-input v-model="data.collegeForm.name" placeholder="请输入教学单位名称" />
+      </el-form-item>
+      <!-- 上级地区 -->
+      <el-form-item>
+        <el-input v-model="data.collegeForm.area_id" placeholder="请输入所属地区" disabled />
+      </el-form-item>
+      <!-- 注册按钮 -->
+      <el-form-item>
+        <el-button class="w-[5rem]" type="primary" @click="submitCollegeModify()">提交修改</el-button>
+      </el-form-item>
+    </el-form>
   </el-dialog>
 
-    <!-- 创建地区框 -->
-    <el-dialog v-model="data.createLocationModalVisible" title="地区创建" width="400">
-      <el-form :model="data.newLocationForm" class="w-[20rem]">
-        <!-- 地区 -->
-        <el-form-item>
-          <el-input v-model="data.newLocationForm.name" placeholder="请输入地区名称"/>
-        </el-form-item>
-        <!-- 上级地区 -->
-        <el-form-item>
-          <el-input v-model="data.newLocationForm.parent_id" placeholder="请输入上级地区"/>
-        </el-form-item>
-        <!-- 注册按钮 -->
-        <el-form-item>
-          <el-button class="w-[5rem]" type="primary" @click="submitLocationCreate()">提交创建</el-button>
-          <el-button class="w-[5rem]" type="primary" @click="cancelLocationCreate()">取消创建</el-button>
-        </el-form-item>
-      </el-form>
+  <!-- 创建地区框 -->
+  <el-dialog v-model="data.createLocationModalVisible" title="地区创建" width="400">
+    <el-form :model="data.newLocationForm" class="w-[20rem]">
+      <!-- 地区 -->
+      <el-form-item>
+        <el-input v-model="data.newLocationForm.name" placeholder="请输入地区名称" />
+      </el-form-item>
+      <!-- 上级地区 -->
+      <el-form-item>
+        <el-input v-model="data.newLocationForm.parent_id" placeholder="请输入上级地区" />
+      </el-form-item>
+      <!-- 注册按钮 -->
+      <el-form-item>
+        <el-button class="w-[5rem]" type="primary" @click="submitLocationCreate()">提交创建</el-button>
+      </el-form-item>
+    </el-form>
+  </el-dialog>
+  <!-- 创建教学单位框 -->
+  <el-dialog v-model="data.createCollegeModalVisible" title="教学单位创建" width="400">
+    <el-form :model="data.newCollegeForm" class="w-[20rem]">
+      <!-- 地区 -->
+      <el-form-item>
+        <el-input v-model="data.newCollegeForm.name" placeholder="请输入教学单位名称" />
+      </el-form-item>
+      <!-- 上级地区 -->
+      <el-form-item>
+        <el-input v-model="data.newCollegeForm.area_id" placeholder="请输入所属地区" />
+      </el-form-item>
+      <!-- 注册按钮 -->
+      <el-form-item>
+        <el-button type="primary" long @click="submitCollegeCreate()">提交创建</el-button>
+      </el-form-item>
+    </el-form>
+  </el-dialog>
+
+  <!-- 创建班级框 -->
+  <el-dialog v-model="data.createClassModalVisible" title="班级创建" width="600">
+    <el-form :model="data.newClassForm" class="w-[20rem]">
+      <!-- 地区 -->
+      <el-form-item>
+        <el-input v-model="data.newCollegeForm.name" placeholder="请输入班级名称" />
+      </el-form-item>
+      <!-- 上级地区 -->
+      <el-form-item>
+        <el-input v-model="data.newCollegeForm.area_id" placeholder="请输入所属地区" />
+      </el-form-item>
+      <!-- 注册按钮 -->
+      <el-form-item>
+        <el-button type="primary" long @click="submitCollegeCreate()">提交创建</el-button>
+      </el-form-item>
+    </el-form>
   </el-dialog>
 
 </template>
@@ -255,6 +439,9 @@ onMounted(() => {
   @apply text-2xl italic font-semibold text-light-50;
 }
 .location-list {
+  @apply flex flex-col mt-4 mr-2;
+}
+.college-list {
   @apply flex flex-col mt-4 mr-2;
 }
 </style>

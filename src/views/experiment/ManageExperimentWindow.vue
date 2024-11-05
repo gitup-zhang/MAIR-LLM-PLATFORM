@@ -1,40 +1,103 @@
 <script setup lang="ts">
-import { reactive } from 'vue';
+import { onMounted, reactive } from 'vue';
+import { getImageList } from '@/apis/image'
+import { getContainerList } from '@/apis/container';
 
 const data = reactive({
   activeName: 'first',
-  // 地区名输入框
-  inputLocation: '',
-  inputEducation: '',
-  inputClss: ''
+  inputImage: '',
+  inputContainer: '',
+  imageList: [],
+  containerList: [],
+  page: 1,
+  count: 10,
+  total: 0
+})
 
+// 搜索镜像
+const searchImage = async () => {
+  const res = await getImageList(data.inputImage, data.page, data.count);
+  data.imageList = res.data.list;
+}
+// 搜索容器
+const searchContainer = async () => {
+  const res = await getContainerList(data.inputContainer, data.page, data.count);
+  data.containerList = res.data.list;
+}
+
+onMounted(() => {
+  // 挂载数据
+  searchImage();
+  searchContainer();
 })
 </script>
 
 <template>
   <div class="education-page">
-    <el-tabs v-model="data.activeName" class="education-tabs" @tab-click="handleClick">
+    <el-tabs v-model="data.activeName" type="border-card" class="education-tabs" @tab-click="handleClick">
       <el-tab-pane label="镜像管理" name="first" class="education-pane">
         <div class="search-box">
           <div class="search-title">镜像管理</div>
           <div class="select-exam">
             <!-- 搜索 -->
-            <el-input v-model="data.inputLocation" class="mr-3 w-[30vw] h-[2rem]" placeholder="请输入镜像名称" />
-            <el-button type="primary" class="mr-3 h-[2rem]" @click="searchExam()">搜索</el-button>
+            <el-input v-model="data.inputImage" class="mr-3 w-[30vw] h-[2rem]" placeholder="请输入镜像名称" />
+            <el-button type="primary" class="mr-3 h-[2rem]" @click="searchImage()">搜索</el-button>
+            <el-button type="primary" class="mr-3 h-[2rem]" @click="">创建普通镜像</el-button>
           </div>
+        </div>
+        <!-- 所有镜像信息展示 -->
+        <div class="show-list">
+          <el-table :data="data.imageList" border style="width: 100%">
+            <el-table-column prop="id" label="ID" width="100"/>
+            <el-table-column prop="name" label="镜像名"/>
+            <el-table-column prop="desc" label="描述"/>
+            <el-table-column prop="type_name" label="镜像类型"/>
+            <el-table-column fixed="right" label="操作">
+              <template v-slot="scope">
+                <el-button link type="primary" size="small" @click="">查看镜像</el-button>
+                <el-button link type="primary" size="small" @click="">创建镜像</el-button>
+                <el-button v-if="scope.row.type === 1" link type="primary" size="small" @click="">修改镜像</el-button>
+                <el-button v-if="scope.row.type === 2" link type="primary" size="small" @click="">删除镜像</el-button>
+              </template>
+            </el-table-column>
+          </el-table>
+          <!-- 分页 -->
+          <el-pagination background layout="prev, pager, next" :total="1" class="mt-4 mx-auto" />
         </div>
       </el-tab-pane>
 
-    <el-tab-pane label="容器管理" name="second">
-      <div class="search-box">
+      <el-tab-pane label="容器管理" name="second">
+        <div class="search-box">
           <div class="search-title">容器管理</div>
           <div class="select-exam">
             <!-- 搜索 -->
-            <el-input v-model="data.inputEducation" class="mr-3 w-[30vw] h-[2rem]" placeholder="请输入容器名称" />
-            <el-button type="primary" class="mr-3 h-[2rem]" @click="searchExam()">搜索</el-button>
+            <el-input v-model="data.inputContainer" class="mr-3 w-[30vw] h-[2rem]" placeholder="请输入容器名称" />
+            <el-button type="primary" class="mr-3 h-[2rem]" @click="searchContainer()">搜索</el-button>
           </div>
         </div>
-    </el-tab-pane>
+        <!-- 所有容器信息展示 -->
+        <div class="show-list">
+          <el-table :data="data.containerList" border style="width: 100%">
+            <el-table-column prop="id" label="ID" width="100"/>
+            <el-table-column prop="user_id_number" label="学号"/>
+            <el-table-column prop="user_name" label="用户"/>
+            <el-table-column prop="class_name" label="班级"/>
+            <el-table-column prop="subcourse_name" label="章节"/>
+            <el-table-column prop="image_name" label="镜像"/>
+            <el-table-column prop="status" label="状态"/>
+            <el-table-column fixed="right" label="操作">
+              <template v-slot="scope">
+                <el-button v-if="scope.row.status != 'delete' && scope.row.status != 'exited'" link type="primary" size="small" @click="">进入容器</el-button>
+                <el-button v-if="scope.row.status != 'delete' && scope.row.status != 'exited'" link type="primary" size="small" @click="">停止容器</el-button>
+                <el-button v-if="scope.row.status != 'delete' && scope.row.status == 'exited'" link type="primary" size="small" @click="">启动容器</el-button>
+                <el-button v-if="scope.row.status != 'delete'" link type="primary" size="small" @click="">删除容器</el-button>
+              </template>
+            </el-table-column>
+          </el-table>
+          <!-- 分页 -->
+          <el-pagination background layout="prev, pager, next" :total="1" class="mt-4 mx-auto" />
+        </div>
+      </el-tab-pane>
   </el-tabs>
 
   </div>
@@ -67,5 +130,8 @@ const data = reactive({
   position: absolute;
   left: 2rem;
   @apply text-2xl italic font-semibold text-light-50;
+}
+.show-list {
+  @apply flex flex-col mt-4 mr-2;
 }
 </style>

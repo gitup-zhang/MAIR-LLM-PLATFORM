@@ -70,7 +70,7 @@ export const getUserList = (searchUserName: string, searchUserId: string, page: 
   return httpInstance({
     url:'/user/',
     method: "GET",
-    data: {
+    params: {
       type: 0,
       name: searchUserName,
       id_number: searchUserId,
@@ -89,7 +89,7 @@ export const getTeacherList = (searchUserName: string, searchUserId: string, pag
   return httpInstance({
     url:'/user/',
     method: "GET",
-    data: {
+    params: {
       type: 2,
       name: searchUserName,
       id_number: searchUserId,
@@ -102,5 +102,3 @@ export const getTeacherList = (searchUserName: string, searchUserId: string, pag
     withCredentials: true
   })
 }
-
-// 获取用户角色申请列表

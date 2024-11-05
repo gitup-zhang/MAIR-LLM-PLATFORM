@@ -80,3 +80,20 @@ export const getManageCourse = (searchText: string, page: number, count: number)
     withCredentials: true
   })
 }
+
+// 获取课程列表
+export const getCourseInfoList = (searchText: string, page: number, count: number) => {
+  return httpInstance({
+    url:'/course/',
+    method: "GET",
+    params: {
+      name: searchText,
+      page: page,
+      count: count
+    },
+    headers: {
+      "content-type": "application/json",
+    },
+    withCredentials: true
+  })
+}

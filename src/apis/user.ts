@@ -127,3 +127,15 @@ export const getUserDetail = (id: number) => {
     withCredentials: true
   })
 }
+
+// 获取教师选项
+export const getTeacherOptions = () => {
+  return httpInstance({
+    url:'/user/teacher_option/',
+    method: "GET",
+    headers: {
+      "content-type": "application/json",
+    },
+    withCredentials: true
+  })
+}

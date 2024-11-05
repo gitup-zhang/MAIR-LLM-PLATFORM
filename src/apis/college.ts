@@ -66,3 +66,15 @@ export const deleteCollege = (id: number) => {
       withCredentials: true
     })
 }
+
+// 获取教学单位选项
+export const getCollegeOptions = () => {
+  return httpInstance({
+    url:'/college/option/',
+    method: "GET",
+    headers: {
+      "content-type": "application/json",
+    },
+    withCredentials: true
+  })
+}

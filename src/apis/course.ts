@@ -97,3 +97,15 @@ export const getCourseInfoList = (searchText: string, page: number, count: numbe
     withCredentials: true
   })
 }
+
+// 获取课程选项
+export const getCourseOptions = () => {
+  return httpInstance({
+    url:'/course/option/',
+    method: "GET",
+    headers: {
+      "content-type": "application/json",
+    },
+    withCredentials: true
+  })
+}

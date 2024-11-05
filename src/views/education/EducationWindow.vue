@@ -1,10 +1,12 @@
 <script setup lang="ts">
 import { onMounted, reactive } from 'vue';
 import { ElMessage } from 'element-plus';
+import { OfficeBuilding, User, Notebook, Location } from '@element-plus/icons-vue'
 import { getLocationList, deleteLocation, getLocationDetail, modifyLocationDetail, createLocation } from '@/apis/location';
-import { getCollegeList, getCollegeDetail, submitCollegeModifyInfo, createCollege, deleteCollege } from '@/apis/college';
-import { getCourseList } from '@/apis/course';
-import { getClassApplyList } from '@/apis/class';
+import { getCollegeList, getCollegeDetail, submitCollegeModifyInfo, createCollege, deleteCollege, getCollegeOptions } from '@/apis/college';
+import { getCourseList, getCourseOptions } from '@/apis/course';
+import { getClassApplyList, evaluateClassApply, createClass, getClassDetail, modifyClass } from '@/apis/class';
+import { getTeacherOptions } from '@/apis/user';
 
 const data = reactive({
   activeName: 'first',
@@ -44,13 +46,24 @@ const data = reactive({
     capacity: 0,
     time_range: [],
     desc: '',
+    start_time: '',
+    end_time: '',
     cover_image: '',
     college_id: undefined
   },
+  // 列表
   locationList: [],
   collegeList: [],
   classList: [],
   classApplyList: [],
+  // 当前选中项
+  currentClass: {},
+  // 当前选中项ID
+  currentClassId: 0,
+  // 选项
+  collegeOptions: [],
+  courseOptions: [],
+  teacherOptions: [],
   page: 1,
   count: 10,
   total: 0
@@ -77,7 +90,7 @@ const searchClassApply = async () => {
   data.classApplyList = res.data.list;
 }
 
-// 提交创建
+// 提交地区创建
 const submitLocationCreate = async () => {
   data.newLocationForm.parent_id = Number(data.newLocationForm.parent_id);
   const res = await createLocation(data.newLocationForm)
@@ -118,6 +131,28 @@ const submitCollegeCreate = async () => {
     })
   }
   searchCollege();
+}
+// 提交新班级创建
+const submitClassCreate = async () => {
+  // 处理时间
+  data.newClassForm.start_time = data.newClassForm.time_range[0];
+  data.newClassForm.end_time = data.newClassForm.time_range[1];
+  const res = await createClass(data.newClassForm);
+  if(res.status === 0){
+    ElMessage({
+      message: '新班级创建成功',
+      type: 'success',
+      plain: true,
+    })
+    data.createClassModalVisible = false;
+  } else {
+    ElMessage({
+      message: '新班级创建失败',
+      type: 'warning',
+      plain: true,
+    })
+  }
+  searchClass();
 }
 
 // 删除地区
@@ -174,8 +209,12 @@ const modityCollegeDetail = async (id: number) => {
   const res = await getCollegeDetail(id);
   data.collegeForm = res.data;
 }
-const modifyClassDetail = async () => {
+// 班级修改
+const modifyClassDetail = async (id: number) => {
   data.modifyClassModalVisible = true;
+  const res = await getClassDetail(id);
+  data.currentClass = res.data;
+  data.currentClassId = id;
 }
 
 // 提交地区修改
@@ -220,10 +259,83 @@ const submitCollegeModify = async () => {
   }
   searchCollege();
 }
+// 提交班级信息修改
+const submitClassModify = async () => {
+  data.currentClass.start_time = data.currentClass.time_range[0];
+  data.currentClass.end_time = data.currentClass.time_range[1];
+  const res = await modifyClass(data.currentClassId, data.currentClass);
+  if(res.status === 0){
+    ElMessage({
+      message: '班级信息修改成功',
+      type: 'success',
+      plain: true,
+    })
+    // 刷新数据
+    searchLocation();
+    data.modifyClassModalVisible = false;
+  } else {
+    ElMessage({
+      message: '班级信息修改失败',
+      type: 'warning',
+      plain: true,
+    })
+  }
+  searchClass();
+}
 
 // 打开班级申请记录框
 const openClassApplyModal = async () => {
   data.classApplyModalVisible = true;
+  searchClassApply();
+}
+// 打开班级创建框
+const openCreateClassModal = async () => {
+  data.createClassModalVisible = true;
+  // 挂载选项数据
+  let res = await getCollegeOptions();
+  data.collegeOptions = res.data;
+  res = await getCourseOptions();
+  data.courseOptions = res.data;
+  res = await getTeacherOptions();
+  data.teacherOptions = res.data;
+}
+
+// 通过班级申请
+const passClassApply = async (id: number) => {
+  const res = await evaluateClassApply(id, 2);
+    //  输出通过申请成功或失败提示
+    if(res.status === 0){
+    ElMessage({
+      message: '申请已批准',
+      type: 'success',
+        plain: true,
+    })
+  } else {
+    ElMessage({
+      message: '申请批准出现错误',
+      type: 'warning',
+      plain: true,
+    })
+  }
+  searchClassApply();
+}
+// 拒绝班级申请
+const rejectClassApply = async (id: number) => {
+  const res = await evaluateClassApply(id, 3);
+  //  输出通过申请成功或失败提示
+  if(res.status === 0){
+    ElMessage({
+      message: '申请已拒绝',
+      type: 'success',
+        plain: true,
+    })
+  } else {
+    ElMessage({
+      message: '申请拒绝出现错误',
+      type: 'warning',
+      plain: true,
+    })
+  }
   searchClassApply();
 }
 
@@ -304,7 +416,7 @@ onMounted(() => {
             <!-- 搜索 -->
             <el-input v-model="data.inputClass" class="mr-3 w-[30vw] h-[2rem]" placeholder="请输入班级名称" />
             <el-button type="primary" class="mr-3 h-[2rem]" @click="searchClass()">搜索</el-button>
-            <el-button type="primary" class="mr-3 h-[2rem]" @click="data.createClassModalVisible = true">创建班级</el-button>
+            <el-button type="primary" class="mr-3 h-[2rem]" @click="openCreateClassModal()">创建班级</el-button>
             <el-button type="primary" class="mr-3 h-[2rem]" @click="openClassApplyModal()">班级申请记录</el-button>
           </div>
         </div>
@@ -424,18 +536,105 @@ onMounted(() => {
   <!-- 创建班级框 -->
   <el-dialog v-model="data.createClassModalVisible" title="班级创建" width="600">
     <div class="education-dialog">
-      <el-form :model="data.newClassForm" class="w-[20rem]">
-        <!-- 地区 -->
+      <el-form :model="data.newClassForm" class="w-[30rem]">
+        <!-- 班级名 -->
         <el-form-item>
-          <el-input v-model="data.newCollegeForm.name" placeholder="请输入班级名称" />
+          <el-input v-model="data.newClassForm.name" placeholder="请输入班级名称">
+            <!-- 图标 -->
+            <template #prefix>
+              <el-icon color="#409efc" class="no-inherit">
+                <OfficeBuilding />
+              </el-icon>
+            </template>
+          </el-input>
         </el-form-item>
-        <!-- 上级地区 -->
+        <!-- 教师ID -->
         <el-form-item>
-          <el-input v-model="data.newCollegeForm.area_id" placeholder="请输入所属地区" />
+          <el-select v-model="data.newClassForm.teacher_id" placeholder="请选择教师">
+            <!-- 图标 -->
+            <template #prefix>
+              <el-icon color="#409efc" class="no-inherit">
+                <User />
+              </el-icon>
+            </template>
+            <el-option
+              v-for="item in data.teacherOptions"
+              :key="item.value"
+              :label="item.label"
+              :value="item.value"
+            />
+          </el-select>
+        </el-form-item>
+        <!-- 课程 -->
+        <el-form-item>
+          <el-select v-model="data.newClassForm.course_id" placeholder="请选择课程">
+            <!-- 图标 -->
+            <template #prefix>
+              <el-icon color="#409efc" class="no-inherit">
+                <Notebook />
+              </el-icon>
+            </template>
+            <el-option
+              v-for="item in data.courseOptions"
+              :key="item.value"
+              :label="item.label"
+              :value="item.value"
+            />
+          </el-select>
+        </el-form-item>
+        <!-- 容量 -->
+        <el-form-item>
+          <el-input-number class="w-[30rem]" v-model="data.newClassForm.capacity" :min="1" :max="100">
+            <template #prefix>
+              <span>课程容量</span>
+            </template>
+            <template #suffix>
+              <span>人</span>
+            </template>
+          </el-input-number>
+        </el-form-item>
+        <!-- 起止时间 -->
+        <el-form-item>
+          <el-date-picker
+            v-model="data.newClassForm.time_range"
+            type="daterange"
+            range-separator="至"
+            start-placeholder="开始日期"
+            end-placeholder="结束日期"
+            value-format="YYYY-MM-DD HH:mm:ss"
+          />
+        </el-form-item>
+        <!-- 描述 -->
+        <el-form-item>
+          <el-input v-model="data.newClassForm.desc" placeholder="请输入课程描述">
+            <!-- 图标 -->
+            <template #prefix>
+              <el-icon color="#409efc" class="no-inherit">
+                <User />
+              </el-icon>
+            </template>
+          </el-input>
+        </el-form-item>
+        <!-- 教学单位 -->
+        <el-form-item>
+          <el-select v-model="data.newClassForm.college_id" placeholder="请选择教学单位">
+            <!-- 图标 -->
+            <template #prefix>
+              <el-icon color="#409efc" class="no-inherit">
+                <Location />
+              </el-icon>
+            </template>
+            <el-option
+              v-for="item in data.collegeOptions"
+              :key="item.value"
+              :label="item.label"
+              :value="item.value"
+            />
+          </el-select>
         </el-form-item>
         <!-- 注册按钮 -->
         <el-form-item>
-          <el-button type="primary" class="w-[20rem]" @click="submitCollegeCreate()">提交创建</el-button>
+          <el-button type="primary" class="w-[40rem]" @click="submitClassCreate()">创建新班级</el-button>
         </el-form-item>
       </el-form>
     </div>
@@ -443,19 +642,106 @@ onMounted(() => {
 
   <!-- 修改班级框 -->
   <el-dialog v-model="data.modifyClassModalVisible" title="班级修改" width="600">
-    <div class="education-dialog">
-      <el-form :model="data.newClassForm" class="w-[20rem]">
-        <!-- 地区 -->
+      <div class="education-dialog">
+      <el-form :model="data.currentClass" class="w-[30rem]">
+        <!-- 班级名 -->
         <el-form-item>
-          <el-input v-model="data.newCollegeForm.name" placeholder="请输入班级名称" />
+          <el-input v-model="data.currentClass.name" placeholder="请输入班级名称">
+            <!-- 图标 -->
+            <template #prefix>
+              <el-icon color="#409efc" class="no-inherit">
+                <OfficeBuilding />
+              </el-icon>
+            </template>
+          </el-input>
         </el-form-item>
-        <!-- 上级地区 -->
+        <!-- 教师ID -->
         <el-form-item>
-          <el-input v-model="data.newCollegeForm.area_id" placeholder="请输入所属地区" />
+          <el-select v-model="data.currentClass.teacher_id" placeholder="请选择教师">
+            <!-- 图标 -->
+            <template #prefix>
+              <el-icon color="#409efc" class="no-inherit">
+                <User />
+              </el-icon>
+            </template>
+            <el-option
+              v-for="item in data.teacherOptions"
+              :key="item.value"
+              :label="item.label"
+              :value="item.value"
+            />
+          </el-select>
+        </el-form-item>
+        <!-- 课程 -->
+        <el-form-item>
+          <el-select v-model="data.currentClass.course_id" placeholder="请选择课程">
+            <!-- 图标 -->
+            <template #prefix>
+              <el-icon color="#409efc" class="no-inherit">
+                <Notebook />
+              </el-icon>
+            </template>
+            <el-option
+              v-for="item in data.courseOptions"
+              :key="item.value"
+              :label="item.label"
+              :value="item.value"
+            />
+          </el-select>
+        </el-form-item>
+        <!-- 容量 -->
+        <el-form-item>
+          <el-input-number class="w-[30rem]" v-model="data.currentClass.capacity" :min="1" :max="100">
+            <template #prefix>
+              <span>课程容量</span>
+            </template>
+            <template #suffix>
+              <span>人</span>
+            </template>
+          </el-input-number>
+        </el-form-item>
+        <!-- 起止时间 -->
+        <el-form-item>
+          <el-date-picker
+            v-model="data.currentClass.time_range"
+            type="daterange"
+            range-separator="至"
+            start-placeholder="开始日期"
+            end-placeholder="结束日期"
+            value-format="YYYY-MM-DD HH:mm:ss"
+          />
+        </el-form-item>
+        <!-- 描述 -->
+        <el-form-item>
+          <el-input v-model="data.currentClass.desc" placeholder="请输入课程描述">
+            <!-- 图标 -->
+            <template #prefix>
+              <el-icon color="#409efc" class="no-inherit">
+                <User />
+              </el-icon>
+            </template>
+          </el-input>
+        </el-form-item>
+        <!-- 教学单位 -->
+        <el-form-item>
+          <el-select v-model="data.currentClass.college_id" placeholder="请选择教学单位">
+            <!-- 图标 -->
+            <template #prefix>
+              <el-icon color="#409efc" class="no-inherit">
+                <Location />
+              </el-icon>
+            </template>
+            <el-option
+              v-for="item in data.collegeOptions"
+              :key="item.value"
+              :label="item.label"
+              :value="item.value"
+            />
+          </el-select>
         </el-form-item>
         <!-- 注册按钮 -->
         <el-form-item>
-          <el-button type="primary" class="w-[20rem]" @click="submitCollegeCreate()">提交创建</el-button>
+          <el-button type="primary" class="w-[40rem]" @click="submitClassModify()">修改班级信息</el-button>
         </el-form-item>
       </el-form>
     </div>
@@ -482,8 +768,8 @@ onMounted(() => {
             <el-table-column prop="status_desc" label="审核状态" />
             <el-table-column fixed="right" label="操作" min-width="120">
               <template v-slot="scope">
-                <el-button v-if="scope.row.status === 1" link type="primary" size="small" @click="modityCollegeDetail(scope.row.id)">通过</el-button>
-                <el-button v-if="scope.row.status === 1" link type="primary" size="small" @click="removeCollege(scope.row.id)">不通过</el-button>
+                <el-button v-if="scope.row.status === 1" link type="primary" size="small" @click="passClassApply(scope.row.id)">通过</el-button>
+                <el-button v-if="scope.row.status === 1" link type="primary" size="small" @click="rejectClassApply(scope.row.id)">不通过</el-button>
               </template>
             </el-table-column>
           </el-table>

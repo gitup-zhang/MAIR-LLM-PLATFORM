@@ -1,15 +1,19 @@
 <script setup lang="ts">
 import { reactive, onMounted } from 'vue';
-import { User, Star, Message, Iphone, Aim, Location, House, Lock } from '@element-plus/icons-vue'
-import { getUserList, getTeacherList } from '@/apis/user'
-import { getRoleApplyList } from '@/apis/role'
+import { ElMessage } from 'element-plus'
+import { User, Star, Message, Iphone, Aim, Location, House, Lock, Postcard } from '@element-plus/icons-vue'
+import { getUserList, getTeacherList, createUser, getUserDetail, editUserInfo } from '@/apis/user'
+import { getRoleApplyList, evaluateRoleApply } from '@/apis/role'
+
 const data = reactive({
   activeName: 'first',
+  // 输入
   inputUserId: '',
   inputUserName: '',
   inputTeacherId: '',
   inputTeacherName: '',
   inputRoleApllyId: '',
+  // 列表
   userList: [],
   teacherList: [],
   roleApplyList: [],
@@ -27,9 +31,36 @@ const data = reactive({
   },
   // 模态框
   createUserModalVisible: false,
+  modifyUserModalVisible: false,
+  // 当前用户ID
+  currentUserId: 0,
+  // 当前用户
+  currentUserForm: {
+    name: '',
+    email: '',
+    phone: '',
+    type: 1,
+    user_name: '',
+    area_id: 4,
+    idcard: ''
+  },
   page: 1,
   count: 10,
-  total: 0
+  total: 0,
+  userRoleOptions: [
+    {
+      value: 1,
+      label: '学生'
+    },
+    {
+      value: 2,
+      label: '教师'
+    }, 
+    {
+      value: 3,
+      label: '教务'
+    }
+  ]
 })
 
 // 搜索用户列表
@@ -48,7 +79,125 @@ const searchApplyList = async () => {
   const res = await getRoleApplyList(data.inputRoleApllyId, data.page, data.count);
   data.roleApplyList = res.data.list;
 }
-
+// 创建用户
+const createNewUser = async () => {
+  // 检查非空
+  if(data.newUserForm.password === '' || data.newUserForm.checkPass === ''){
+    ElMessage({
+      message: '请输入密码',
+      type: 'warning',
+      plain: true,
+    })
+  }else if(!validatePassword(data.newUserForm.password ) || !validatePassword(data.newUserForm.checkPass)){
+    // 检查类型
+    ElMessage({
+      message: '密码由字母与数字组成',
+      type: 'warning',
+      plain: true,
+    })
+  }else if(!checkPassword(data.newUserForm.password, data.newUserForm.checkPass)){
+    // 检查两次输入是否一致
+    ElMessage({
+      message: '两次输入密码不一致',
+      type: 'warning',
+      plain: true,
+    })
+  }else {
+    const res = await createUser(data.newUserForm);
+    //  输出新用户创建成功或失败提示
+    if(res.status === 0){
+      ElMessage({
+        message: '新用户创建成功',
+        type: 'success',
+        plain: true,
+      })
+    } else {
+      ElMessage({
+        message: '新用户创建失败',
+        type: 'warning',
+        plain: true,
+      })
+    }
+    data.createUserModalVisible = false;
+    searchUser();
+  }
+}
+// 检查密码格式
+const validatePassword = (password: string) => {
+  let reg = /^[a-z|A-Z|0-9]*$/
+  if(!reg.test(password)){
+    return false;
+  } else {
+    return true;
+  }
+}
+// 检查两次输入密码
+const checkPassword = (newPassword: string, confirmPassword: string) => {
+  if(confirmPassword != newPassword){
+    return false;
+  } else {
+    return true;
+  }
+}
+// 打开并初始化用户信息修改框
+const openModifyUserModal = async (currentUserInfo: object) => {
+  data.modifyUserModalVisible = true;
+  const res = await getUserDetail(currentUserInfo.id);
+  data.currentUserId = currentUserInfo.id;
+  data.currentUserForm.name = res.data.name;
+  data.currentUserForm.email = res.data.email;
+  data.currentUserForm.phone = res.data.phone;
+  data.currentUserForm.type = res.data.type;
+  data.currentUserForm.user_name = res.data.user_name;
+  data.currentUserForm.area_id = res.data.area_id;
+  data.currentUserForm.idcard = res.data.idcard;
+}
+// 修改用户信息
+const modifyUserInfo = async () => {
+  const res = await editUserInfo(data.currentUserForm, data.currentUserId);
+  //  输出用户信息修改成功或失败提示
+  if(res.status === 0){
+    ElMessage({
+      message: '用户信息修改成功',
+      type: 'success',
+        plain: true,
+    })
+  } else {
+    ElMessage({
+      message: '用户信息修改失败',
+      type: 'warning',
+      plain: true,
+    })
+  }
+  data.modifyUserModalVisible = false;
+  searchUser();
+}
+// 通过角色申请
+const passRoleApply = async (currentRoleApply: object) => {
+  const res = await evaluateRoleApply(currentRoleApply.id, 2);
+  //  输出角色申请成功或失败提示
+  if(res.status === 0){
+    ElMessage({
+      message: '已通过该申请',
+      type: 'success',
+        plain: true,
+    })
+  }
+  searchApplyList();
+}
+// 拒绝角色申请
+const rejectRoleApply = async (currentRoleApply: object) => {
+  const res = await evaluateRoleApply(currentRoleApply.id, 3);
+  //  输出角色申请成功或失败提示
+  if(res.status === 0){
+    ElMessage({
+      message: '已拒绝该申请',
+      type: 'success',
+      plain: true,
+    })
+  }
+  searchApplyList();
+}
 onMounted(() => {
   // 挂载信息
   searchUser();
@@ -82,7 +231,7 @@ onMounted(() => {
             <el-table-column prop="area_name" label="所属地区"/>
             <el-table-column fixed="right" label="操作" min-width="60">
               <template v-slot="scope">
-                <el-button link type="primary" size="small" @click="">修改</el-button>
+                <el-button link type="primary" size="small" @click="openModifyUserModal(scope.row)">修改</el-button>
               </template>
             </el-table-column>
           </el-table>
@@ -90,7 +239,6 @@ onMounted(() => {
           <el-pagination background layout="prev, pager, next" :total="1" class="mt-4 mx-auto"/>
         </div>
       </el-tab-pane>
-
       <el-tab-pane label="教师管理" name="second">
         <!-- 检索用户 -->
         <div class="manage-box">
@@ -115,7 +263,6 @@ onMounted(() => {
           <el-pagination background layout="prev, pager, next" :total="1" class="mt-4 mx-auto"/>
         </div>
       </el-tab-pane>
-
       <el-tab-pane label="角色申请管理" name="third">
         <!-- 检索用户 -->
         <div class="manage-box">
@@ -136,8 +283,8 @@ onMounted(() => {
             <el-table-column prop="status_desc" label="审核状态"/>
             <el-table-column fixed="right" label="操作" min-width="60">
               <template v-slot="scope">
-                <el-button v-if="scope.row.status === 1" link type="primary" size="small" @click="">通过</el-button>
-                <el-button v-if="scope.row.status === 1" link type="primary" size="small" @click="">不通过</el-button>
+                <el-button v-if="scope.row.status === 1" link type="primary" size="small" @click="passRoleApply(scope.row)">通过</el-button>
+                <el-button v-if="scope.row.status === 1" link type="primary" size="small" @click="rejectRoleApply(scope.row)">不通过</el-button>
               </template>
             </el-table-column>
           </el-table>
@@ -150,9 +297,8 @@ onMounted(() => {
 
   <!-- 创建用户框 -->
   <el-dialog v-model="data.createUserModalVisible" title="创建新用户" width="400">
-    <div class="edit-dialog">
+    <div class="user-dialog">
       <el-form :model="data.newUserForm" class="w-[20rem]">
-        
         <!-- 昵称 -->
         <el-form-item>
           <el-input v-model="data.newUserForm.name" placeholder="请输入昵称">
@@ -164,11 +310,209 @@ onMounted(() => {
             </template>
           </el-input>
         </el-form-item>
-
+        <!-- 姓名 -->
+        <el-form-item>
+          <el-input v-model="data.newUserForm.user_name" placeholder="请输入姓名">
+          <!-- 图标 -->
+            <template #prefix>
+              <el-icon color="#409efc" class="no-inherit">
+                <User />
+              </el-icon>
+            </template>
+          </el-input>
+        </el-form-item>
+        <!-- 邮箱 -->
+        <el-form-item>
+          <el-input v-model="data.newUserForm.email" placeholder="请输入邮箱">
+          <!-- 图标 -->
+            <template #prefix>
+              <el-icon color="#409efc" class="no-inherit">
+                <Message />
+              </el-icon>
+            </template>
+          </el-input>
+        </el-form-item>
+        <!-- 手机号码 -->
+        <el-form-item>
+          <el-input v-model="data.newUserForm.phone" placeholder="请输入手机号码">
+          <!-- 图标 -->
+            <template #prefix>
+              <el-icon color="#409efc" class="no-inherit">
+                <Iphone />
+              </el-icon>
+            </template>
+          </el-input>
+        </el-form-item>
+        <!-- 角色 -->
+        <el-form-item>
+          <el-select
+            v-model="data.newUserForm.type"
+            placeholder="请选择角色"
+            class="w-[20rem]"
+          >
+            <!-- 图标 -->
+            <template #prefix>
+              <el-icon color="#409efc" class="no-inherit">
+                <Postcard />
+              </el-icon>
+            </template>
+            <el-option
+              v-for="item in data.userRoleOptions"
+              :key="item.value"
+              :label="item.label"
+              :value="item.value"
+            />
+          </el-select>
+        </el-form-item>
+        <!-- 所属地区 -->
+        <el-form-item>
+          <el-input v-model="data.newUserForm.area_id" placeholder="请输入所属地区">
+          <!-- 图标 -->
+            <template #prefix>
+              <el-icon color="#409efc" class="no-inherit">
+                <Location />
+              </el-icon>
+            </template>
+          </el-input>
+        </el-form-item>
+        <!-- 身份证号码 -->
+        <el-form-item>
+          <el-input v-model="data.newUserForm.idcard" placeholder="请输入身份证号码">
+          <!-- 图标 -->
+            <template #prefix>
+              <el-icon color="#409efc" class="no-inherit">
+                <Aim />
+              </el-icon>
+            </template>
+          </el-input>
+        </el-form-item>
+        <!-- 密码 -->
+        <el-form-item>
+          <el-input v-model="data.newUserForm.password" placeholder="请输入密码">
+          <!-- 图标 -->
+            <template #prefix>
+              <el-icon color="#409efc" class="no-inherit">
+                <Lock />
+              </el-icon>
+            </template>
+          </el-input>
+        </el-form-item>
+        <!-- 确认密码 -->
+        <el-form-item>
+          <el-input v-model="data.newUserForm.checkPass" placeholder="请确认密码">
+          <!-- 图标 -->
+            <template #prefix>
+              <el-icon color="#409efc" class="no-inherit">
+                <Lock />
+              </el-icon>
+            </template>
+          </el-input>
+        </el-form-item>
+        <!-- 创建按钮 -->
+        <el-form-item>
+          <el-button class="w-[20rem]" type="primary" @click="createNewUser()">创建用户</el-button>
+        </el-form-item>
       </el-form>
     </div>
   </el-dialog>
-
+  <!-- 修改用户信息框 -->
+  <el-dialog v-model="data.modifyUserModalVisible" title="修改用户信息" width="400">
+    <div class="user-dialog">
+      <el-form :model="data.currentUserForm" class="w-[20rem]">
+        <!-- 昵称 -->
+        <el-form-item>
+          <el-input v-model="data.currentUserForm.name" placeholder="请输入昵称">
+          <!-- 图标 -->
+            <template #prefix>
+              <el-icon color="#409efc" class="no-inherit">
+                <User />
+              </el-icon>
+            </template>
+          </el-input>
+        </el-form-item>
+        <!-- 姓名 -->
+        <el-form-item>
+          <el-input v-model="data.currentUserForm.user_name" placeholder="请输入姓名">
+          <!-- 图标 -->
+            <template #prefix>
+              <el-icon color="#409efc" class="no-inherit">
+                <User />
+              </el-icon>
+            </template>
+          </el-input>
+        </el-form-item>
+        <!-- 邮箱 -->
+        <el-form-item>
+          <el-input v-model="data.currentUserForm.email" placeholder="请输入邮箱">
+          <!-- 图标 -->
+            <template #prefix>
+              <el-icon color="#409efc" class="no-inherit">
+                <Message />
+              </el-icon>
+            </template>
+          </el-input>
+        </el-form-item>
+        <!-- 手机号码 -->
+        <el-form-item>
+          <el-input v-model="data.currentUserForm.phone" placeholder="请输入手机号码">
+          <!-- 图标 -->
+            <template #prefix>
+              <el-icon color="#409efc" class="no-inherit">
+                <Iphone />
+              </el-icon>
+            </template>
+          </el-input>
+        </el-form-item>
+        <!-- 角色 -->
+        <el-form-item>
+          <el-select
+            v-model="data.currentUserForm.type"
+            placeholder="请选择角色"
+            class="w-[20rem]"
+          >
+            <!-- 图标 -->
+            <template #prefix>
+              <el-icon color="#409efc" class="no-inherit">
+                <Postcard />
+              </el-icon>
+            </template>
+            <el-option
+              v-for="item in data.userRoleOptions"
+              :key="item.value"
+              :label="item.label"
+              :value="item.value"
+            />
+          </el-select>
+        </el-form-item>
+        <!-- 所属地区 -->
+        <el-form-item>
+          <el-input v-model="data.currentUserForm.area_id" placeholder="请输入所属地区">
+          <!-- 图标 -->
+            <template #prefix>
+              <el-icon color="#409efc" class="no-inherit">
+                <Location />
+              </el-icon>
+            </template>
+          </el-input>
+        </el-form-item>
+        <!-- 身份证号码 -->
+        <el-form-item>
+          <el-input v-model="data.currentUserForm.idcard" placeholder="请输入身份证号码">
+          <!-- 图标 -->
+            <template #prefix>
+              <el-icon color="#409efc" class="no-inherit">
+                <Aim />
+              </el-icon>
+            </template>
+          </el-input>
+        </el-form-item>
+        <!-- 修改按钮 -->
+        <el-form-item>
+          <el-button class="w-[20rem]" type="primary" @click="modifyUserInfo()">修改用户信息</el-button>
+        </el-form-item>
+      </el-form>
+    </div>
+  </el-dialog>
 </template>
 
 <style scoped>
@@ -205,5 +549,9 @@ onMounted(() => {
 }
 .user-list {
   @apply flex flex-col mt-4 mr-2;
+}
+/* 模态框 */
+.user-dialog {
+  @apply flex items-center justify-center flex-col;
 }
 </style>

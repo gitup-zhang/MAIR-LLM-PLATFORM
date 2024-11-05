@@ -1,9 +1,10 @@
 <script setup lang="ts">
 import { onMounted, reactive } from 'vue';
-import { ElMessage } from 'element-plus'
-import { getLocationList, deleteLocation, getLocationDetail, modifyLocationDetail, createLocation } from '@/apis/location'
-import { getCollegeList, getCollegeDetail, submitCollegeModifyInfo, createCollege, deleteCollege } from '@/apis/college'
-import { getCourseList } from '@/apis/course'
+import { ElMessage } from 'element-plus';
+import { getLocationList, deleteLocation, getLocationDetail, modifyLocationDetail, createLocation } from '@/apis/location';
+import { getCollegeList, getCollegeDetail, submitCollegeModifyInfo, createCollege, deleteCollege } from '@/apis/college';
+import { getCourseList } from '@/apis/course';
+import { getClassApplyList } from '@/apis/class';
 
 const data = reactive({
   activeName: 'first',
@@ -11,12 +12,15 @@ const data = reactive({
   inputLocation: '',
   inputCollege: '',
   inputClass: '',
+  inputClassApply: '',
   // 模态框
   modifyLocationModalVisible: false,
   modifyCollegeModalVisible: false,
+  modifyClassModalVisible: false,
   createLocationModalVisible: false,
   createCollegeModalVisible: false,
   createClassModalVisible: false,
+  classApplyModalVisible: false,
   // 表单
   locationForm: {
     id: 0,
@@ -46,6 +50,7 @@ const data = reactive({
   locationList: [],
   collegeList: [],
   classList: [],
+  classApplyList: [],
   page: 1,
   count: 10,
   total: 0
@@ -65,6 +70,11 @@ const searchCollege = async () => {
 const searchClass = async () => {
   const res = await getCourseList(data.inputClass, data.page, data.count);
   data.classList = res.data.list;
+}
+// 搜索班级申请记录
+const searchClassApply = async () => {
+  const res = await getClassApplyList(data.inputClassApply, data.page, data.count);
+  data.classApplyList = res.data.list;
 }
 
 // 提交创建
@@ -164,6 +174,9 @@ const modityCollegeDetail = async (id: number) => {
   const res = await getCollegeDetail(id);
   data.collegeForm = res.data;
 }
+const modifyClassDetail = async () => {
+  data.modifyClassModalVisible = true;
+}
 
 // 提交地区修改
 const submitLocationModify = async () => {
@@ -206,6 +219,12 @@ const submitCollegeModify = async () => {
     })
   }
   searchCollege();
+}
+
+// 打开班级申请记录框
+const openClassApplyModal = async () => {
+  data.classApplyModalVisible = true;
+  searchClassApply();
 }
 
 onMounted(() => {
@@ -286,6 +305,7 @@ onMounted(() => {
             <el-input v-model="data.inputClass" class="mr-3 w-[30vw] h-[2rem]" placeholder="请输入班级名称" />
             <el-button type="primary" class="mr-3 h-[2rem]" @click="searchClass()">搜索</el-button>
             <el-button type="primary" class="mr-3 h-[2rem]" @click="data.createClassModalVisible = true">创建班级</el-button>
+            <el-button type="primary" class="mr-3 h-[2rem]" @click="openClassApplyModal()">班级申请记录</el-button>
           </div>
         </div>
         <!-- 所有班级信息展示 -->
@@ -308,8 +328,8 @@ onMounted(() => {
             <el-table-column prop="college_name" label="地区名" />
             <el-table-column fixed="right" label="操作" min-width="120">
               <template v-slot="scope">
-                <el-button link type="primary" size="small" @click="modityCollegeDetail(scope.row.id)">班级修改</el-button>
-                <el-button link type="primary" size="small" @click="removeCollege(scope.row.id)">考试安排</el-button>
+                <el-button link type="primary" size="small" @click="modifyClassDetail(scope.row.id)">班级修改</el-button>
+                <el-button link type="primary" size="small" @click="">考试安排</el-button>
               </template>
             </el-table-column>
           </el-table>
@@ -323,92 +343,155 @@ onMounted(() => {
 
   <!-- 修改地区框 -->
   <el-dialog v-model="data.modifyLocationModalVisible" title="地区修改" width="400">
-    <el-form :model="data.locationForm" class="w-[20rem]">
-      <!-- 地区 -->
-      <el-form-item>
-        <el-input v-model="data.locationForm.name" placeholder="请输入地区名称" />
-      </el-form-item>
-      <!-- 上级地区 -->
-      <el-form-item>
-        <el-input v-model="data.locationForm.collegeId" placeholder="请输入上级地区" disabled />
-      </el-form-item>
-      <!-- 注册按钮 -->
-      <el-form-item>
-        <el-button class="w-[5rem]" type="primary" @click="submitLocationModify()">提交修改</el-button>
-      </el-form-item>
-    </el-form>
+    <div class="education-dialog">
+      <el-form :model="data.locationForm" class="w-[20rem]">
+        <!-- 地区 -->
+        <el-form-item>
+          <el-input v-model="data.locationForm.name" placeholder="请输入地区名称" />
+        </el-form-item>
+        <!-- 上级地区 -->
+        <el-form-item>
+          <el-input v-model="data.locationForm.collegeId" placeholder="请输入上级地区" disabled />
+        </el-form-item>
+        <!-- 注册按钮 -->
+        <el-form-item>
+          <el-button class="w-[20rem]" type="primary" @click="submitLocationModify()">提交修改</el-button>
+        </el-form-item>
+      </el-form>
+    </div>
   </el-dialog>
+
   <!-- 修改教学单位框 -->
   <el-dialog v-model="data.modifyCollegeModalVisible" title="教学单位修改" width="400">
-    <el-form :model="data.collegeForm" class="w-[20rem]">
-      <!-- 地区 -->
-      <el-form-item>
-        <el-input v-model="data.collegeForm.name" placeholder="请输入教学单位名称" />
-      </el-form-item>
-      <!-- 上级地区 -->
-      <el-form-item>
-        <el-input v-model="data.collegeForm.area_id" placeholder="请输入所属地区" disabled />
-      </el-form-item>
-      <!-- 注册按钮 -->
-      <el-form-item>
-        <el-button class="w-[5rem]" type="primary" @click="submitCollegeModify()">提交修改</el-button>
-      </el-form-item>
-    </el-form>
+    <div class="education-dialog">
+      <el-form :model="data.collegeForm" class="w-[20rem]">
+        <!-- 地区 -->
+        <el-form-item>
+          <el-input v-model="data.collegeForm.name" placeholder="请输入教学单位名称" />
+        </el-form-item>
+        <!-- 上级地区 -->
+        <el-form-item>
+          <el-input v-model="data.collegeForm.area_id" placeholder="请输入所属地区" disabled />
+        </el-form-item>
+        <!-- 注册按钮 -->
+        <el-form-item>
+          <el-button class="w-[20rem]" type="primary" @click="submitCollegeModify()">提交修改</el-button>
+        </el-form-item>
+      </el-form>
+    </div>
   </el-dialog>
 
   <!-- 创建地区框 -->
   <el-dialog v-model="data.createLocationModalVisible" title="地区创建" width="400">
-    <el-form :model="data.newLocationForm" class="w-[20rem]">
-      <!-- 地区 -->
-      <el-form-item>
-        <el-input v-model="data.newLocationForm.name" placeholder="请输入地区名称" />
-      </el-form-item>
-      <!-- 上级地区 -->
-      <el-form-item>
-        <el-input v-model="data.newLocationForm.parent_id" placeholder="请输入上级地区" />
-      </el-form-item>
-      <!-- 注册按钮 -->
-      <el-form-item>
-        <el-button class="w-[5rem]" type="primary" @click="submitLocationCreate()">提交创建</el-button>
-      </el-form-item>
-    </el-form>
+    <div class="education-dialog">
+      <el-form :model="data.newLocationForm" class="w-[20rem]">
+        <!-- 地区 -->
+        <el-form-item>
+          <el-input v-model="data.newLocationForm.name" placeholder="请输入地区名称" />
+        </el-form-item>
+        <!-- 上级地区 -->
+        <el-form-item>
+          <el-input v-model="data.newLocationForm.parent_id" placeholder="请输入上级地区" />
+        </el-form-item>
+        <!-- 注册按钮 -->
+        <el-form-item>
+          <el-button class="w-[20rem]" type="primary" @click="submitLocationCreate()">提交创建</el-button>
+        </el-form-item>
+      </el-form>
+    </div>
   </el-dialog>
+
   <!-- 创建教学单位框 -->
   <el-dialog v-model="data.createCollegeModalVisible" title="教学单位创建" width="400">
-    <el-form :model="data.newCollegeForm" class="w-[20rem]">
-      <!-- 地区 -->
-      <el-form-item>
-        <el-input v-model="data.newCollegeForm.name" placeholder="请输入教学单位名称" />
-      </el-form-item>
-      <!-- 上级地区 -->
-      <el-form-item>
-        <el-input v-model="data.newCollegeForm.area_id" placeholder="请输入所属地区" />
-      </el-form-item>
-      <!-- 注册按钮 -->
-      <el-form-item>
-        <el-button type="primary" long @click="submitCollegeCreate()">提交创建</el-button>
-      </el-form-item>
-    </el-form>
+    <div class="education-dialog">
+      <el-form :model="data.newCollegeForm" class="w-[20rem]">
+        <!-- 地区 -->
+        <el-form-item>
+          <el-input v-model="data.newCollegeForm.name" placeholder="请输入教学单位名称" />
+        </el-form-item>
+        <!-- 上级地区 -->
+        <el-form-item>
+          <el-input v-model="data.newCollegeForm.area_id" placeholder="请输入所属地区" />
+        </el-form-item>
+        <!-- 注册按钮 -->
+        <el-form-item>
+          <el-button type="primary" class="w-[20rem]" @click="submitCollegeCreate()">提交创建</el-button>
+        </el-form-item>
+      </el-form>
+    </div>
   </el-dialog>
 
   <!-- 创建班级框 -->
   <el-dialog v-model="data.createClassModalVisible" title="班级创建" width="600">
-    <el-form :model="data.newClassForm" class="w-[20rem]">
-      <!-- 地区 -->
-      <el-form-item>
-        <el-input v-model="data.newCollegeForm.name" placeholder="请输入班级名称" />
-      </el-form-item>
-      <!-- 上级地区 -->
-      <el-form-item>
-        <el-input v-model="data.newCollegeForm.area_id" placeholder="请输入所属地区" />
-      </el-form-item>
-      <!-- 注册按钮 -->
-      <el-form-item>
-        <el-button type="primary" long @click="submitCollegeCreate()">提交创建</el-button>
-      </el-form-item>
-    </el-form>
+    <div class="education-dialog">
+      <el-form :model="data.newClassForm" class="w-[20rem]">
+        <!-- 地区 -->
+        <el-form-item>
+          <el-input v-model="data.newCollegeForm.name" placeholder="请输入班级名称" />
+        </el-form-item>
+        <!-- 上级地区 -->
+        <el-form-item>
+          <el-input v-model="data.newCollegeForm.area_id" placeholder="请输入所属地区" />
+        </el-form-item>
+        <!-- 注册按钮 -->
+        <el-form-item>
+          <el-button type="primary" class="w-[20rem]" @click="submitCollegeCreate()">提交创建</el-button>
+        </el-form-item>
+      </el-form>
+    </div>
   </el-dialog>
 
+  <!-- 修改班级框 -->
+  <el-dialog v-model="data.modifyClassModalVisible" title="班级修改" width="600">
+    <div class="education-dialog">
+      <el-form :model="data.newClassForm" class="w-[20rem]">
+        <!-- 地区 -->
+        <el-form-item>
+          <el-input v-model="data.newCollegeForm.name" placeholder="请输入班级名称" />
+        </el-form-item>
+        <!-- 上级地区 -->
+        <el-form-item>
+          <el-input v-model="data.newCollegeForm.area_id" placeholder="请输入所属地区" />
+        </el-form-item>
+        <!-- 注册按钮 -->
+        <el-form-item>
+          <el-button type="primary" class="w-[20rem]" @click="submitCollegeCreate()">提交创建</el-button>
+        </el-form-item>
+      </el-form>
+    </div>
+  </el-dialog>
+
+  <!-- 班级申请记录框 -->
+  <el-dialog v-model="data.classApplyModalVisible" title="班级申请记录" width="1200">
+    <div class="education-dialog">
+      <div class="dialog-search-box">
+          <div class="search-title">班级申请记录</div>
+          <div class="select-exam">
+            <!-- 搜索 -->
+            <el-input v-model="data.inputClassApply" class="mr-3 w-[20vw] h-[2rem]" placeholder="请输入班级名称" />
+            <el-button type="primary" class="mr-3 h-[2rem]" @click="searchClassApply()">搜索</el-button>
+          </div>
+        </div>
+        <!-- 所有班级信息展示 -->
+        <div class="dialog-list">
+          <el-table :data="data.classApplyList" border style="width: 100%">
+            <el-table-column prop="user_id_number" label="用户ID"/>
+            <el-table-column prop="user_name" label="用户名" />
+            <el-table-column prop="class_name" label="班级名"/>
+            <el-table-column prop="create_time" label="创建时间"/>
+            <el-table-column prop="status_desc" label="审核状态" />
+            <el-table-column fixed="right" label="操作" min-width="120">
+              <template v-slot="scope">
+                <el-button v-if="scope.row.status === 1" link type="primary" size="small" @click="modityCollegeDetail(scope.row.id)">通过</el-button>
+                <el-button v-if="scope.row.status === 1" link type="primary" size="small" @click="removeCollege(scope.row.id)">不通过</el-button>
+              </template>
+            </el-table-column>
+          </el-table>
+          <!-- 分页 -->
+          <el-pagination background layout="prev, pager, next" :total="1" class="mt-4 mx-auto" />
+        </div>
+    </div>
+  </el-dialog>
 </template>
 
 <style scoped>
@@ -443,5 +526,19 @@ onMounted(() => {
 }
 .college-list {
   @apply flex flex-col mt-4 mr-2;
+}
+/* 模态框 */
+.education-dialog {
+  @apply flex items-center justify-center flex-col;
+}
+.dialog-search-box {
+  height: 10vh;
+  width: 100%;
+  background-image: linear-gradient(120deg, #a1c4fd 0%, #c2e9fb 100%);
+  @apply flex flex-row items-center justify-center rounded-md;
+}
+.dialog-list {
+  width: 100%;
+  @apply flex flex-col mt-4;
 }
 </style>

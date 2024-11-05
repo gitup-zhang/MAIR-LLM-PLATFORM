@@ -102,3 +102,28 @@ export const getTeacherList = (searchUserName: string, searchUserId: string, pag
     withCredentials: true
   })
 }
+
+// 创建用户
+export const createUser = (form: object) => {
+  return httpInstance({
+    url:'/user/',
+    method: "POST",
+    data: JSON.stringify(form),
+    headers: {
+      "content-type": "application/json",
+    },
+    withCredentials: true
+  })
+}
+
+// 获取用户详细信息
+export const getUserDetail = (id: number) => {
+  return httpInstance({
+    url:'/user/' + id + '/',
+    method: "GET",
+    headers: {
+      "content-type": "application/json",
+    },
+    withCredentials: true
+  })
+}

@@ -6,7 +6,7 @@ export const getChapterList = (searchText: string, page: number, count: number) 
     url:'/subcourse/',
     method: "GET",
     params: {
-      desc: searchText,
+      name: searchText,
       page: page,
       count: count
     },

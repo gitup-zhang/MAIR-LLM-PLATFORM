@@ -1,7 +1,10 @@
 <script setup lang="ts">
 import { onMounted, reactive } from 'vue';
+import { ElMessage } from 'element-plus';
+import { Document, ChatDotRound, Connection, AlarmClock, UploadFilled, Notebook } from '@element-plus/icons-vue'
 import { getChapterList } from '@/apis/chapter';
-import { getCourseInfoList } from '@/apis/course';
+import { getCourseInfoList, createCourse, getCourseDetail, modifyCourse } from '@/apis/course';
+import { getImageOptions } from '@/apis/image'
 
 const data = reactive({
   activeName: 'first',
@@ -11,6 +14,34 @@ const data = reactive({
   // 列表
   chapterList: [],
   courseList: [],
+  // 表单
+  newChapterForm: {
+    name: '',
+    desc: '',
+    files_info: [],
+    supplement_files_info: [],
+    image_id: 0,
+    use_time: 0
+  },
+  newCourseForm: {
+    name: '',
+    desc: '',
+    total_time: 0
+  },
+  courseForm: {
+    id: 0,
+    modify_time: '',
+    create_time: '',
+    name: '',
+    desc: '',
+    total_time: 0
+  },
+  // 模态框
+  createChapterModalVisible: false,
+  createCourseModalVisible: false,
+  modifyCourseModalVisible: false,
+  // 选项
+  imageOptions: [],
   page: 1,
   count: 10,
   total: 0
@@ -19,13 +50,77 @@ const data = reactive({
 // 搜索章节
 const searchChapter = async () => {
   const res = await getChapterList(data.inputChapter, data.page, data.count);
+  console.log(res);
   data.chapterList = res.data.list;
 }
+// 打开章节创建模态框
+const openChapterCreateModal = async () => {
+  data.createChapterModalVisible = true;
+  const res = await getImageOptions();
+  data.imageOptions = res.data.list;
+  data.newChapterForm.image_id = data.imageOptions[0]['id'];
+}
+// 提交章节创建
+const submitChapterCreate = async () => {
+
+}
+
+
 // 搜索课程
 const searchCourse = async () => {
   const res = await getCourseInfoList(data.inputCourse, data.page, data.count);
   data.courseList = res.data.list;
 }
+// 提交课程创建
+const submitCourseCreate = async () => {
+  const res = await createCourse(data.newCourseForm);
+  if(res.status === 0){
+    ElMessage({
+      message: '新课程创建成功',
+      type: 'success',
+      plain: true,
+    })
+  } else {
+    ElMessage({
+      message: '新课程创建失败',
+      type: 'warning',
+      plain: true,
+    })
+  }
+  data.createCourseModalVisible = false;
+  searchCourse();
+}
+// 打开课程修改模态框
+const openCourseModifyModal = async (courseId: number) => {
+  data.modifyCourseModalVisible = true;
+  const res = await getCourseDetail(courseId);
+  data.courseForm.name = res.data.name;
+  data.courseForm.create_time = res.data.create_time;
+  data.courseForm.desc = res.data.desc;
+  data.courseForm.id = res.data.id;
+  data.courseForm.modify_time = res.data.modify_time;
+  data.courseForm.total_time = res.data.total_time;
+}
+// 提交课程修改
+const submitCourseModify = async () => {
+  const res = await modifyCourse(data.courseForm.id, data.courseForm);
+  if(res.status === 0){
+    ElMessage({
+      message: '课程修改成功',
+      type: 'success',
+      plain: true,
+    })
+  } else {
+    ElMessage({
+      message: '课程修改失败',
+      type: 'warning',
+      plain: true,
+    })
+  }
+  data.modifyCourseModalVisible = false;
+  searchCourse();
+}
+
 
 onMounted(() => {
   // 挂载数据
@@ -44,7 +139,7 @@ onMounted(() => {
             <!-- 搜索 -->
             <el-input v-model="data.inputChapter" class="mr-3 w-[30vw] h-[2rem]" placeholder="请输入章节名称" />
             <el-button type="primary" class="mr-3 h-[2rem]" @click="searchChapter()">搜索</el-button>
-            <el-button type="primary" class="mr-3 h-[2rem]" @click="">创建</el-button>
+            <el-button type="primary" class="mr-3 h-[2rem]" @click="openChapterCreateModal()">创建新章节</el-button>
           </div>
         </div>
         <!-- 所有章节信息展示 -->
@@ -78,19 +173,19 @@ onMounted(() => {
             <!-- 搜索 -->
             <el-input v-model="data.inputCourse" class="mr-3 w-[30vw] h-[2rem]" placeholder="请输入课程名称" />
             <el-button type="primary" class="mr-3 h-[2rem]" @click="searchCourse()">搜索</el-button>
-            <el-button type="primary" class="mr-3 h-[2rem]" @click="">创建</el-button>
+            <el-button type="primary" class="mr-3 h-[2rem]" @click="data.createCourseModalVisible = true">创建新课程</el-button>
           </div>
         </div>
         <!-- 所有课程信息展示 -->
         <div class="show-list">
-          <el-table :data="data.chapterList" border style="width: 100%">
+          <el-table :data="data.courseList" border style="width: 100%">
             <el-table-column prop="id" label="ID" width="100"/>
             <el-table-column prop="name" label="课程名"/>
             <el-table-column prop="desc" label="描述"/>
             <el-table-column prop="use_time" label="总学时"/>
             <el-table-column fixed="right" label="操作">
               <template v-slot="scope">
-                <el-button link type="primary" size="small" @click="">修改</el-button>
+                <el-button link type="primary" size="small" @click="openCourseModifyModal(scope.row.id)">修改</el-button>
               </template>
             </el-table-column>
           </el-table>
@@ -101,6 +196,186 @@ onMounted(() => {
   </el-tabs>
 
   </div>
+
+
+  <!-- 创建新章节框 -->
+  <el-dialog v-model="data.createChapterModalVisible" title="章节创建" width="600">
+    <div class="course-dialog">
+      <el-form :model="data.newChapterForm" class="w-[30rem]">
+        <!-- 章节名 -->
+        <el-form-item>
+          <el-input v-model="data.newChapterForm.name" placeholder="请输入章节名称">
+            <!-- 图标 -->
+            <template #prefix>
+              <el-icon color="#409efc" class="no-inherit">
+                <Document />
+              </el-icon>
+            </template>
+          </el-input>
+        </el-form-item>
+        <!-- 章节描述 -->
+        <el-form-item>
+          <el-input v-model="data.newChapterForm.desc" placeholder="请输入章节描述">
+            <!-- 图标 -->
+            <template #prefix>
+              <el-icon color="#409efc" class="no-inherit">
+                <ChatDotRound />
+              </el-icon>
+            </template>
+          </el-input>
+        </el-form-item>
+        <!-- 镜像 -->
+        <el-form-item>
+          <el-select v-model="data.newChapterForm.image_id" placeholder="请选择镜像">
+            <!-- 图标 -->
+            <template #prefix>
+              <el-icon color="#409efc" class="no-inherit">
+                <Connection />
+              </el-icon>
+            </template>
+            <el-option
+              v-for="item in data.imageOptions"
+              :key="index"
+              :label="item['name']"
+              :value="item['id']"
+            />
+          </el-select>
+        </el-form-item>
+        <!-- 课时 -->
+        <el-form-item>
+          <el-input v-model="data.newChapterForm.use_time" placeholder="请输入课时">
+            <!-- 图标 -->
+            <template #prefix>
+              <el-icon color="#409efc" class="no-inherit">
+                <AlarmClock />
+              </el-icon>
+            </template>
+          </el-input>
+        </el-form-item>
+        <!-- 章节内容 -->
+        <el-form-item>
+          <el-upload
+            class="w-[30rem]"
+            drag
+            action=""
+            multiple
+          >
+            <el-icon class="el-icon--upload"><upload-filled /></el-icon>
+            <div class="el-upload__text">
+              <em>章节内容</em>拖拽文件到此处或点击上传
+            </div>
+            <template #tip>
+              <div class="el-upload__tip">
+                请上传单个PDF文件且大小不能超过50MB
+              </div>
+            </template>
+          </el-upload>
+        </el-form-item>
+        <!-- 辅助文件 -->
+        <el-form-item>
+          <el-upload
+            class="w-[30rem]"
+            drag
+            action=""
+            multiple
+          >
+            <el-icon class="el-icon--upload"><upload-filled /></el-icon>
+            <div class="el-upload__text">
+              <em>辅助文件</em>拖拽文件到此处或点击上传
+            </div>
+            <template #tip>
+              <div class="el-upload__tip">
+                请上传单个PDF文件且大小不能超过50MB
+              </div>
+            </template>
+          </el-upload>
+        </el-form-item>
+        <!-- 创建按钮 -->
+        <el-form-item>
+          <el-button class="w-[30rem]" type="primary" @click="submitChapterCreate()">创建新章节</el-button>
+        </el-form-item>
+      </el-form>
+    </div>
+  </el-dialog>
+
+  <!-- 创建新课程框 -->
+  <el-dialog v-model="data.createCourseModalVisible" title="课程创建" width="600">
+    <div class="course-dialog">
+      <el-form :model="data.newChapterForm" class="w-[30rem]">
+        <!-- 课程名 -->
+        <el-form-item>
+          <el-input v-model="data.newCourseForm.name" placeholder="请输入课程名称">
+            <!-- 图标 -->
+            <template #prefix>
+              <el-icon color="#409efc" class="no-inherit">
+                <Notebook />
+              </el-icon>
+            </template>
+          </el-input>
+        </el-form-item>
+        <!-- 描述 -->
+        <el-form-item>
+          <el-input v-model="data.newCourseForm.desc" placeholder="请输入课程描述">
+            <!-- 图标 -->
+            <template #prefix>
+              <el-icon color="#409efc" class="no-inherit">
+                <ChatDotRound />
+              </el-icon>
+            </template>
+          </el-input>
+        </el-form-item>
+        <!-- 创建按钮 -->
+        <el-form-item>
+          <el-button class="w-[30rem]" type="primary" @click="submitCourseCreate()">创建新课程</el-button>
+        </el-form-item>
+      </el-form>
+    </div>
+  </el-dialog>
+
+  <!-- 修改课程框 -->
+  <el-dialog v-model="data.modifyCourseModalVisible" title="课程修改" width="600">
+    <div class="course-dialog">
+      <el-form :model="data.courseForm" class="w-[30rem]">
+        <!-- 课程名 -->
+        <el-form-item>
+          <el-input v-model="data.courseForm.name" placeholder="请输入课程名称">
+            <!-- 图标 -->
+            <template #prefix>
+              <el-icon color="#409efc" class="no-inherit">
+                <Notebook />
+              </el-icon>
+            </template>
+          </el-input>
+        </el-form-item>
+        <!-- 描述 -->
+        <el-form-item>
+          <el-input v-model="data.courseForm.desc" placeholder="请输入课程描述">
+            <!-- 图标 -->
+            <template #prefix>
+              <el-icon color="#409efc" class="no-inherit">
+                <ChatDotRound />
+              </el-icon>
+            </template>
+          </el-input>
+        </el-form-item>
+        <!-- 总学时 -->
+        <el-form-item>
+          <el-input v-model="data.courseForm.total_time" placeholder="请输入课程学时" disabled="disabled">
+            <!-- 图标 -->
+            <template #prefix>
+              <el-icon color="#409efc" class="no-inherit">
+                <AlarmClock />
+              </el-icon>
+            </template>
+          </el-input>
+        </el-form-item>
+        <!-- 创建按钮 -->
+        <el-form-item>
+          <el-button class="w-[30rem]" type="primary" @click="submitCourseModify()">提交课程修改</el-button>
+        </el-form-item>
+      </el-form>
+    </div>
+  </el-dialog>
 
 </template>
 
@@ -133,5 +408,9 @@ onMounted(() => {
 }
 .show-list {
   @apply flex flex-col mt-4 mr-2;
+}
+/* 模态框 */
+.course-dialog {
+  @apply flex items-center justify-center flex-col;
 }
 </style>

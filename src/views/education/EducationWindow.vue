@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { onMounted, reactive } from 'vue';
+import { useRouter } from 'vue-router'
 import { ElMessage } from 'element-plus';
 import { OfficeBuilding, User, Notebook, Location } from '@element-plus/icons-vue'
 import { getLocationList, deleteLocation, getLocationDetail, modifyLocationDetail, createLocation } from '@/apis/location';
@@ -8,6 +9,7 @@ import { getCourseList, getCourseOptions } from '@/apis/course';
 import { getClassApplyList, evaluateClassApply, createClass, getClassDetail, modifyClass } from '@/apis/class';
 import { getTeacherOptions } from '@/apis/user';
 
+const router = useRouter();
 const data = reactive({
   activeName: 'first',
   // 输入框
@@ -339,6 +341,16 @@ const rejectClassApply = async (id: number) => {
   searchClassApply();
 }
 
+// 查看考试安排
+const checkExamDetail = async (id: number) => {
+  router.push({
+    path: "/classExam",
+    query: {
+      id: id
+    }
+  })
+}
+
 onMounted(() => {
   // 挂载地区信息
   searchLocation();
@@ -441,7 +453,7 @@ onMounted(() => {
             <el-table-column fixed="right" label="操作" min-width="120">
               <template v-slot="scope">
                 <el-button link type="primary" size="small" @click="modifyClassDetail(scope.row.id)">班级修改</el-button>
-                <el-button link type="primary" size="small" @click="">考试安排</el-button>
+                <el-button link type="primary" size="small" @click="checkExamDetail(scope.row.id)">考试安排</el-button>
               </template>
             </el-table-column>
           </el-table>

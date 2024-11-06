@@ -2,21 +2,40 @@
 import { onMounted, reactive } from 'vue';
 import { getExamInfoList } from '@/apis/exam'
 import { getExamPaperList } from '@/apis/examPaper'
-import { getExamQuestionList } from '@/apis/examQuestion'
+import { getExamQuestionList, getExamQuestionDetail } from '@/apis/examQuestion'
 import { getExamResultList } from '@/apis/examResult'
 
 const data = reactive({
   activeName: 'first',
-  // 考试名称输入
+  // 输入
   inputExamQuestion: '',
   inputExam: '',
   inputExamPaper: '',
   inputExamResultId: '',
   inputExamResultStuId: '',
+  // 列表
   examList: [],
   examPaperList: [],
   examQuestionList: [],
   examResultList: [],
+  // 表单
+  questionForm: {
+    answer_limit: '',
+    answer_option: [],
+    answer_words_limit: 0,
+    content: '',
+    create_time: 0,
+    desc: '',
+    id: 0,
+    modify_time: 0,
+    right_answer: '',
+    status: 0,
+    status_desc: '',
+    type: 0,
+    type_desc: '',
+  },
+  // 模态框
+  questionDetailModalVisible: false,
   page: 1,
   count: 10,
   total: 0
@@ -32,11 +51,33 @@ const searchExamPaper = async () => {
   const res = await getExamPaperList(data.inputExamPaper, data.page, data.count);
   data.examPaperList = res.data.list;
 }
+
+
 // 搜索试题
 const searchExamQuestion = async () => {
   const res = await getExamQuestionList(data.inputExamQuestion, data.page, data.count);
   data.examQuestionList = res.data.list;
 }
+// 查看试题详情
+const checkQuestionDetail = async (id: number) => {
+  data.questionDetailModalVisible = true;
+  const res = await getExamQuestionDetail(id);
+  data.questionForm.answer_limit = res.data.answer_limit;
+  data.questionForm.answer_option = res.data.answer_option;
+  data.questionForm.answer_words_limit = res.data.answer_words_limit;
+  data.questionForm.content = res.data.content;
+  data.questionForm.create_time = res.data.create_time;
+  data.questionForm.desc = res.data.desc;
+  data.questionForm.id = res.data.id;
+  data.questionForm.modify_time = res.data.modify_time;
+  data.questionForm.right_answer = res.data.right_answer;
+  data.questionForm.status = res.data.status;
+  data.questionForm.status_desc = res.data.status_desc;
+  data.questionForm.type = res.data.type;
+  data.questionForm.type_desc = res.data.type_desc;
+}
+
+
 // 搜索考试结果
 const searchExamResult = async () => {
   const res = await getExamResultList(data.inputExamResultId, data.inputExamResultStuId, data.page, data.count);
@@ -62,20 +103,21 @@ onMounted(() => {
             <!-- 搜索 -->
             <el-input v-model="data.inputExamQuestion" class="mr-3 w-[30vw] h-[2rem]" placeholder="请输入试题名称" />
             <el-button type="primary" class="mr-3 h-[2rem]" @click="searchExamQuestion()">搜索</el-button>
+            <el-button type="primary" class="mr-3 h-[2rem]" @click="">创建新试题</el-button>
           </div>
         </div>
-        <!-- 所有试卷信息展示 -->
+        <!-- 所有试题信息展示 -->
         <div class="show-list">
           <el-table :data="data.examQuestionList" border style="width: 100%">
             <el-table-column prop="id" label="ID" width="100"/>
             <el-table-column prop="content" label="内容"/>
             <el-table-column prop="desc" label="描述"/>
-            <el-table-column prop="type_desc" label="类型"/>
-            <el-table-column prop="status_desc" label="状态"/>
-            <el-table-column fixed="right" label="操作">
+            <el-table-column prop="type_desc" label="类型" width="100"/>
+            <el-table-column prop="status_desc" label="状态" width="100"/>
+            <el-table-column fixed="right" label="操作" width="200">
               <template v-slot="scope">
                 <el-button v-if="scope.row.status===3" link type="primary" size="small" @click="">修改</el-button>
-                <el-button v-else-if="scope.row.status===1" link type="primary" size="small" @click="">查看详情</el-button>
+                <el-button v-else-if="scope.row.status===1" link type="primary" size="small" @click="checkQuestionDetail(scope.row.id)">查看详情</el-button>
               </template>
             </el-table-column>
           </el-table>
@@ -187,6 +229,23 @@ onMounted(() => {
 
   </div>
 
+
+  <!-- 查看试题详情框 -->
+  <el-dialog v-model="data.questionDetailModalVisible" title="试题详情" width="600">
+    <div class="course-dialog">
+      <el-descriptions
+        direction="vertical"
+        :column="2"
+        border
+      >
+        <el-descriptions-item label="类型">{{ data.questionForm.type_desc }}</el-descriptions-item>
+        <el-descriptions-item label="字数限制">{{ data.questionForm.answer_words_limit }}</el-descriptions-item>
+        <el-descriptions-item label="内容" :span="2">{{ data.questionForm.content }}</el-descriptions-item>
+        <el-descriptions-item label="问题" :span="2">{{ data.questionForm.desc }}</el-descriptions-item>
+        <el-descriptions-item label="正确答案" :span="2">{{ data.questionForm.right_answer }}</el-descriptions-item>
+      </el-descriptions>
+    </div>
+  </el-dialog>
 </template>
 
 <style scoped>

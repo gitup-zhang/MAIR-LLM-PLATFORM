@@ -109,3 +109,41 @@ export const getCourseOptions = () => {
     withCredentials: true
   })
 }
+
+// 创建新课程
+export const createCourse = (form: object) => {
+  return httpInstance({
+    url:'/course/',
+    method: "POST",
+    data: JSON.stringify(form),
+    headers: {
+      "content-type": "application/json",
+    },
+    withCredentials: true
+  })
+}
+
+// 获取课程详情
+export const getCourseDetail = (id: number) => {
+  return httpInstance({
+    url:'/course/' + id + '/',
+    method: "GET",
+    headers: {
+      "content-type": "application/json",
+    },
+    withCredentials: true
+  })
+}
+
+// 提交课程修改
+export const modifyCourse = (id: number, form: object) => {
+  return httpInstance({
+    url:'/course/' + id + '/',
+    method: "PUT",
+    data: JSON.stringify(form),
+    headers: {
+      "content-type": "application/json",
+    },
+    withCredentials: true
+  })
+}

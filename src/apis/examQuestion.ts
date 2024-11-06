@@ -28,3 +28,16 @@ export const getExamQuestionDetail = (id: number) => {
     withCredentials: true
   })
 }
+
+// 创建新试题
+export const createQuestion = (status: number, form: object) => {
+  return httpInstance({
+    url: '/question/',
+    method: "POST",
+    data: JSON.stringify(form),
+    headers: {
+      "content-type": "application/json",
+    },
+    withCredentials: true
+  })
+}

@@ -1,8 +1,10 @@
 <script setup lang="ts">
 import { onMounted, reactive } from 'vue';
+import { ElMessage } from 'element-plus';
+import { Document, Files, Filter, Warning, Check } from '@element-plus/icons-vue'
 import { getExamInfoList } from '@/apis/exam'
 import { getExamPaperList } from '@/apis/examPaper'
-import { getExamQuestionList, getExamQuestionDetail } from '@/apis/examQuestion'
+import { getExamQuestionList, getExamQuestionDetail, createQuestion } from '@/apis/examQuestion'
 import { getExamResultList } from '@/apis/examResult'
 
 const data = reactive({
@@ -34,8 +36,41 @@ const data = reactive({
     type: 0,
     type_desc: '',
   },
+  // 新表单
+  newQuestionForm: {
+    content: '',
+    desc: '',
+    type: 2,
+    answer_option: [],
+    right_answer: '',
+    status: 3,
+    answer_words_limit: 50
+  },
   // 模态框
   questionDetailModalVisible: false,
+  createQuestionModalVisible: false,
+  // 类型
+  typeOptions: [
+    {
+      value: 1,
+      label: '问答题'
+    }, 
+    {
+      value: 2,
+      label: '单选题'
+    }, 
+    {
+      value: 3,
+      label: '多选题'
+    }, 
+    {
+      value: 4,
+      label: '填空题'
+    }, 
+    {
+      value: 5,
+      label: '判断题'
+    }],
   page: 1,
   count: 10,
   total: 0
@@ -76,7 +111,46 @@ const checkQuestionDetail = async (id: number) => {
   data.questionForm.type = res.data.type;
   data.questionForm.type_desc = res.data.type_desc;
 }
-
+// 改变多选题答案类型
+const changeType = () => {
+  data.newQuestionForm.answer_option = [];
+  if(data.newQuestionForm.type === 3){
+    data.newQuestionForm.right_answer = [] as any;
+  } else {
+    data.newQuestionForm.right_answer = '';
+  }
+}
+// 新增选项 
+const addOption = () => {
+  data.newQuestionForm.answer_option.push('');
+}
+// 删除选项
+const removeOption = (option: string) => {
+  let index = data.newQuestionForm.answer_option.indexOf(option);
+  if(index !== -1) {
+    data.newQuestionForm.answer_option.splice(index, 1);
+  }
+}
+// 提交试题创建
+const submitQuestionCreate = async (status: number) => {
+  data.newQuestionForm.status = status;
+  const res = await createQuestion(status, data.newQuestionForm);
+  if(res.status === 0){
+    ElMessage({
+      message: '新试题创建成功',
+      type: 'success',
+      plain: true,
+    })
+  } else {
+    ElMessage({
+      message: '新试题创建失败',
+      type: 'warning',
+      plain: true,
+    })
+  }
+  data.createQuestionModalVisible = false;
+  searchExamPaper();
+}
 
 // 搜索考试结果
 const searchExamResult = async () => {
@@ -103,7 +177,7 @@ onMounted(() => {
             <!-- 搜索 -->
             <el-input v-model="data.inputExamQuestion" class="mr-3 w-[30vw] h-[2rem]" placeholder="请输入试题名称" />
             <el-button type="primary" class="mr-3 h-[2rem]" @click="searchExamQuestion()">搜索</el-button>
-            <el-button type="primary" class="mr-3 h-[2rem]" @click="">创建新试题</el-button>
+            <el-button type="primary" class="mr-3 h-[2rem]" @click="data.createQuestionModalVisible = true">创建新试题</el-button>
           </div>
         </div>
         <!-- 所有试题信息展示 -->
@@ -232,7 +306,7 @@ onMounted(() => {
 
   <!-- 查看试题详情框 -->
   <el-dialog v-model="data.questionDetailModalVisible" title="试题详情" width="600">
-    <div class="course-dialog">
+    <div class="exam-dialog">
       <el-descriptions
         direction="vertical"
         :column="2"
@@ -244,6 +318,140 @@ onMounted(() => {
         <el-descriptions-item label="问题" :span="2">{{ data.questionForm.desc }}</el-descriptions-item>
         <el-descriptions-item label="正确答案" :span="2">{{ data.questionForm.right_answer }}</el-descriptions-item>
       </el-descriptions>
+    </div>
+  </el-dialog>
+  
+  <!-- 创建试题框 -->
+  <el-dialog v-model="data.createQuestionModalVisible" title="创建新试题" width="600">
+    <div class="exam-dialog">
+      <el-form :model="data.newQuestionForm" class="w-[30rem]">
+        <!-- 内容 -->
+        <el-form-item>
+          <el-input v-model="data.newQuestionForm.content" placeholder="请输入题目内容">
+            <!-- 图标 -->
+            <template #prefix>
+              <el-icon color="#409efc" class="no-inherit">
+                <Document />
+              </el-icon>
+            </template>
+          </el-input>
+        </el-form-item>
+        <!-- 描述 -->
+        <el-form-item>
+          <el-input v-model="data.newQuestionForm.desc" placeholder="请输入题目描述">
+            <!-- 图标 -->
+            <template #prefix>
+              <el-icon color="#409efc" class="no-inherit">
+                <Files />
+              </el-icon>
+            </template>
+          </el-input>
+        </el-form-item>
+        <!-- 类型 -->
+        <el-form-item>
+          <el-select v-model="data.newQuestionForm.type" placeholder="请选择题目类型" class="w-[30rem]" @change="changeType()">
+            <!-- 图标 -->
+            <template #prefix>
+              <el-icon color="#409efc" class="no-inherit">
+                <Filter />
+              </el-icon>
+            </template>
+            <el-option
+              v-for="item in data.typeOptions"
+              :key="item.value"
+              :label="item.label"
+              :value="item.value"
+            />
+          </el-select>
+        </el-form-item>
+        <!-- 问答题 -->
+        <template v-if="data.newQuestionForm.type===1">
+          <el-form-item>
+            <el-input-number class="w-[30rem]" v-model="data.newQuestionForm.answer_words_limit" :min="1" placeholder="请输入回答字数限制" />
+          </el-form-item>
+        </template>
+        <!-- 单选题 -->
+        <template v-if="data.newQuestionForm.type===2">
+          <el-form-item 
+            v-for="(option, index) in data.newQuestionForm.answer_option" 
+            :label="'选项' + (index+1)"
+            :key="index" 
+            :prop="'answer_option[' + index + ']'" 
+            style="width: 100%"
+          >
+            <el-input v-model="data.newQuestionForm.answer_option[index]" style="width: 80%"/>
+            <el-button type="primary" class="ml-2" @click.prevent="removeOption(option)">删除</el-button>
+          </el-form-item>
+          <el-form-item>
+            <el-button class="w-[30rem]" type="primary" @click="addOption()">新增选项</el-button>
+          </el-form-item>
+          <el-form-item>
+            <el-radio-group v-model="data.newQuestionForm.right_answer">
+              <el-radio v-for="(option, i) in data.newQuestionForm.answer_option" :label="(i+1).toString()" border>{{ option }}</el-radio>
+              </el-radio-group>
+          </el-form-item>
+        </template>
+        <!-- 多选题 -->
+        <template v-if="data.newQuestionForm.type===3">
+          <el-form-item 
+            v-for="(option, index) in data.newQuestionForm.answer_option" 
+            :label="'选项' + (index+1)"
+            :key="index" 
+            :prop="'answer_option[' + index + ']'" 
+            style="width: 100%"
+          >
+            <el-input v-model="data.newQuestionForm.answer_option[index]" style="width: 80%"/>
+            <el-button type="primary" class="ml-2" @click.prevent="removeOption(option)">删除</el-button>
+          </el-form-item>
+          <el-form-item>
+            <el-button class="w-[30rem]" type="primary" @click="addOption()">新增选项</el-button>
+          </el-form-item>
+          <el-form-item>
+            <el-checkbox-group v-model="data.newQuestionForm.right_answer">
+              <el-checkbox v-for="(option, index) in data.newQuestionForm.answer_option" :key="index" :label="(index+1).toString()" :value="option">
+                {{ option }}
+              </el-checkbox>
+            </el-checkbox-group>
+          </el-form-item>
+        </template>
+        <!-- 填空题 -->
+        <template v-if="data.newQuestionForm.type===4">
+          <el-form-item>
+            <el-input v-model="data.newQuestionForm.right_answer" placeholder="请输入正确答案">
+              <!-- 图标 -->
+              <template #prefix>
+                <el-icon color="#409efc" class="no-inherit">
+                  <Check />
+                </el-icon>
+              </template>
+            </el-input>
+          </el-form-item>
+          <el-form-item>
+            <el-input v-model="data.newQuestionForm.answer_words_limit" placeholder="请输入回答字数限制">
+              <!-- 图标 -->
+              <template #prefix>
+                <el-icon color="#409efc" class="no-inherit">
+                  <Warning />
+                </el-icon>
+              </template>
+            </el-input>
+          </el-form-item>
+        </template>
+        <!-- 判断题 -->
+        <template v-if="data.newQuestionForm.type===5">
+          <el-form-item>
+            <el-radio v-model="data.newQuestionForm.right_answer" label="1">正确</el-radio>
+            <el-radio v-model="data.newQuestionForm.right_answer" label="2">错误</el-radio>
+          </el-form-item>
+        </template>
+        <!-- 创建按钮 -->
+        <el-form-item>
+          <el-button class="w-[30rem]" type="primary" @click="submitQuestionCreate(1)">创建新试题</el-button>
+        </el-form-item>
+        <el-form-item>
+          <el-button class="w-[30rem]" type="primary" @click="submitQuestionCreate(3)">存为草稿</el-button>
+        </el-form-item>
+      </el-form>
     </div>
   </el-dialog>
 </template>
@@ -277,5 +485,9 @@ onMounted(() => {
 }
 .show-list {
   @apply flex flex-col mt-4 mr-2;
+}
+/* 模态框 */
+.exam-dialog {
+  @apply flex items-center justify-center flex-col;
 }
 </style>

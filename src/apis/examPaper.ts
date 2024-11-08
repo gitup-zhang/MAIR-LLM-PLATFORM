@@ -66,3 +66,15 @@ export const deleteExamPaper = (id: number) => {
     withCredentials: true
   })
 }
+
+// 获取所有试卷选项
+export const getExamPaperOptions = () => {
+  return httpInstance({
+    url:'/exam_paper/option/',
+    method: "GET",
+    headers: {
+      "content-type": "application/json",
+    },
+    withCredentials: true
+  })
+}

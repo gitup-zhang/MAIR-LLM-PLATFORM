@@ -76,3 +76,15 @@ export const modifyClass = (id: number, form: object) => {
     withCredentials: true,
   });
 };
+
+// 获取所有班级选项
+export const getClassOptions = () => {
+  return httpInstance({
+    url: "/class/option/",
+    method: "GET",
+    headers: {
+      "content-type": "application/json",
+    },
+    withCredentials: true,
+  });
+};

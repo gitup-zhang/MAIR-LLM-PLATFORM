@@ -1,11 +1,12 @@
 <script setup lang="ts">
 import { onMounted, reactive } from 'vue';
 import { ElMessage } from 'element-plus';
-import { Document, Files, Filter, Warning, Check, CollectionTag } from '@element-plus/icons-vue'
-import { getExamInfoList } from '@/apis/exam'
-import { getExamPaperList, createExamPaper, getExamPaperDetail, modifyExamPaper, deleteExamPaper } from '@/apis/examPaper'
-import { getExamQuestionList, getExamQuestionDetail, createQuestion, getQuestionRelation, getQuestionOptions, createQuestionRelation, deleteQuestionRelation } from '@/apis/examQuestion'
-import { getExamResultList } from '@/apis/examResult'
+import { Document, Files, Filter, Warning, Check, CollectionTag } from '@element-plus/icons-vue';
+import { getClassOptions } from '@/apis/class';
+import { getExamInfoList, createExam, deleteExam, getExamDetail } from '@/apis/exam';
+import { getExamPaperList, createExamPaper, getExamPaperDetail, modifyExamPaper, deleteExamPaper, getExamPaperOptions } from '@/apis/examPaper';
+import { getExamQuestionList, getExamQuestionDetail, createQuestion, getQuestionRelation, getQuestionOptions, createQuestionRelation, deleteQuestionRelation } from '@/apis/examQuestion';
+import { getExamResultList } from '@/apis/examResult';
 
 const data = reactive({
   activeName: 'first',
@@ -55,6 +56,21 @@ const data = reactive({
     title: "",
     total_score: 0
   },
+  examForm: {
+    class_id: 0,
+    class_name: '',
+    create_time: 0,
+    desc: '',
+    end_time: '',
+    exam_paper_id: 0,
+    exam_paper_title: '',
+    id: 0,
+    modify_time: 0,
+    start_time: '',
+    status: 0,
+    type: 0,
+    type_desc: ''
+  },
   // 新表单
   newQuestionForm: {
     content: '',
@@ -75,6 +91,15 @@ const data = reactive({
     desc: '',
     total_score: ''
   },
+  newExamForm: {
+    desc: '',
+    class_id: undefined,
+    exam_paper_id: undefined,
+    type: 2,
+    time_range: ['', ''],
+    start_time: '',
+    end_time: ''
+  },
   // 模态框
   questionDetailModalVisible: false,
   createQuestionModalVisible: false,
@@ -82,6 +107,8 @@ const data = reactive({
   modifyExamPaperModalVisible: false,
   addExamQuestionModalVisible: false,
   checkExamPaperDetailModalVisible: false,
+  createExamModalVisible: false,
+  checkExamDetailModalVisible: false,
   // 类型
   typeOptions: [
     {
@@ -105,6 +132,8 @@ const data = reactive({
       label: '判断题'
     }],
   questionOptions: [],
+  classOptions: [],
+  examPaperOptions: [],
   page: 1,
   count: 10,
   total: 0
@@ -354,6 +383,73 @@ const submitQuestionCreate = async (status: number) => {
   searchExamQuestion();
 }
 
+// 打开创建考试模态框
+const openCreateExamModal = async () => {
+  data.createExamModalVisible = true;
+  let res = await getClassOptions();
+  data.classOptions = res.data;
+  res = await getExamPaperOptions();
+  data.examPaperOptions = res.data;
+}
+// 提交考试创建
+const submitExamCreate = async () => {
+  data.newExamForm.start_time = data.newExamForm.time_range[0];
+  data.newExamForm.end_time = data.newExamForm.time_range[1]; 
+  const res = await createExam(data.newExamForm);
+  if(res.status === 0){
+    ElMessage({
+      message: '考试创建成功',
+      type: 'success',
+      plain: true,
+    })
+  } else {
+    ElMessage({
+      message: '考试创建失败',
+      type: 'warning',
+      plain: true,
+    })
+  }
+  data.createExamModalVisible = false;
+  searchExam();
+}
+// 删除考试
+const removeExam = async (id: number) => {
+  const res = await deleteExam(id);
+  if(res.status === 0){
+    ElMessage({
+      message: '考试删除成功',
+      type: 'success',
+      plain: true,
+    })
+  } else {
+    ElMessage({
+      message: '考试删除失败',
+      type: 'warning',
+      plain: true,
+    })
+  }
+  searchExam();
+}
+// 查看考试详情
+const checkExamDetail = async (id: number) => {
+  data.checkExamDetailModalVisible = true;
+  const res = await getExamDetail(id);
+  data.examForm.class_id = res.data.class_id;
+  data.examForm.class_name = res.data.class_name;
+  data.examForm.create_time = res.data.create_time;
+  data.examForm.desc = res.data.desc;
+  data.examForm.end_time = res.data.end_time;
+  data.examForm.exam_paper_id = res.data.exam_paper_id;
+  data.examForm.exam_paper_title = res.data.exam_paper_title;
+  data.examForm.id = res.data.id;
+  data.examForm.modify_time = res.data.modify_time;
+  data.examForm.start_time = res.data.start_time;
+  data.examForm.status = res.data.status;
+  data.examForm.type = res.data.type;
+  data.examForm.type_desc = res.data.type_desc;
+}
+
+
 // 搜索考试结果
 const searchExamResult = async () => {
   const res = await getExamResultList(data.inputExamResultId, data.inputExamResultStuId, data.page, data.count);
@@ -439,6 +535,7 @@ onMounted(() => {
             <!-- 搜索 -->
             <el-input v-model="data.inputExam" class="mr-3 w-[30vw] h-[2rem]" placeholder="请输入考试名称" />
             <el-button type="primary" class="mr-3 h-[2rem]" @click="searchExam()">搜索</el-button>
+            <el-button type="primary" class="mr-3 h-[2rem]" @click="openCreateExamModal()">创建新的考试</el-button>
           </div>
         </div>
         <!-- 所有考试信息展示 -->
@@ -456,8 +553,8 @@ onMounted(() => {
             </el-table-column>
             <el-table-column fixed="right" label="操作">
               <template v-slot="scope">
-                <el-button link type="primary" size="small" @click="modityCollegeDetail(scope.row.id)">查看详情</el-button>
-                <el-button v-if="scope.row.status===1" link type="primary" size="small" @click="removeExam(scope.row)">取消</el-button>
+                <el-button link type="primary" size="small" @click="checkExamDetail(scope.row.id)">查看详情</el-button>
+                <el-button v-if="scope.row.status===1" link type="primary" size="small" @click="removeExam(scope.row.id)">取消</el-button>
               </template>
             </el-table-column>
           </el-table>
@@ -830,6 +927,90 @@ onMounted(() => {
         </div>
     </div>
   </el-dialog>
+
+  <!-- 创建新的考试 -->
+  <el-dialog v-model="data.createExamModalVisible" title="创建考试" width="600">
+    <div class="exam-dialog">
+      <el-form :model="data.newExamForm" class="w-[30rem]">
+        <!-- 考试描述 -->
+        <el-form-item>
+          <el-input v-model="data.newExamForm.desc" placeholder="请输入考试描述">
+            <!-- 图标 -->
+            <template #prefix>
+              <el-icon color="#409efc" class="no-inherit">
+                <Document />
+              </el-icon>
+            </template>
+          </el-input>
+        </el-form-item>
+        <!-- 考试班级 -->
+        <el-form-item>
+          <el-select v-model="data.newExamForm.class_id" placeholder="请选择考试班级" class="w-[30rem]">
+            <!-- 图标 -->
+            <template #prefix>
+              <el-icon color="#409efc" class="no-inherit">
+                <Filter />
+              </el-icon>
+            </template>
+            <el-option
+              v-for="item in data.classOptions"
+              :key="item.value"
+              :label="item.label"
+              :value="item.value"
+            />
+          </el-select>
+        </el-form-item>
+        <!-- 试卷 -->
+        <el-form-item>
+          <el-select v-model="data.newExamForm.exam_paper_id" placeholder="请选择试卷" class="w-[30rem]">
+            <!-- 图标 -->
+            <template #prefix>
+              <el-icon color="#409efc" class="no-inherit">
+                <Files />
+              </el-icon>
+            </template>
+            <el-option
+              v-for="item in data.examPaperOptions"
+              :key="item.value"
+              :label="item.label"
+              :value="item.value"
+            />
+          </el-select>
+        </el-form-item>
+        <!-- 起止时间 -->
+        <el-form-item>
+          <el-date-picker
+            v-model="data.newExamForm.time_range"
+            type="daterange"
+            range-separator="至"
+            start-placeholder="开始日期"
+            end-placeholder="结束日期"
+            value-format="YYYY-MM-DD HH:mm:ss"
+          />
+        </el-form-item>
+        <el-form-item>
+          <el-button class="w-[30rem]" type="primary" @click="submitExamCreate()">创建新的考试</el-button>
+        </el-form-item>
+      </el-form>
+    </div>
+  </el-dialog>
+  <!-- 查看考试详情 -->
+  <el-dialog v-model="data.checkExamDetailModalVisible" title="考试详情" width="600">
+    <div class="exam-dialog">
+      <el-descriptions
+        class="exam-description"
+        direction="vertical"
+        :column="2"
+        border
+      >
+        <el-descriptions-item label="描述" :span="2">{{ data.examForm.desc }}</el-descriptions-item>
+        <el-descriptions-item label="考试班级" :span="2">{{ data.examForm.class_name }}</el-descriptions-item>
+        <el-descriptions-item label="试卷" :span="1">{{ data.examForm.exam_paper_title }}</el-descriptions-item>
+        <el-descriptions-item label="类型" :span="1">{{ data.examForm.type_desc }}</el-descriptions-item>
+        <el-descriptions-item label="起止时间" :span="2">{{ data.examForm.start_time + '--' + data.examForm.end_time }}</el-descriptions-item>
+      </el-descriptions>
+    </div>
+  </el-dialog>
 </template>
 
 <style scoped>
@@ -872,5 +1053,8 @@ onMounted(() => {
 }
 .exampaper-dialog {
   @apply flex flex-col;
+}
+.exam-description {
+  width: 100%;
 }
 </style>

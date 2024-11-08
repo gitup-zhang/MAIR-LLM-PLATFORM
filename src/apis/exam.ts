@@ -64,3 +64,40 @@ export const getExamInfoList = (searchText: string, page: number, count: number)
     withCredentials: true
   })
 }
+
+// 创建考试
+export const createExam = (form: object) => {
+  return httpInstance({
+    url:'/exam/',
+    method: "POST",
+    data: JSON.stringify(form),
+    headers: {
+      "content-type": "application/json",
+    },
+    withCredentials: true
+  })
+}
+
+// 取消考试
+export const deleteExam = (id: number) => {
+  return httpInstance({
+    url:'/exam/' + id + '/',
+    method: "DELETE",
+    headers: {
+      "content-type": "application/json",
+    },
+    withCredentials: true
+  })
+}
+
+// 获取考试详情
+export const getExamDetail = (id: number) => {
+  return httpInstance({
+    url:'/exam/' + id + '/',
+    method: "GET",
+    headers: {
+      "content-type": "application/json",
+    },
+    withCredentials: true
+  })
+}

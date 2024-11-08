@@ -50,7 +50,6 @@ const data = reactive({
 // 搜索章节
 const searchChapter = async () => {
   const res = await getChapterList(data.inputChapter, data.page, data.count);
-  console.log(res);
   data.chapterList = res.data.list;
 }
 // 打开章节创建模态框

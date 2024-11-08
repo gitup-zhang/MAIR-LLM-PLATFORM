@@ -41,3 +41,62 @@ export const createQuestion = (status: number, form: object) => {
     withCredentials: true
   })
 }
+
+// 搜索试题相关信息
+export const getQuestionRelation = (id: number, searchText: string, page: number, count: number) => {
+  return httpInstance({
+    url: '/exam_question_relation/',
+    method: "GET",
+    params: {
+      exam_paper_id: id,
+      title: searchText,
+      page: page,
+      count: count
+    },
+    headers: {
+      "content-type": "application/json",
+    },
+    withCredentials: true
+  })
+}
+
+// 向试卷添加试题
+export const createQuestionRelation = (examPaperId: number, questionId: number, score: number) => {
+  return httpInstance({
+    url: '/exam_question_relation/',
+    method: "POST",
+    data: {
+      exam_paper_id: examPaperId,
+      question_id: questionId,
+      score: score
+    },
+    headers: {
+      "content-type": "application/json",
+    },
+    withCredentials: true
+  })
+}
+
+// 搜索所有试题选项
+export const getQuestionOptions = () => {
+  return httpInstance({
+    url: '/question/option/',
+    method: "GET",
+    headers: {
+      "content-type": "application/json",
+    },
+    withCredentials: true
+  })
+}
+
+// 向试卷移除试题
+export const deleteQuestionRelation = (id: number) => {
+  return httpInstance({
+    url: '/exam_question_relation/' + id + '/',
+    method: "DELETE",
+    headers: {
+      "content-type": "application/json",
+    },
+    withCredentials: true
+  })
+}

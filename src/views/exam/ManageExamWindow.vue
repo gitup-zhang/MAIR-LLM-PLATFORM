@@ -1,25 +1,33 @@
 <script setup lang="ts">
 import { onMounted, reactive } from 'vue';
 import { ElMessage } from 'element-plus';
-import { Document, Files, Filter, Warning, Check } from '@element-plus/icons-vue'
+import { Document, Files, Filter, Warning, Check, CollectionTag } from '@element-plus/icons-vue'
 import { getExamInfoList } from '@/apis/exam'
-import { getExamPaperList } from '@/apis/examPaper'
-import { getExamQuestionList, getExamQuestionDetail, createQuestion } from '@/apis/examQuestion'
+import { getExamPaperList, createExamPaper, getExamPaperDetail, modifyExamPaper, deleteExamPaper } from '@/apis/examPaper'
+import { getExamQuestionList, getExamQuestionDetail, createQuestion, getQuestionRelation, getQuestionOptions, createQuestionRelation, deleteQuestionRelation } from '@/apis/examQuestion'
 import { getExamResultList } from '@/apis/examResult'
 
 const data = reactive({
   activeName: 'first',
+  // 数据项
+  currentQuestionId: undefined || 0,
+  currentQuestionScore: 0,
+  currentExamPaperId: 0,
   // 输入
   inputExamQuestion: '',
   inputExam: '',
   inputExamPaper: '',
   inputExamResultId: '',
   inputExamResultStuId: '',
+  inputSearchExamQuestion: '',
+  inputSearchCurrentExamPaperQuestion: '',
   // 列表
   examList: [],
   examPaperList: [],
   examQuestionList: [],
   examResultList: [],
+  currentExamPaperQuestion: [],
+  currentExamPaperQuestionList: [],
   // 表单
   questionForm: {
     answer_limit: '',
@@ -36,6 +44,17 @@ const data = reactive({
     type: 0,
     type_desc: '',
   },
+  examPaperForm: {
+    create_time: 0,
+    creator_id: 0,
+    current_score: 0,
+    desc: "",
+    id: 0,
+    modify_time: 0,
+    status: 0,
+    title: "",
+    total_score: 0
+  },
   // 新表单
   newQuestionForm: {
     content: '',
@@ -46,9 +65,23 @@ const data = reactive({
     status: 3,
     answer_words_limit: 50
   },
+  newExamPaperForm: {
+    title: '',
+    desc: '',
+    total_score: 0
+  },
+  examPaperShowForm: {
+    title: '',
+    desc: '',
+    total_score: ''
+  },
   // 模态框
   questionDetailModalVisible: false,
   createQuestionModalVisible: false,
+  createExamPaperModalVisible: false,
+  modifyExamPaperModalVisible: false,
+  addExamQuestionModalVisible: false,
+  checkExamPaperDetailModalVisible: false,
   // 类型
   typeOptions: [
     {
@@ -71,6 +104,7 @@ const data = reactive({
       value: 5,
       label: '判断题'
     }],
+  questionOptions: [],
   page: 1,
   count: 10,
   total: 0
@@ -81,12 +115,180 @@ const searchExam = async () => {
   const res = await getExamInfoList(data.inputExam, data.page, data.count);
   data.examList = res.data.list;
 }
+
 // 搜索试卷
 const searchExamPaper = async () => {
   const res = await getExamPaperList(data.inputExamPaper, data.page, data.count);
   data.examPaperList = res.data.list;
 }
-
+// 删除试卷
+const removeExamPaper = async (id: number) => {
+  const res = await deleteExamPaper(id);
+  if(res.status === 0){
+    ElMessage({
+      message: '试卷删除成功',
+      type: 'success',
+      plain: true,
+    })
+  } else {
+    ElMessage({
+      message: '试卷删除失败',
+      type: 'warning',
+      plain: true,
+    })
+  }
+  searchExamPaper();
+}
+// 提交试卷创建
+const submitExamPaperCreate = async () => {
+  const res = await createExamPaper(data.newExamPaperForm);
+  if(res.status === 0){
+    ElMessage({
+      message: '新试卷创建成功',
+      type: 'success',
+      plain: true,
+    })
+  } else {
+    ElMessage({
+      message: '新试卷创建失败',
+      type: 'warning',
+      plain: true,
+    })
+  }
+  data.createExamPaperModalVisible = false;
+  searchExamPaper();
+}
+// 打开试卷修改模态框
+const openModifyExamPaperModal = async (id: number) => {
+  data.modifyExamPaperModalVisible = true;
+  const res = await getExamPaperDetail(id);
+  data.examPaperForm.create_time = res.data.create_time;
+  data.examPaperForm.creator_id = res.data.creator_id;
+  data.examPaperForm.current_score = res.data.current_score;
+  data.examPaperForm.desc = res.data.desc;
+  data.examPaperForm.id = res.data.id;
+  data.examPaperForm.modify_time = res.data.modify_time;
+  data.examPaperForm.status = res.data.status;
+  data.examPaperForm.title = res.data.title;
+  data.examPaperForm.total_score = res.data.total_score;
+}
+// 提交试卷修改并发布
+const submitExamPaperModify = async (stauts: number) => {
+  data.examPaperForm.status = stauts;
+  const res = await modifyExamPaper(data.examPaperForm.id, data.examPaperForm);
+  if(res.status === 0){
+    ElMessage({
+      message: '试卷修改成功',
+      type: 'success',
+      plain: true,
+    })
+  } else {
+    ElMessage({
+      message: '试卷修改失败',
+      type: 'warning',
+      plain: true,
+    })
+  }
+  data.modifyExamPaperModalVisible = false;
+  searchExamPaper();
+}
+// 保存试卷修改
+const saveExamPaperModify = async (stauts: number) => {
+  data.examPaperForm.status = stauts;
+  const res = await modifyExamPaper(data.examPaperForm.id, data.examPaperForm);
+  if(res.status === 0){
+    ElMessage({
+      message: '试卷保存成功',
+      type: 'success',
+      plain: true,
+    })
+  } else {
+    ElMessage({
+      message: '试卷保存失败',
+      type: 'warning',
+      plain: true,
+    })
+  }
+  data.modifyExamPaperModalVisible = false;
+  searchExamPaper();
+}
+// 打开添加试题模态框
+const openAddExamQuestionModal = async () => {
+  data.addExamQuestionModalVisible = true;
+  searchAddExamQuestion();
+}
+// 搜索当前试卷相关试题
+const searchCurrentExamQuestion = async () => {
+  const res = await getQuestionRelation(data.currentExamPaperId, data.inputSearchCurrentExamPaperQuestion, data.page, data.count);
+  data.currentExamPaperQuestionList = res.data.list;
+} 
+// 查看试题详情
+const checkExamPaperDetail = async (id: number) => {
+  data.currentExamPaperId = id;
+  data.checkExamPaperDetailModalVisible = true;
+  const res = await getExamPaperDetail(id);
+  data.examPaperShowForm.title = res.data.title;
+  data.examPaperShowForm.desc = res.data.desc;
+  data.examPaperShowForm.total_score = res.data.total_score;
+  searchCurrentExamQuestion();
+}
+// 搜索试题内容
+const searchAddExamQuestion = async () => {
+  const res = await getQuestionRelation(data.examPaperForm.id, data.inputSearchExamQuestion, data.page, data.count);
+  const options = await getQuestionOptions();
+  data.currentExamPaperQuestion = res.data.list;
+  data.questionOptions = options.data;
+}
+// 添加试题
+const addExamQuestion = async () => {
+  if (data.currentQuestionId === 0 || data.currentQuestionId === undefined) {
+    ElMessage({
+      message: '请选择试题',
+      type: 'warning',
+      plain: true
+    })
+  } else if (data.currentQuestionScore === 0 || data.currentQuestionScore === undefined) {
+    ElMessage({
+      message: '试题分数不能为零',
+      type: 'warning',
+      plain: true
+    })
+  } else {
+    const res = await createQuestionRelation(data.examPaperForm.id, data.currentQuestionId, data.currentQuestionScore);
+    if(res.status === 0){
+      ElMessage({
+        message: '试题添加成功',
+        type: 'success',
+        plain: true,
+      })
+    } else {
+      ElMessage({
+        message: '试题添加失败',
+        type: 'warning',
+        plain: true,
+      })
+    }
+    searchAddExamQuestion();
+  }
+}
+// 删除已选择的试题
+const removeExamPaperQuestion = async (id: number) => {
+  const res = await deleteQuestionRelation(id);
+  if(res.status === 0){
+      ElMessage({
+        message: '试题删除成功',
+        type: 'success',
+        plain: true,
+      })
+    } else {
+      ElMessage({
+        message: '试题删除失败',
+        type: 'warning',
+        plain: true,
+      })
+    }
+  searchAddExamQuestion();
+}
 
 // 搜索试题
 const searchExamQuestion = async () => {
@@ -149,7 +351,7 @@ const submitQuestionCreate = async (status: number) => {
     })
   }
   data.createQuestionModalVisible = false;
-  searchExamPaper();
+  searchExamQuestion();
 }
 
 // 搜索考试结果
@@ -199,7 +401,6 @@ onMounted(() => {
           <el-pagination background layout="prev, pager, next" :total="1" class="mt-4 mx-auto" />
         </div>
       </el-tab-pane>
-
       <el-tab-pane label="试卷管理" name="second">
         <div class="search-box">
           <div class="search-title">试卷管理</div>
@@ -207,6 +408,7 @@ onMounted(() => {
             <!-- 搜索 -->
             <el-input v-model="data.inputExamPaper" class="mr-3 w-[30vw] h-[2rem]" placeholder="请输入试卷标题" />
             <el-button type="primary" class="mr-3 h-[2rem]" @click="searchExamPaper()">搜索</el-button>
+            <el-button type="primary" class="mr-3 h-[2rem]" @click="data.createExamPaperModalVisible = true">创建新试卷</el-button>
           </div>
         </div>
         <!-- 所有试卷信息展示 -->
@@ -220,9 +422,9 @@ onMounted(() => {
             <el-table-column prop="total_score" label="总分"/>
             <el-table-column fixed="right" label="操作">
               <template v-slot="scope">
-                <el-button v-if="scope.row.status===3" link type="primary" size="small" @click="">修改</el-button>
-                <el-button v-if="scope.row.status===3" link type="primary" size="small" @click="">删除</el-button>
-                <el-button v-else-if="scope.row.status===1" link type="primary" size="small" @click="">查看详情</el-button>
+                <el-button v-if="scope.row.status===3" link type="primary" size="small" @click="openModifyExamPaperModal(scope.row.id)">修改</el-button>
+                <el-button v-if="scope.row.status===3" link type="primary" size="small" @click="removeExamPaper(scope.row.id)">删除</el-button>
+                <el-button v-else-if="scope.row.status===1" link type="primary" size="small" @click="checkExamPaperDetail(scope.row.id)">查看详情</el-button>
               </template>
             </el-table-column>
           </el-table>
@@ -230,7 +432,6 @@ onMounted(() => {
           <el-pagination background layout="prev, pager, next" :total="1" class="mt-4 mx-auto" />
         </div>
       </el-tab-pane>
-
       <el-tab-pane label="考试管理" name="third">
         <div class="search-box">
           <div class="search-title">考试管理</div>
@@ -264,7 +465,6 @@ onMounted(() => {
           <el-pagination background layout="prev, pager, next" :total="1" class="mt-4 mx-auto" />
         </div>
       </el-tab-pane>
-
       <el-tab-pane label="考试结果" name="Fourth">
         <div class="search-box">
           <div class="search-title">考试结果</div>
@@ -299,8 +499,7 @@ onMounted(() => {
           <el-pagination background layout="prev, pager, next" :total="1" class="mt-4 mx-auto" />
         </div>
       </el-tab-pane>
-  </el-tabs>
-
+    </el-tabs>
   </div>
 
 
@@ -320,7 +519,6 @@ onMounted(() => {
       </el-descriptions>
     </div>
   </el-dialog>
-  
   <!-- 创建试题框 -->
   <el-dialog v-model="data.createQuestionModalVisible" title="创建新试题" width="600">
     <div class="exam-dialog">
@@ -454,6 +652,184 @@ onMounted(() => {
       </el-form>
     </div>
   </el-dialog>
+  <!-- 创建新试卷 -->
+  <el-dialog v-model="data.createExamPaperModalVisible" title="创建新试卷" width="600">
+    <div class="exam-dialog">
+      <el-form :model="data.newExamPaperForm" class="w-[30rem]">
+        <!-- 标题 -->
+        <el-form-item>
+          <el-input v-model="data.newExamPaperForm.title" placeholder="请输入试卷标题">
+            <!-- 图标 -->
+            <template #prefix>
+              <el-icon color="#409efc" class="no-inherit">
+                <Document />
+              </el-icon>
+            </template>
+          </el-input>
+        </el-form-item>
+        <!-- 描述 -->
+        <el-form-item>
+          <el-input v-model="data.newExamPaperForm.desc" placeholder="请输入试卷描述">
+            <!-- 图标 -->
+            <template #prefix>
+              <el-icon color="#409efc" class="no-inherit">
+                <Files />
+              </el-icon>
+            </template>
+          </el-input>
+        </el-form-item>
+        <!-- 总分 -->
+        <el-form-item>
+          <el-input v-model="data.newExamPaperForm.total_score" placeholder="请输入试卷总分">
+            <!-- 图标 -->
+            <template #prefix>
+              <el-icon color="#409efc" class="no-inherit">
+                <CollectionTag />
+              </el-icon>
+            </template>
+          </el-input>
+        </el-form-item>
+        <!-- 创建新试卷 -->
+        <el-form-item>
+          <el-button class="w-[30rem]" type="primary" @click="submitExamPaperCreate()">创建新试卷</el-button>
+        </el-form-item>
+      </el-form>
+    </div>
+  </el-dialog>
+  <!-- 修改试卷 -->
+  <el-dialog v-model="data.modifyExamPaperModalVisible" title="修改试卷" width="600">
+    <div class="exam-dialog">
+      <el-form :model="data.examPaperForm" class="w-[30rem]">
+        <!-- 标题 -->
+        <el-form-item>
+          <el-input v-model="data.examPaperForm.title" placeholder="请输入试卷标题">
+            <!-- 图标 -->
+            <template #prefix>
+              <el-icon color="#409efc" class="no-inherit">
+                <Document />
+              </el-icon>
+            </template>
+          </el-input>
+        </el-form-item>
+        <!-- 描述 -->
+        <el-form-item>
+          <el-input v-model="data.examPaperForm.desc" placeholder="请输入试卷描述">
+            <!-- 图标 -->
+            <template #prefix>
+              <el-icon color="#409efc" class="no-inherit">
+                <Files />
+              </el-icon>
+            </template>
+          </el-input>
+        </el-form-item>
+        <!-- 总分 -->
+        <el-form-item>
+          <el-input v-model="data.examPaperForm.total_score" placeholder="请输入预设试卷总分">
+            <!-- 图标 -->
+            <template #prefix>
+              <el-icon color="#409efc" class="no-inherit">
+                <CollectionTag />
+              </el-icon>
+            </template>
+          </el-input>
+        </el-form-item>
+        <!-- 当前总分 -->
+        <el-form-item>
+          <el-input v-model="data.examPaperForm.current_score" placeholder="当前总分" disabled>
+            <!-- 图标 -->
+            <template #prefix>
+              <el-icon color="#409efc" class="no-inherit">
+                <CollectionTag />
+              </el-icon>
+            </template>
+          </el-input>
+        </el-form-item>
+        <el-form-item>
+          <el-button class="w-[30rem]" type="primary" @click="openAddExamQuestionModal()">添加试题</el-button>
+        </el-form-item>
+        <!-- 提交试卷修改 -->
+        <el-form-item>
+          <el-tooltip class="item" effect="dark" content="发布后不可再进行修改" placement="top">
+            <el-button class="w-[30rem]" type="primary" @click="submitExamPaperModify(1)">修改试卷并发布</el-button>
+          </el-tooltip>
+        </el-form-item>
+        <el-form-item>
+          <el-tooltip class="item" effect="dark" content="保存后可进行修改" placement="top">
+            <el-button class="w-[30rem]" type="primary" @click="saveExamPaperModify(3)">保存试卷</el-button>
+          </el-tooltip>
+        </el-form-item>
+      </el-form>
+    </div>
+  </el-dialog>
+  <!-- 向试卷添加新试题 -->
+  <el-dialog v-model="data.addExamQuestionModalVisible" title="添加试题" width="1000">
+    <div class="exampaper-dialog">
+      <div class="select-exam">
+        <!-- 搜索 -->
+        <el-input v-model="data.inputSearchExamQuestion" class="mr-3 w-[25vw] h-[2rem]" placeholder="请输入试题内容" />
+        <el-button type="primary" class="mr-3 h-[2rem]" @click="searchAddExamQuestion()">搜索</el-button>
+        <el-select v-model="data.currentQuestionId" placeholder="请选择试题" style="width: 240px">
+          <el-option
+            v-for="item in data.questionOptions"
+            :key="item.value"
+            :label="item.label"
+            :value="item.value"
+            style="width: 540px"
+          />
+        </el-select>
+        <el-input-number v-model="data.currentQuestionScore" :min="0" label="试题占分" class="ml-3"/>
+        <el-button type="primary" class="ml-3 h-[2rem]" @click="addExamQuestion()">添加试题</el-button>
+      </div>
+      <!-- 与该试卷相关的试题信息展示 -->
+      <div class="show-list">
+        <el-table :data="data.currentExamPaperQuestion" border style="width: 100%">
+          <el-table-column prop="id" label="ID" width="100"/>
+            <el-table-column prop="content" label="内容"/>
+            <el-table-column prop="desc" label="描述"/>
+            <el-table-column prop="type_desc" label="类型" width="100"/>
+            <el-table-column prop="score" label="占分" width="100"/>
+            <el-table-column fixed="right" label="操作" width="200">
+              <template v-slot="scope">
+                <el-button link type="primary" size="small" @click="removeExamPaperQuestion(scope.row.id)">删除</el-button>
+              </template>
+            </el-table-column>
+          </el-table>
+          <!-- 分页 -->
+          <el-pagination background layout="prev, pager, next" :total="1" class="mt-4 mx-auto" />
+        </div>
+    </div>
+  </el-dialog>
+  <!-- 查看试卷详情 -->
+  <el-dialog v-model="data.checkExamPaperDetailModalVisible" title="试题详情" width="1000">
+    <div class="exampaper-dialog">
+      <el-descriptions
+        direction="vertical"
+        :column="2"
+        border
+      >
+        <el-descriptions-item label="标题" :span="2">{{ data.examPaperShowForm.title }}</el-descriptions-item>
+        <el-descriptions-item label="描述" :span="1">{{ data.examPaperShowForm.desc }}</el-descriptions-item>
+        <el-descriptions-item label="总分" :span="1">{{ data.examPaperShowForm.total_score }}</el-descriptions-item>
+      </el-descriptions>
+      <div class="select-exam">
+        <!-- 搜索 -->
+        <el-input v-model="data.inputSearchCurrentExamPaperQuestion" class="mr-3 w-[30vw] h-[2rem] mt-3" placeholder="请输入试题内容" />
+        <el-button type="primary" class="mr-3 h-[2rem] mt-3" @click="searchCurrentExamQuestion()">搜索</el-button>
+      </div>
+      <!-- 与该试卷相关的试题信息展示 -->
+      <div class="show-list">
+        <el-table :data="data.currentExamPaperQuestionList" border style="width: 100%">
+          <el-table-column prop="id" label="ID" width="100"/>
+            <el-table-column prop="content" label="内容"/>
+            <el-table-column prop="desc" label="描述"/>
+            <el-table-column prop="type_desc" label="类型" width="100"/>
+            <el-table-column prop="score" label="占分" width="100"/>
+          </el-table>
+          <!-- 分页 -->
+          <el-pagination background layout="prev, pager, next" :total="1" class="mt-4 mx-auto" />
+        </div>
+    </div>
+  </el-dialog>
 </template>
 
 <style scoped>
@@ -484,10 +860,17 @@ onMounted(() => {
   @apply text-2xl italic font-semibold text-light-50;
 }
 .show-list {
+  width: 100%;
   @apply flex flex-col mt-4 mr-2;
 }
 /* 模态框 */
 .exam-dialog {
   @apply flex items-center justify-center flex-col;
+}
+.select-exam {
+  @apply flex flex-row justify-start items-start;
+}
+.exampaper-dialog {
+  @apply flex flex-col;
 }
 </style>

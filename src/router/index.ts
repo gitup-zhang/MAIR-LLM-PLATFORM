@@ -4,6 +4,8 @@ import Window from '@/views/Window.vue'
 import Me from '@/views/Me.vue'
 import TeacherMe from '@/views/TeacherMe.vue'
 import AdminMe from '@/views/AdminMe.vue'
+// 班级
+import AdminClass from '@/views/class/AdminClass.vue'
 // 课程
 import Course from '@/views/course/index.vue'
 import TeacherCourse from '@/views/course/TeacherCourse.vue'
@@ -127,7 +129,12 @@ const router = createRouter({
           path: '/manageExamWindow',          
           name: 'manageExamWindow',
           component: ManageExamWindow
-        }
+        },
+        {
+          path: '/adminClass',          
+          name: 'adminClass',
+          component: AdminClass
+        },
       ]
     }
   ]

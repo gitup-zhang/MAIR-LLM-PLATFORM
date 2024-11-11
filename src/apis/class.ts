@@ -88,3 +88,55 @@ export const getClassOptions = () => {
     withCredentials: true,
   });
 };
+
+// 获取报名的班级列表
+export const getClassList = (page: number, count: number) => {
+  return httpInstance({
+    url: "/class/",
+    method: "GET",
+    params: {
+      type: 'study',
+      page: page,
+      count: count
+    },
+    headers: {
+      "content-type": "application/json",
+    },
+    withCredentials: true,
+  });
+};
+
+// 获取报名的班级列表
+export const getManagedClassList = (searchText: string, page: number, count: number) => {
+  return httpInstance({
+    url: "/class/",
+    method: "GET",
+    params: {
+      name: searchText,
+      type: 'teach',
+      page: page,
+      count: count
+    },
+    headers: {
+      "content-type": "application/json",
+    },
+    withCredentials: true,
+  });
+};
+
+// 获取授课的班级列表
+export const getTeachedClassList = (page: number, count: number) => {
+  return httpInstance({
+    url: "/class/",
+    method: "GET",
+    params: {
+      type: 'teach',
+      page: page,
+      count: count
+    },
+    headers: {
+      "content-type": "application/json",
+    },
+    withCredentials: true,
+  });
+};

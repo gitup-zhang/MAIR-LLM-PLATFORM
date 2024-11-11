@@ -448,8 +448,6 @@ const checkExamDetail = async (id: number) => {
   data.examForm.type = res.data.type;
   data.examForm.type_desc = res.data.type_desc;
 }
-
-
 // 搜索考试结果
 const searchExamResult = async () => {
   const res = await getExamResultList(data.inputExamResultId, data.inputExamResultStuId, data.page, data.count);
@@ -588,7 +586,7 @@ onMounted(() => {
             </el-table-column>
             <el-table-column fixed="right" label="操作">
               <template v-slot="scope">
-                <el-button v-if="scope.row.status === 3" link type="primary" size="small" @click="">查看试卷</el-button>
+                <el-button v-if="scope.row.status === 3" link type="primary" size="small" @click="checkExamPaperDetail()">查看试卷</el-button>
               </template>
             </el-table-column>
           </el-table>

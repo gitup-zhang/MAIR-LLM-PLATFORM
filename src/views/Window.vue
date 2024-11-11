@@ -1,6 +1,5 @@
 <script setup lang="ts">
 import { useRouter, RouterView, RouterLink } from "vue-router"
-import { DataAnalysis, User } from '@element-plus/icons-vue'
 import { reactive, toRefs } from "vue";
 
 // 引入模态框组件
@@ -52,21 +51,9 @@ const quit = () => {
         </RouterLink>
 
         <!-- 课程信息 教师 -->
-        <RouterLink v-if="data.userType === '2'" class="sider-nav-icon" to="/teacherCourse">
+        <RouterLink v-if="data.userType === '2'" class="sider-nav-icon" to="/adminClass">
           <icon-book  size="33" strokeWidth="3" class="mt-2"/>
           <div class="icon-text">课程</div>
-        </RouterLink>
-
-        <!-- 课程信息 教师 -->
-        <RouterLink v-if="data.userType === '2'" class="sider-nav-icon" to="/manageCourse">
-          <icon-bar-chart  size="33" strokeWidth="3" class="mt-2"/>
-          <div class="icon-text">授课</div>
-        </RouterLink>
-
-        <!-- 课程信息 教师 -->
-        <RouterLink v-if="data.userType === '2'" class="sider-nav-icon" to="/experiment">
-          <icon-desktop  size="33" strokeWidth="3" class="mt-2"/>
-          <div class="icon-text">镜像</div>
         </RouterLink>
 
         <!-- 实验平台 学生 -->
@@ -79,6 +66,12 @@ const quit = () => {
         <RouterLink v-if="data.userType === '3'" class="sider-nav-icon" to="/adminMe">
           <icon-user  size="33" strokeWidth="3" class="mt-2"/>
           <div class="icon-text">我的</div>
+        </RouterLink>
+
+        <!-- 个人信息 教务 -->
+        <RouterLink v-if="data.userType === '3'" class="sider-nav-icon" to="/adminClass">
+          <icon-home  size="33" strokeWidth="3" class="mt-2"/>
+          <div class="icon-text">班级</div>
         </RouterLink>
 
         <!-- 用户管理 教务 -->
@@ -110,15 +103,6 @@ const quit = () => {
           <icon-experiment size="33" strokeWidth="3" class="mt-2"/>
           <div class="icon-text">实验</div>
         </RouterLink>
-
-
-        <!-- 设置 -->
-        <Setting v-if="data.userType === '1'">
-          <template #default>
-            <icon-settings  size="33" strokeWidth="3" class="mt-2"/>
-            <div class="icon-text">设置</div>
-          </template>
-        </Setting>
 
         <!-- 与大模型对话 -->
         <ChatMain v-if="data.userType === '1'">

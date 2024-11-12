@@ -1,7 +1,8 @@
 <script setup lang="ts">
 import { onMounted, reactive } from 'vue';
 import { ElMessage } from 'element-plus';
-import { getImageList, getImageInfo } from '@/apis/image'
+import { Document, Edit, Filter } from '@element-plus/icons-vue'
+import { getImageList, getImageInfo, createImage, buildImage, deleteImage, getImageDetail } from '@/apis/image'
 import { getContainerList, stopContainer, startContainer, deleteContainer } from '@/apis/container';
 
 const data = reactive({
@@ -16,16 +17,19 @@ const data = reactive({
     name: ''
   },
   myImageList: [],
-  imageList: [],
+  imageList: [] as any,
   containerList: [],
   // 新表单
   newImageForm: {
-    image_id: 0,
+    image_id: 0 || '',
     desc: '',
     container_id: '',
     name: ''
   },
+  // 容器地址
+  containerAddr: '',
   // 模态框
+  modifyImageModalVisible: false,
   createImageModalVisible: false,
   // 选项
   imageOptions: [],
@@ -39,36 +43,134 @@ const searchImage = async () => {
   const res = await getImageList(data.inputImage, data.page, data.count);
   data.imageList = res.data.list;
 }
-// 打开创建镜像模态框
-const openImageCreateModal = async () => {
+
+// 获取镜像相关信息
+const getImageData = async () => {
+  var tmp = {} as any;
+  if (sessionStorage.image_id === '-1') {
+    const res = await getImageInfo();
+    data.imageList = res.data.normal_image_list;
+    data.newImageForm.image_id = data.imageList[0]['id'];
+  } else if (sessionStorage.image_name !== sessionStorage.flag_name) {
+    tmp = {}
+    tmp['name'] = sessionStorage.image_name;
+    tmp['id'] = sessionStorage.image_id;
+    data.imageList.push(tmp);
+    data.newImageForm.desc = sessionStorage.desc;
+    data.newImageForm.container_id = 'modify';
+    data.newImageForm.image_id = 'modify';
+    data.newImageForm.name = sessionStorage.flag_name;
+    data.containerAddr = 'modify';
+  }
+  data.newImageForm.image_id = data.imageList[0]['id'];
+}
+// 添加镜像
+const addImage = (index: number) => {
+  if(index === -1){
+    sessionStorage.image_id = index;
+  } else {
+    sessionStorage.image_id = data.imageList[index]['id'];
+    sessionStorage.image_name = data.imageList[index]['name'];
+  }
+  getImageData();
+  // 打开创建镜像模态框
   data.createImageModalVisible = true;
-  sessionStorage.image_id = -1;
+}
+// 修改镜像
+const updateImage = (index: number) => {
+  sessionStorage.desc = data.imageList[index]['desc'];
+  sessionStorage.flag_name = data.imageList[index]['name'];
+  if(index === -1){
+    sessionStorage.image_id = index;
+  } else {
+    sessionStorage.image_id = data.imageList[index]['id'];
+    sessionStorage.image_name = data.imageList[index]['name']
+  }
+  data.modifyImageModalVisible = true;
+}
+// 删除镜像
+const removeImage = async (index: number) => {
+  const res = await deleteImage(data.imageList[index]['id'] as number, data.imageList[index]['image_tag'] as string);
+  if(res.status === 0){
+    ElMessage({
+      message: '镜像删除成功',
+      type: 'success',
+      plain: true,
+    })
+  } else {
+    ElMessage({
+      message: '镜像删除失败',
+      type: 'warning',
+      plain: true,
+    })
+  }
+  searchImage();
 }
 // 创建镜像
 const submitImageCreate = async () => {
-  
-}
-
-const getData = async () => {
-  var tmp = {
-    'name': '',
-    'id': ''
-  };
-  if(sessionStorage.image_id === '-1') {
-    const res = await getImageInfo();
-    data.myImageList = res.data.base_image_list;
-    data.imageInfo.image_id = data.myImageList[0]['id'];
-
-  } else if (sessionStorage.image_name !== sessionStorage.flag_name) {
-    tmp = {
-      'name': '',
-    'id': ''
-    }
-    tmp['name'] = sessionStorage.image_name;
-    tmp['id'] = sessionStorage.image_id;
-    data.imageList.push(tmp)
+  const res = await createImage(data.newImageForm.image_id);
+  if(res.status === 0){
+    ElMessage({
+      message: '镜像创建成功',
+      type: 'success',
+      plain: true,
+    })
+    data.newImageForm.container_id = res.data.container_id
+    data.containerAddr = res.data.addr
+    window.open(data.containerAddr)
+  } else {
+    ElMessage({
+      message: '镜像创建失败',
+      type: 'warning',
+      plain: true,
+    })
   }
 }
+// 保存镜像
+const saveImageCreate = async () => {
+  if(data.containerAddr === ''){
+    ElMessage({
+      message: '请设置镜像',
+      type: 'warning',
+      plain: true,
+    })
+  } else {
+    const res = await buildImage(data.newImageForm.container_id, data.newImageForm.desc, data.newImageForm.name, data.newImageForm.image_id);
+    if(res.status === 0){
+      ElMessage({
+        message: '镜像创建成功',
+        type: 'success',
+        plain: true,
+      })
+      data.createImageModalVisible = false;
+    } else {
+      ElMessage({
+        message: '镜像创建失败',
+        type: 'warning',
+        plain: true,
+      })
+    }
+  }
+}
+// 查看镜像
+const checkImageDetail = async (index: number) => {
+  const res = await getImageDetail(data.imageList[index]['id']);
+  if(res.status === 0){
+    ElMessage({
+      message: '正在跳转到容器内',
+      type: 'success',
+      plain: true,
+    })
+    window.open(res.data.addr);
+  } else {
+    ElMessage({
+      message: '查看镜像失败',
+      type: 'warning',
+      plain: true,
+    })
+  }
+}
+
 
 // 搜索容器
 const searchContainer = async () => {
@@ -133,14 +235,12 @@ const removeContainer = async (id: number) => {
 // 进入容器
 const enterContainer = async (address: string) => {
   window.open(address)
-} 
+}
 
 onMounted(() => {
   // 挂载数据
   searchImage();
   searchContainer();
-  // 初始化数据
-  getData();
 })
 </script>
 
@@ -154,7 +254,7 @@ onMounted(() => {
             <!-- 搜索 -->
             <el-input v-model="data.inputImage" class="mr-3 w-[30vw] h-[2rem]" placeholder="请输入镜像名称" />
             <el-button type="primary" class="mr-3 h-[2rem]" @click="searchImage()">搜索</el-button>
-            <el-button type="primary" class="mr-3 h-[2rem]" @click="openImageCreateModal()">创建普通镜像</el-button>
+            <el-button type="primary" class="mr-3 h-[2rem]" @click="addImage(-1)">创建新镜像</el-button>
           </div>
         </div>
         <!-- 所有镜像信息展示 -->
@@ -166,10 +266,10 @@ onMounted(() => {
             <el-table-column prop="type_name" label="镜像类型"/>
             <el-table-column fixed="right" label="操作">
               <template v-slot="scope">
-                <el-button link type="primary" size="small" @click="">查看镜像</el-button>
-                <el-button link type="primary" size="small" @click="">创建镜像</el-button>
-                <el-button v-if="scope.row.type === 1" link type="primary" size="small" @click="">修改镜像</el-button>
-                <el-button v-if="scope.row.type === 2" link type="primary" size="small" @click="">删除镜像</el-button>
+                <el-button link type="primary" size="small" @click="checkImageDetail(scope.$index)">查看镜像</el-button>
+                <el-button link type="primary" size="small" @click="addImage(scope.$index)">创建镜像</el-button>
+                <el-button v-if="scope.row.type === 1" link type="primary" size="small" @click="updateImage(scope.$index)">修改镜像</el-button>
+                <el-button v-if="scope.row.type === 2" link type="primary" size="small" @click="removeImage(scope.$index)">删除镜像</el-button>
               </template>
             </el-table-column>
           </el-table>
@@ -177,7 +277,6 @@ onMounted(() => {
           <el-pagination background layout="prev, pager, next" :total="1" class="mt-4 mx-auto" />
         </div>
       </el-tab-pane>
-
       <el-tab-pane label="容器管理" name="second">
         <div class="search-box">
           <div class="search-title">容器管理</div>
@@ -210,13 +309,13 @@ onMounted(() => {
           <el-pagination background layout="prev, pager, next" :total="1" class="mt-4 mx-auto" />
         </div>
       </el-tab-pane>
-  </el-tabs>
+    </el-tabs>
 
   </div>
 
-  <!-- 创建镜像框 -->
-  <el-dialog v-model="data.createImageModalVisible" title="创建镜像" width="600">
-    <div class="image-dialog">
+    <!-- 创建镜像框 -->
+    <el-dialog v-model="data.createImageModalVisible" title="创建镜像" width="600">
+    <div class="admin-class-dialog">
       <el-form :model="data.newImageForm" class="w-[30rem]">
         <!-- 选择源镜像 -->
         <el-form-item>
@@ -228,12 +327,16 @@ onMounted(() => {
               </el-icon>
             </template>
             <el-option
-              v-for="item in data.typeOptions"
-              :key="item.value"
-              :label="item.label"
-              :value="item.value"
+              v-for="(item, index) in data.imageList"
+              :key="index"
+              :label="item['name']"
+              :value="item['id']"
             />
           </el-select>
+        </el-form-item>
+        <!-- 创建镜像 -->
+        <el-form-item>
+          <el-button class="w-[30rem]" type="primary" @click="submitImageCreate()">创建镜像</el-button>
         </el-form-item>
         <!-- 镜像名称 -->
         <el-form-item>
@@ -252,13 +355,66 @@ onMounted(() => {
             <!-- 图标 -->
             <template #prefix>
               <el-icon color="#409efc" class="no-inherit">
-                <Document />
+                <Edit />
               </el-icon>
             </template>
           </el-input>
         </el-form-item>
         <el-form-item>
-          <el-button class="w-[30rem]" type="primary" @click="submitImageCreate()">创建新镜像</el-button>
+          <el-button class="w-[30rem]" type="primary" @click="saveImageCreate()">保存镜像</el-button>
+        </el-form-item>
+      </el-form>
+    </div>
+  </el-dialog>
+  <!-- 修改镜像框 -->
+  <el-dialog v-model="data.modifyImageModalVisible" title="修改镜像" width="600">
+    <div class="admin-class-dialog">
+      <el-form :model="data.newImageForm" class="w-[30rem]">
+        <!-- 选择源镜像 -->
+        <el-form-item>
+          <el-select v-model="data.newImageForm.image_id" placeholder="请选择源镜像" class="w-[30rem]">
+            <!-- 图标 -->
+            <template #prefix>
+              <el-icon color="#409efc" class="no-inherit">
+                <Filter />
+              </el-icon>
+            </template>
+            <el-option
+              v-for="(item, index) in data.imageList"
+              :key="index"
+              :label="item['name']"
+              :value="item['id']"
+            />
+          </el-select>
+        </el-form-item>
+        <!-- 创建镜像 -->
+        <el-form-item>
+          <el-button class="w-[30rem]" type="primary" @click="submitImageCreate()">创建镜像</el-button>
+        </el-form-item>
+        <!-- 镜像名称 -->
+        <el-form-item>
+          <el-input v-model="data.newImageForm.name" placeholder="请输入镜像名称">
+            <!-- 图标 -->
+            <template #prefix>
+              <el-icon color="#409efc" class="no-inherit">
+                <Document />
+              </el-icon>
+            </template>
+          </el-input>
+        </el-form-item>
+        <!-- 镜像描述 -->
+        <el-form-item>
+          <el-input v-model="data.newImageForm.desc" placeholder="请输入镜像描述">
+            <!-- 图标 -->
+            <template #prefix>
+              <el-icon color="#409efc" class="no-inherit">
+                <Edit />
+              </el-icon>
+            </template>
+          </el-input>
+        </el-form-item>
+        <el-form-item>
+          <el-button class="w-[30rem]" type="primary" @click="saveImageCreate()">保存镜像</el-button>
         </el-form-item>
       </el-form>
     </div>

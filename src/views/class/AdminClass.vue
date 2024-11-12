@@ -1,10 +1,12 @@
 <script setup lang="ts">
 // 教师课程页
-import { onMounted, reactive, ref } from "vue"
+import { onMounted, reactive } from "vue"
+import { ElMessage } from 'element-plus';
+import { Document, Edit, Filter } from '@element-plus/icons-vue'
 import { getCourseDetailInfo } from '@/apis/experiment'
 import { getCourseList, getCourseApplyRecord, deleteCourseApply } from '@/apis/course'
 import { getClassList, getManagedClassList, getTeachedClassList } from '@/apis/class'
-import { getImageInfo } from '@/apis/image'
+import { getImageInfo, deleteImage, createImage, buildImage } from '@/apis/image'
 import { useUserStore } from '@/stores/user'
 import { useRouter } from "vue-router"
 
@@ -21,7 +23,7 @@ const data = reactive({
   courseList: [],
   experimentList: [],
   teachExperimentList: [],
-  imageList: [],
+  imageList: [] as any,
   // 课程内部的详细列表
   subcourseList: [],
   // 当前选中的班级信息
@@ -32,13 +34,25 @@ const data = reactive({
   managedClassList: [],
   // 班级申请记录
   courseApplyList: [],
+  // 新表单
+  newImageForm: {
+    image_id: 0 || '',
+    desc: '',
+    container_id: '',
+    name: ''
+  },
+  // 容器地址
+  containerAddr: '',
+  // 分页相关
   page: 1,
   count: 10,
   total: 0,
   courseDetailVisible: false,
   courseApplyDetailVisible: false,
   classNotificationVisible: false,
-  experimentDetailVisible: false
+  experimentDetailVisible: false,
+  createImageModalVisible: false,
+  modifyImageModalVisible: false
 })
 
 // 搜索申请的班级
@@ -114,7 +128,6 @@ const openStuReport = (courseId: number, subcourseId: number) => {
 // 搜索授课实验信息
 const searchTeachedExperiment = async () => {
   const res = await getTeachedClassList(data.page, data.count);
-  console.log('teach:', res)
   data.teachExperimentList = res.data.list;
 }
 
@@ -128,26 +141,117 @@ const openClassNotificationModal = (id: number) => {
 // 搜索镜像
 const searchImage = async () => {
   const res = await getImageInfo();
-  console.log(res);
   data.imageList = res.data.normal_image_list;
   data.total = res.data.total;
 }
-
-// 打开镜像创建模态框
-const openImageCreateModal = async () => {
-
+// 获取镜像相关信息
+const getImageData = async () => {
+  var tmp = {} as any;
+  if (sessionStorage.image_id === '-1') {
+    const res = await getImageInfo();
+    data.imageList = res.data.normal_image_list;
+    data.newImageForm.image_id = data.imageList[0]['id'];
+  } else if (sessionStorage.image_name !== sessionStorage.flag_name) {
+    tmp = {}
+    tmp['name'] = sessionStorage.image_name;
+    tmp['id'] = sessionStorage.image_id;
+    data.imageList.push(tmp);
+    data.newImageForm.desc = sessionStorage.desc;
+    data.newImageForm.container_id = 'modify';
+    data.newImageForm.image_id = 'modify';
+    data.newImageForm.name = sessionStorage.flag_name;
+    data.containerAddr = 'modify';
+  }
+  data.newImageForm.image_id = data.imageList[0]['id'];
 }
-
 // 添加镜像
 const addImage = (index: number) => {
   if(index === -1){
     sessionStorage.image_id = index;
   } else {
     sessionStorage.image_id = data.imageList[index]['id'];
+    sessionStorage.image_name = data.imageList[index]['name'];
+  }
+  getImageData();
+  // 打开创建镜像模态框
+  data.createImageModalVisible = true;
+}
+// 修改镜像
+const updateImage = (index: number) => {
+  sessionStorage.desc = data.imageList[index]['desc'];
+  sessionStorage.flag_name = data.imageList[index]['name'];
+  if(index === -1){
+    sessionStorage.image_id = index;
+  } else {
+    sessionStorage.image_id = data.imageList[index]['id'];
     sessionStorage.image_name = data.imageList[index]['name']
   }
+  data.modifyImageModalVisible = true;
 }
-
+// 删除镜像
+const removeImage = async (index: number) => {
+  const res = await deleteImage(data.imageList[index]['id'] as number, data.imageList[index]['image_tag'] as string);
+  if(res.status === 0){
+    ElMessage({
+      message: '镜像删除成功',
+      type: 'success',
+      plain: true,
+    })
+  } else {
+    ElMessage({
+      message: '镜像删除失败',
+      type: 'warning',
+      plain: true,
+    })
+  }
+  searchImage();
+}
+// 创建镜像
+const submitImageCreate = async () => {
+  const res = await createImage(data.newImageForm.image_id);
+  if(res.status === 0){
+    ElMessage({
+      message: '镜像创建成功',
+      type: 'success',
+      plain: true,
+    })
+    data.newImageForm.container_id = res.data.container_id
+    data.containerAddr = res.data.addr
+    window.open(data.containerAddr)
+  } else {
+    ElMessage({
+      message: '镜像创建失败',
+      type: 'warning',
+      plain: true,
+    })
+  }
+}
+// 保存镜像
+const saveImageCreate = async () => {
+  if(data.containerAddr === ''){
+    ElMessage({
+      message: '请设置镜像',
+      type: 'warning',
+      plain: true,
+    })
+  } else {
+    const res = await buildImage(data.newImageForm.container_id, data.newImageForm.desc, data.newImageForm.name, data.newImageForm.image_id);
+    if(res.status === 0){
+      ElMessage({
+        message: '镜像创建成功',
+        type: 'success',
+        plain: true,
+      })
+      data.createImageModalVisible = false;
+    } else {
+      ElMessage({
+        message: '镜像创建失败',
+        type: 'warning',
+        plain: true,
+      })
+    }
+  }
+}
 
 onMounted(() => {
   // 初始化
@@ -157,6 +261,20 @@ onMounted(() => {
   searchTeachedExperiment();
   searchImage();
 })
+
+// 测试数据
+// let test_image_data = reactive([
+//   {
+//     id: 1,
+//     name: '测试1',
+//     desc: '描述1'
+//   },
+//   {
+//     id: 2,
+//     name: '测试2',
+//     desc: '描述2'
+//   },
+// ])
 </script>
 
 <template>
@@ -305,7 +423,7 @@ onMounted(() => {
             <!-- 搜索 -->
             <el-input v-model="data.inputImage" class="mr-3 w-[30vw] h-[2rem]" placeholder="请输入镜像名称" />
             <el-button type="primary" class="mr-3 h-[2rem]" @click="searchImage()">搜索</el-button>
-            <el-button type="primary" class="mr-3 h-[2rem]" @click="openImageCreateModal()">创建普通镜像</el-button>
+            <el-button type="primary" class="mr-3 h-[2rem]" @click="addImage(-1)">创建新镜像</el-button>
           </div>
         </div>
         <!-- 所有镜像信息展示 -->
@@ -317,8 +435,8 @@ onMounted(() => {
             <el-table-column fixed="right" label="操作">
               <template v-slot="scope">
                 <el-button link type="primary" size="small" @click="addImage(scope.$index)">添加镜像</el-button>
-                <el-button v-if="scope.row.is_used == 0" link type="primary" size="small" @click="">修改镜像</el-button>
-                <el-button v-if="scope.row.is_used == 0" link type="primary" size="small" @click="">删除镜像</el-button>
+                <el-button v-if="scope.row.is_used == 0" link type="primary" size="small" @click="updateImage(scope.$index)">修改镜像</el-button>
+                <el-button v-if="scope.row.is_used == 0" link type="primary" size="small" @click="removeImage(scope.$index)">删除镜像</el-button>
               </template>
             </el-table-column>
           </el-table>
@@ -379,7 +497,6 @@ onMounted(() => {
           </el-table-column>
         </el-table>
   </el-dialog>
-
   <!-- 实验详情框 -->
   <el-dialog v-model="data.experimentDetailVisible" title="实验详情" class="experimentDetailModal">
     <!-- 章节列表 -->
@@ -393,13 +510,119 @@ onMounted(() => {
         <el-table-column fixed="right" label="操作" min-width="60">
           <template v-slot="scope">
             <el-button link type="primary" size="small" @click="openExperiment()">进入实验</el-button>
-            <el-button link type="primary" size="small">课堂交流</el-button>
             <el-button link type="primary" size="small" @click="openStuReport(data.currentExperimentId, scope.row.id)">学习报告</el-button>
           </template>
         </el-table-column>
       </el-table>
     </div>
   </el-dialog>
+  <!-- 创建镜像框 -->
+  <el-dialog v-model="data.createImageModalVisible" title="创建镜像" width="600">
+    <div class="admin-class-dialog">
+      <el-form :model="data.newImageForm" class="w-[30rem]">
+        <!-- 选择源镜像 -->
+        <el-form-item>
+          <el-select v-model="data.newImageForm.image_id" placeholder="请选择源镜像" class="w-[30rem]">
+            <!-- 图标 -->
+            <template #prefix>
+              <el-icon color="#409efc" class="no-inherit">
+                <Filter />
+              </el-icon>
+            </template>
+            <el-option
+              v-for="(item, index) in data.imageList"
+              :key="index"
+              :label="item['name']"
+              :value="item['id']"
+            />
+          </el-select>
+        </el-form-item>
+        <!-- 创建镜像 -->
+        <el-form-item>
+          <el-button class="w-[30rem]" type="primary" @click="submitImageCreate()">创建镜像</el-button>
+        </el-form-item>
+        <!-- 镜像名称 -->
+        <el-form-item>
+          <el-input v-model="data.newImageForm.name" placeholder="请输入镜像名称">
+            <!-- 图标 -->
+            <template #prefix>
+              <el-icon color="#409efc" class="no-inherit">
+                <Document />
+              </el-icon>
+            </template>
+          </el-input>
+        </el-form-item>
+        <!-- 镜像描述 -->
+        <el-form-item>
+          <el-input v-model="data.newImageForm.desc" placeholder="请输入镜像描述">
+            <!-- 图标 -->
+            <template #prefix>
+              <el-icon color="#409efc" class="no-inherit">
+                <Edit />
+              </el-icon>
+            </template>
+          </el-input>
+        </el-form-item>
+        <el-form-item>
+          <el-button class="w-[30rem]" type="primary" @click="saveImageCreate()">保存镜像</el-button>
+        </el-form-item>
+      </el-form>
+    </div>
+  </el-dialog>
+  <!-- 修改镜像框 -->
+  <el-dialog v-model="data.modifyImageModalVisible" title="修改镜像" width="600">
+    <div class="admin-class-dialog">
+      <el-form :model="data.newImageForm" class="w-[30rem]">
+        <!-- 选择源镜像 -->
+        <el-form-item>
+          <el-select v-model="data.newImageForm.image_id" placeholder="请选择源镜像" class="w-[30rem]">
+            <!-- 图标 -->
+            <template #prefix>
+              <el-icon color="#409efc" class="no-inherit">
+                <Filter />
+              </el-icon>
+            </template>
+            <el-option
+              v-for="(item, index) in data.imageList"
+              :key="index"
+              :label="item['name']"
+              :value="item['id']"
+            />
+          </el-select>
+        </el-form-item>
+        <!-- 创建镜像 -->
+        <el-form-item>
+          <el-button class="w-[30rem]" type="primary" @click="submitImageCreate()">创建镜像</el-button>
+        </el-form-item>
+        <!-- 镜像名称 -->
+        <el-form-item>
+          <el-input v-model="data.newImageForm.name" placeholder="请输入镜像名称">
+            <!-- 图标 -->
+            <template #prefix>
+              <el-icon color="#409efc" class="no-inherit">
+                <Document />
+              </el-icon>
+            </template>
+          </el-input>
+        </el-form-item>
+        <!-- 镜像描述 -->
+        <el-form-item>
+          <el-input v-model="data.newImageForm.desc" placeholder="请输入镜像描述">
+            <!-- 图标 -->
+            <template #prefix>
+              <el-icon color="#409efc" class="no-inherit">
+                <Edit />
+              </el-icon>
+            </template>
+          </el-input>
+        </el-form-item>
+        <el-form-item>
+          <el-button class="w-[30rem]" type="primary" @click="saveImageCreate()">保存镜像</el-button>
+        </el-form-item>
+      </el-form>
+    </div>
+  </el-dialog>
+
 
   <!-- 班级通知框 -->
   <el-dialog v-model="data.classNotificationVisible" title="班级通知" class="experimentDetailModal">
@@ -481,5 +704,10 @@ onMounted(() => {
 }
 .notification-header {
   @apply mb-2;
+}
+
+/* 模态框 */
+.admin-class-dialog {
+  @apply flex items-center justify-center flex-col;
 }
 </style>

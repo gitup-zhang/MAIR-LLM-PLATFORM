@@ -12,7 +12,8 @@ const router = useRouter();
 const data = reactive({
   aboutUsVisible : false,
   settingVisible : false,
-  userType: sessionStorage.userType
+  // userType: sessionStorage.userType
+  userType: '3'
 })
 const { aboutUsVisible, settingVisible } = toRefs(data)
 

@@ -12,8 +12,8 @@ const router = useRouter();
 const data = reactive({
   aboutUsVisible : false,
   settingVisible : false,
-  // userType: sessionStorage.userType
-  userType: '3'
+  userType: sessionStorage.userType
+  // userType: '1'
 })
 const { aboutUsVisible, settingVisible } = toRefs(data)
 
@@ -45,6 +45,12 @@ const quit = () => {
           <div class="icon-text">课程</div>
         </RouterLink>
 
+        <!-- 实验平台 学生 -->
+        <RouterLink v-if="data.userType === '1'" class="sider-nav-icon" to="/experiment">
+          <icon-experiment  size="33" strokeWidth="3" class="mt-2"/>
+          <div class="icon-text">实验</div>
+        </RouterLink>
+
         <!-- 个人信息 教师 -->
         <RouterLink v-if="data.userType === '2'" class="sider-nav-icon" to="/teacherMe">
           <icon-user  size="33" strokeWidth="3" class="mt-2"/>
@@ -57,11 +63,7 @@ const quit = () => {
           <div class="icon-text">课程</div>
         </RouterLink>
 
-        <!-- 实验平台 学生 -->
-        <RouterLink v-if="data.userType === '1'" class="sider-nav-icon" to="/experiment">
-          <icon-experiment  size="33" strokeWidth="3" class="mt-2"/>
-          <div class="icon-text">实验</div>
-        </RouterLink>
+
 
         <!-- 个人信息 教务 -->
         <RouterLink v-if="data.userType === '3'" class="sider-nav-icon" to="/adminMe">

@@ -3,7 +3,8 @@ import { ref } from 'vue'
 import StudyExperiment from '@/components/experiment/StudyExperiment.vue'
 import TeachExperiment from '@/components/experiment/teacher/TeachExperiment.vue';
 
-const userType = ref(sessionStorage.userType);
+// const userType = ref(sessionStorage.userType);
+const userType = '1';
 </script>
 
 <template>

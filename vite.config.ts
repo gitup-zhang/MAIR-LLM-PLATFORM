@@ -21,7 +21,7 @@ export default defineConfig({
     open: true,
     proxy: {
       '/system': {
-        target: 'http://8.142.78.0:30027/olexp_server',
+        target: 'http://8.155.19.142:30027/olexp_server',
         changeOrigin: false,
         rewrite: (path) => path.replace(/^\/system/, '')
       }

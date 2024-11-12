@@ -1,17 +1,24 @@
 <script setup lang="ts">
-import { onMounted, reactive, ref } from 'vue'
-import { getClassList, getCourseDetailInfo } from '@/apis/experiment'
-import ExperimentDetail from '@/components/modal/ExperimentDetail.vue'
-import { useSystemStore } from '@/stores/system'
-import { useRouter, RouterView, RouterLink } from "vue-router"
+import { onMounted, reactive, ref } from 'vue';
+import { useRouter } from "vue-router";
+import { getClassList, getCourseDetailInfo } from '@/apis/experiment';
+import { getNotificationList } from '@/apis/notification';
+
 
 const router = useRouter();
 const data = reactive({
   // 当前实验 ID
   currentExperimentId: -1,
+  // 输入
+  inputNotification: '',
+  // 列表
+  notificationList: [],
   courseList: [],
   // 课程内部的详细列表
   subcourseList: [],
+  // 模态框
+  experimentDetailModalVisible: false,
+  classNotificationModalVisible: false,
   page: 1,
   count: 6,
   total: 0
@@ -22,23 +29,20 @@ const getCourseList = async () => {
   const res = await getClassList('study', data.page, data.count);
   data.courseList = res.data.list;
 }
-
 // 获取课程详情
 const getCourseDetail = async (courseId:number, page:number, count:number) => {
   const res = await getCourseDetailInfo(courseId, page, count);
   data.subcourseList = res.data.list;
 }
-
 // 进入课程
 const openExperimentDetailModal = (courseId: number) => {
   data.currentExperimentId = courseId;
-  systemStore.experimentDetailVisible = true;
+  data.experimentDetailModalVisible = true;
   getCourseDetail(courseId, 1, 10);
 }
-
 // 进入学生课程报告页面
 const openStuReport = (courseId: number, subcourseId: number) => {
-  systemStore.experimentDetailVisible = false
+  data.experimentDetailVisible = false
   router.push({
     path: "/stuCourseReport",
     query: {
@@ -48,27 +52,47 @@ const openStuReport = (courseId: number, subcourseId: number) => {
   })
 }
 
-// 进入课程
-const openClassNotificationModal = () => {
-  
-  
+// 搜索班级通知
+const searchNotification = async (classId: number) => {
+  const res = await getNotificationList(classId, data.inputNotification, data.page, data.count);
+  data.notificationList = res.data.list;
+  data.total = res.data.total;
 }
-
-
-
-
+// 打开班级通知列表
+const openClassNotificationModal = (id: number) => {
+  data.classNotificationModalVisible = true;
+  data.currentExperimentId = id;
+  searchNotification(id);
+}
 // 进入实验
 const openExperiment = () => {
-  systemStore.experimentDetailVisible = false
+  data.experimentDetailModalVisible = false
   router.push("/experimentConduct")
 }
 
+const classList = ref(
+  [
+    {
+      id: 1,
+      name: '测试1',
+      student_num: 10,
+      files_info: [
+        {
+          name: '文件1',
+        },
+        {
+          name: '文件2'
+        }
+      ]
+    },
+    {
+      id: 2,
+      name: '测试2',
+      student_num: 20,
+    },
+  ]
+)
 
-
-const systemStore = useSystemStore()
-const classList = ref([])
-const page = 1;
-const count = 6;
 
 const testInput = ref('')
 
@@ -109,7 +133,14 @@ const notificationData = [
   {
     id: '1',
     content: '测试',
-    file: '无',
+    files_info: [
+        {
+          name: '文件1',
+        },
+        {
+          name: '文件2'
+        }
+    ],
     time: '2024-09-20 10:19:54'
   }
 ]
@@ -122,7 +153,7 @@ onMounted(() => {
 <template>
   <div class="course-page">
     <el-row>
-      <el-col :span="8" v-for="course in data.courseList" :key="course.id">
+      <el-col :span="8" v-for="course in classList" :key="course.id">
         <!-- 课程卡片 -->
         <el-card body-style="padding:0px" class="course-card">
           <!-- 配图 -->
@@ -139,7 +170,7 @@ onMounted(() => {
   </div>
 
   <!-- 实验详情框 -->
-  <el-dialog v-model="systemStore.experimentDetailVisible" title="实验详情" class="experimentDetailModal">
+  <el-dialog v-model="data.experimentDetailModalVisible" title="实验详情" class="experimentDetailModal">
     <!-- 章节列表 -->
     <div class="chapter-list">
       <el-table :data="data.subcourseList" stripe border style="width: 100%">
@@ -160,18 +191,24 @@ onMounted(() => {
   </el-dialog>
 
   <!-- 班级通知框 -->
-  <el-dialog v-model="systemStore.classNotificationVisible" title="班级通知" class="experimentDetailModal">
+  <el-dialog v-model="data.classNotificationModalVisible" title="班级通知" class="experimentDetailModal">
     <!-- 搜索框 -->
     <div class="notification-header">
-      <el-input v-model="testInput" style="width: 240px" class="mr-3" placeholder="请输入内容" />
-      <el-button type="primary" class="mr-3">搜索</el-button>
+      <el-input v-model="data.inputNotification" style="width: 240px" class="mr-3" placeholder="请输入通知标题" />
+      <el-button type="primary" class="mr-3" @click="searchNotification(data.currentExperimentId)">搜索</el-button>
     </div>
     <!-- 通知列表 -->
     <div class="notification-list">
       <el-table :data="notificationData" border style="width: 100%">
         <el-table-column prop="id" label="ID" width="60" />
         <el-table-column prop="content" label="通知内容"/>
-        <el-table-column prop="file" label="文件"/>
+        <el-table-column prop="file" label="文件">
+          <template v-slot="scope">
+            <template v-for="(file, index) in scope.row.files_info">
+              {{ file.name }} <br>
+            </template>
+          </template>
+        </el-table-column>
         <el-table-column prop="time" label="发布时间" />
       </el-table>
     </div>

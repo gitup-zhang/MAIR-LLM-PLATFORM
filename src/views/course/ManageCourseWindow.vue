@@ -63,8 +63,6 @@ const openChapterCreateModal = async () => {
 const submitChapterCreate = async () => {
 
 }
-
-
 // 搜索课程
 const searchCourse = async () => {
   const res = await getCourseInfoList(data.inputCourse, data.page, data.count);

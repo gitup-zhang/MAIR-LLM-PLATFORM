@@ -1,6 +1,6 @@
 import { httpInstance } from '@/utils/http-util'
 
-// 获取班级申请列表
+// 获取课程通知列表
 export const getNotificationList = (
   classId: number,
   searchText: string,
@@ -16,6 +16,31 @@ export const getNotificationList = (
       page: page,
       count: count
     },
+    headers: {
+      "content-type": "application/json",
+    },
+    withCredentials: true,
+  });
+};
+
+// 删除课程通知列表
+export const deleteNotification = (id: number) => {
+  return httpInstance({
+    url: "/announce/" + id + '/',
+    method: "DELETE",
+    headers: {
+      "content-type": "application/json",
+    },
+    withCredentials: true,
+  });
+};
+
+// 创建课程通知
+export const createNotification = (form: object) => {
+  return httpInstance({
+    url: "/announce/",
+    method: "DELETE",
+    data: JSON.stringify(form),
     headers: {
       "content-type": "application/json",
     },

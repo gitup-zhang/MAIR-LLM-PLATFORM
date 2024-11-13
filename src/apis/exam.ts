@@ -101,3 +101,18 @@ export const getExamDetail = (id: number) => {
     withCredentials: true
   })
 }
+
+// 获取ID值
+export const getUserExamId = (id: number) => {
+  return httpInstance({
+    url:'/user_exam/to/',
+    method: "GET",
+    params: {
+      exam_id: id
+    },
+    headers: {
+      "content-type": "application/json",
+    },
+    withCredentials: true
+  })
+}

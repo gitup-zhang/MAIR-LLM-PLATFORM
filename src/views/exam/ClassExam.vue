@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { onMounted, reactive } from 'vue';
 import { useRoute, useRouter } from 'vue-router'
-import { getExamList } from '@/apis/exam'
+import { getExamList, getUserExamId } from '@/apis/exam'
 import { useUserStore } from '@/stores/user'
 
 const route = useRoute();
@@ -23,7 +23,6 @@ const searchExam = async () => {
   data.examList = res.data.list;
   data.total = res.data.total;
 }
-
 // 考试结果
 const checkExamResult = (examDetail: any) => {
   router.push({
@@ -33,11 +32,74 @@ const checkExamResult = (examDetail: any) => {
     }
   })
 }
+// 查看试卷
+const checkExamDetail = async (id: number) => {
+  // const res = await getUserExamId(id);
+  router.push({
+    // path: '/examPaperDetail/',
+    path: '/examPaperDetail/' + 1 + '/',
+    query: {
+      type: 'student',
+      userExamId: res.data.user_exam_id
+    }
+  })
+}
+// 查看练习
+const checkPracticeDetail = async (id: number) => {
+    // const res = await getUserExamId(id);
+    router.push({
+    // path: '/examPaperDetail/',
+    path: '/examPaperDetail/' + 1 + '/',
+    query: {
+      type: 'student',
+      userExamId: res.data.user_exam_id
+    }
+  })
+}
+// 进入考试
+const enterExam = async (id: number) => {
+    // const res = await getUserExamId(id);
+    router.push({
+    // path: '/examPaperDetail/',
+    path: '/examPaperDetail/' + 1 + '/',
+    query: {
+      type: 'student',
+      userExamId: res.data.user_exam_id
+    }
+  })
+}
+// 进入练习
+const enterPractice = async (id: number) => {
+    // const res = await getUserExamId(id);
+    router.push({
+    // path: '/examPaperDetail/',
+    path: '/examPaperDetail/',
+    query: {
+      type: 'student',
+      userExamId: res.data.user_exam_id
+    }
+  })
+}
 
 onMounted(() => {
   // 挂载考试数据
   searchExam();
 })
+
+
+// 测试数据
+const examListTest = reactive([
+  {
+    id: 1,
+    desc: '测试1',
+    exam_paper_title: '试卷1',
+    type_desc: '类型1',
+    start_time: '20240809',
+    end_time: '20241209',
+    status: 3,
+    type: 2
+  }
+])
 
 </script>
 
@@ -53,10 +115,9 @@ onMounted(() => {
           <el-button type="primary" class="mr-3 h-[2rem]" @click="searchExam()">搜索</el-button>
         </div>
       </div>
-
       <!-- 所有考试安排信息展示 -->
       <div class="exam-list">
-        <el-table :data="data.examList" border style="width: 100%">
+        <el-table :data="examListTest" border style="width: 100%">
           <el-table-column prop="id" label="ID" width="50" />
           <el-table-column prop="desc" label="描述"/>
           <el-table-column prop="exam_paper_title" label="试卷"/>
@@ -70,12 +131,12 @@ onMounted(() => {
           <el-table-column fixed="right" label="操作" min-width="60">
             <template v-slot="scope">
               <template v-if="data.userType === 1 && scope.row.status === 3">
-                <el-button v-if="scope.row.type === 2" link type="primary" size="small" @click="">查看试卷</el-button>
-                <el-button v-if="scope.row.type === 1" link type="primary" size="small" @click="">查看练习</el-button>
+                <el-button v-if="scope.row.type === 2" link type="primary" size="small" @click="checkExamDetail(scope.row.id)">查看试卷</el-button>
+                <el-button v-if="scope.row.type === 1" link type="primary" size="small" @click="checkPracticeDetail(scope.row.id)">查看练习</el-button>
               </template>
               <template v-if="data.userType === 1 && scope.row.status === 4">
-                <el-button v-if="scope.row.type === 2" link type="primary" size="small" @click="">进入考试</el-button>
-                <el-button v-if="scope.row.type === 1" link type="primary" size="small" @click="">进入练习</el-button>
+                <el-button v-if="scope.row.type === 2" link type="primary" size="small" @click="enterExam(scope.row.id)">进入考试</el-button>
+                <el-button v-if="scope.row.type === 1" link type="primary" size="small" @click="enterPractice(scope.row.id)">进入练习</el-button>
               </template>
               <el-button v-if="data.userType === 3 || data.userType === 2" link type="primary" size="small" @click="checkExamResult(scope.row)">考试结果</el-button>
             </template>

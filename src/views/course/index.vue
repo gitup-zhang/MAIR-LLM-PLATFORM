@@ -8,6 +8,7 @@ const router = useRouter();
 const userStore = useUserStore();
 
 const data = reactive({
+  activeName: 'first',
   searchText: '',
   // 全部班级信息
   courseList: [],
@@ -41,20 +42,17 @@ const getCourseApplyDetail = async () => {
   const res = await getCourseApplyRecord(userStore.id, data.page, data.count);
   data.courseApplyList = res.data.list;
 }
-
 // 取消申请
 const removeCourseApply = async (applyId:number) => {
   const res = deleteCourseApply(applyId);
   // 刷新
   getCourseApplyDetail()
 }
-
 // 查看课程详情
 const getCourseDetail = (courseDetail: any) => {
   data.courseDetailVisible = true;
   data.currentCourseDetail = courseDetail;
 }
-
 // 获取考试详情
 const getExamDetail = (courseDetail: any) => {
   router.push({
@@ -73,6 +71,7 @@ onMounted(() => {
 })
 
 
+// 测试数据
 const course = ref('')
 const apply = ref('')
 const coursesType = [
@@ -107,150 +106,128 @@ const applyStatus = [
     label: '审核中',
   }
 ]
-
+const courseListTest = reactive([
+  {
+    id: 1,
+    name: '测试1',
+    course_name: '人工智能1',
+    teacher_name: '王小波',
+    capacity: 14,
+    end_time: '20240909',
+    college_name: '北京邮电大学',
+    not_apply_reason: '拒绝'
+  }
+])
+const enrolledClassListTest = reactive([
+  {
+    id: 1,
+    name: '测试1',
+    course_name: '人工智能1',
+    teacher_name: '王小波',
+    capacity: 14,
+    end_time: '20240909',
+    college_name: '北京邮电大学',
+    not_apply_reason: '拒绝'
+  }
+])
 </script>
 
 <template>
   <div class="course-page">
-    <img src="../../assets/img/banner.png" class="banner" alt="大模型实训平台">
-    <div class="course-main">
-
-      <!-- 课程搜索框 -->
-      <div class="select-course">
-        <!-- 搜索 -->
-        <el-input v-model="data.searchText" style="width: 240px" class="mr-3" placeholder="请输入课程名称" />
-        <el-button type="primary" class="mr-3" @click="searchCourse()">搜索</el-button>
-          <!-- 筛选课程类型 -->
-          <el-select
-            v-model="course"
-            clearable
-            placeholder="选择课程类型"
-            style="width: 140px"
-            class="mr-3"
-          >
-            <el-option
-              v-for="item in coursesType"
-              :key="item.value"
-              :label="item.label"
-              :value="item.value"
-            />
-          </el-select>
-          <!-- 筛选申请状态 -->
-          <el-select
-            v-model="apply"
-            clearable
-            placeholder="选择申请状态"
-            style="width: 140px"
-          >
-            <el-option
-              v-for="item in applyStatus"
-              :key="item.value"
-              :label="item.label"
-              :value="item.value"
-            />
-          </el-select>
-          <el-button type="primary" class="ml-3" @click="getCourseApplyDetail()">班级申请记录</el-button>
-      </div>
-
-      <!-- 所有班级列表展示 -->
-      <div class="course-list">
-        <el-table :data="data.courseList" border style="width: 100%">
-          <el-table-column prop="id" label="ID" width="50" />
-          <el-table-column prop="name" label="班级名"/>
-          <el-table-column prop="course_name" label="课程名"/>
-          <el-table-column prop="teacher_name" label="教师名"/>
-          <el-table-column prop="capacity" label="学生数量"/>
-          <el-table-column prop="end_time" label="截止时间"/>
-          <el-table-column prop="college_name" label="教学单位名"/>
-          <el-table-column prop="not_apply_reason" label="申请状态"/>
-          <!-- 右侧固定列 展示详情信息 -->
-          <el-table-column fixed="right" label="操作" min-width="60">
-            <template v-slot="scope">
-              <el-button link type="primary" size="small" @click="getCourseDetail(scope.row)">详情</el-button>
-            </template>
-          </el-table-column>
-        </el-table>
-        <!-- 分页 -->
-        <el-pagination background layout="prev, pager, next" :total="1" class="mt-4 mx-auto"/>
-      </div>
-
-      <el-divider />
-
-      <!-- 已报名班级列表 -->
-      <h3 class="heading">已报名班级</h3>
-      <div class="course-list">
-        <el-table :data="data.enrolledClassList" border style="width: 100%">
-          <el-table-column prop="id" label="ID" width="50" />
-          <el-table-column prop="name" label="班级名"/>
-          <el-table-column prop="course_name" label="课程名"/>
-          <el-table-column prop="teacher_name" label="教师名"/>
-          <el-table-column prop="capacity" label="学生数量"/>
-          <el-table-column prop="end_time" label="截止时间"/>
-          <!-- 右侧固定列 展示详情信息 -->
-          <el-table-column fixed="right" label="操作" min-width="60">
-            <template v-slot="scope">
-              <el-button link type="primary" size="small" @click="getCourseDetail(scope.row)">详情</el-button>
-              <el-button link type="primary" size="small" @click="getExamDetail(scope.row)">考试安排</el-button>
-            </template>
-          </el-table-column>
-        </el-table>
-        <!-- 分页 -->
-        <el-pagination background layout="prev, pager, next" :total="1" class="mt-4 mx-auto"/>
-      </div>
-
-    </div>
+    <el-tabs v-model="data.activeName" type="border-card" class="class-tabs" @tab-click="handleClick">
+      <el-tab-pane label="全部班级信息" name="first">
+        <img src="../../assets/img/banner.png" class="banner" alt="大模型实训平台">
+        <div class="course-main">
+          <!-- 课程搜索框 -->
+          <div class="select-course">
+          <!-- 搜索 -->
+            <el-input v-model="data.searchText" style="width: 240px" class="mr-3" placeholder="请输入课程名称" />
+            <el-button type="primary" class="mr-3" @click="searchCourse()">搜索</el-button>
+            <el-button type="primary" class="ml-3" @click="getCourseApplyDetail()">班级申请记录</el-button>
+          </div>
+          <!-- 所有班级列表展示 -->
+          <div class="course-list">
+            <el-table :data="data.courseList" border style="width: 100%">
+              <el-table-column prop="id" label="ID" width="50" />
+              <el-table-column prop="name" label="班级名"/>
+              <el-table-column prop="course_name" label="课程名"/>
+              <el-table-column prop="teacher_name" label="教师名"/>
+              <el-table-column prop="capacity" label="学生数量"/>
+              <el-table-column prop="end_time" label="截止时间"/>
+              <el-table-column prop="college_name" label="教学单位名"/>
+              <el-table-column prop="not_apply_reason" label="申请状态"/>
+              <!-- 右侧固定列 展示详情信息 -->
+              <el-table-column fixed="right" label="操作" min-width="60">
+                <template v-slot="scope">
+                  <el-button link type="primary" size="small" @click="getCourseDetail(scope.row)">详情</el-button>
+                </template>
+              </el-table-column>
+            </el-table>
+            <!-- 分页 -->
+            <el-pagination background layout="prev, pager, next" :total="1" class="mt-4 mx-auto"/>
+          </div>
+        </div>
+      </el-tab-pane>
+      <el-tab-pane label="已报名班级信息" name="second">
+        <img src="../../assets/img/banner.png" class="banner" alt="大模型实训平台">
+        <div class="course-main">
+          <!-- 班级列表 -->
+          <div class="course-list">
+            <el-table :data="enrolledClassListTest" border style="width: 100%">
+              <el-table-column prop="id" label="ID" width="50" />
+              <el-table-column prop="name" label="班级名"/>
+              <el-table-column prop="course_name" label="课程名"/>
+              <el-table-column prop="teacher_name" label="教师名"/>
+              <el-table-column prop="capacity" label="学生数量"/>
+              <el-table-column prop="end_time" label="截止时间"/>
+              <!-- 右侧固定列 展示详情信息 -->
+              <el-table-column fixed="right" label="操作" min-width="60">
+                <template v-slot="scope">
+                  <el-button link type="primary" size="small" @click="getCourseDetail(scope.row)">详情</el-button>
+                  <el-button link type="primary" size="small" @click="getExamDetail(scope.row)">考试安排</el-button>
+                </template>
+              </el-table-column>
+            </el-table>
+            <!-- 分页 -->
+            <el-pagination background layout="prev, pager, next" :total="1" class="mt-4 mx-auto"/>
+          </div>
+        </div>
+      </el-tab-pane>
+    </el-tabs>
   </div>
 
   <!-- 班级详情模态框 -->
-  <el-dialog v-model="data.courseDetailVisible" title="班级详细信息" width="600">
-    <div class="course-detail-dialog">
-      <el-form :model="data.currentCourseDetail" class="w-[40rem]">
-        <!-- 班级名 -->
-        <el-form-item label="班级名:">
-          <span>{{ data.currentCourseDetail.name }}</span>
-        </el-form-item>
-        <!-- 教师名 -->
-        <el-form-item label="教师名:">
-          <span>{{ data.currentCourseDetail.teacher_name }}</span>
-        </el-form-item>
-        <!-- 课程名: -->
-        <el-form-item label="课程名:">
-          <span>{{ data.currentCourseDetail.course_name }}</span>
-        </el-form-item>
-        <!-- 容量 -->
-        <el-form-item label="容量:">
-          <span>{{ data.currentCourseDetail.capacity }}</span>
-        </el-form-item>
-        <!-- 起止时间 -->
-        <el-form-item label="起止时间:">
-          <span>{{ data.currentCourseDetail.start_time + '--' + data.currentCourseDetail.end_time}}</span>
-        </el-form-item>
-        <!-- 描述 -->
-        <el-form-item label="描述:">
-          <span>{{ data.currentCourseDetail.desc }}</span>
-        </el-form-item>
-        <!-- 教学单位名 -->
-        <el-form-item label="教学单位名:">
-          <span>{{ data.currentCourseDetail.college_name }}</span>
-        </el-form-item>
-      </el-form>
-    </div>
+  <el-dialog v-model="data.courseDetailVisible" title="班级详细信息" width="600" center>
+    <el-descriptions
+    direction="vertical"
+    :column="4"
+    border
+    class="des-form"
+    >
+      <el-descriptions-item label="班级名" :span="2">{{ data.currentCourseDetail.name }}</el-descriptions-item>
+      <el-descriptions-item label="教师名" :span="2">{{ data.currentCourseDetail.teacher_name }}</el-descriptions-item>
+      <el-descriptions-item label="课程名" :span="2">{{ data.currentCourseDetail.course_name }}</el-descriptions-item>
+      <el-descriptions-item label="容量" :span="2">{{ data.currentCourseDetail.capacity }}</el-descriptions-item>
+      <el-descriptions-item label="起止时间" :span="4">{{ data.currentCourseDetail.start_time + '--' + data.currentCourseDetail.end_time}}</el-descriptions-item>
+      <el-descriptions-item label="描述" :span="2">{{ data.currentCourseDetail.desc }}</el-descriptions-item>
+      <el-descriptions-item label="教学单位名" :span="2">{{ data.currentCourseDetail.college_name }}</el-descriptions-item>
+    </el-descriptions>
   </el-dialog>
 
-    <!-- 班级申请记录模态框 -->
-    <el-dialog v-model="data.courseApplyDetailVisible" title="课程申请记录" width="800">
+  <!-- 班级申请记录模态框 -->
+  <el-dialog v-model="data.courseApplyDetailVisible" title="课程申请记录" width="800" center>
     <el-table :data="data.courseApplyList" border style="width: 100%">
-          <el-table-column prop="class_id" label="ID" width="50" />
-          <el-table-column prop="class_name" label="班级名"/>
-          <el-table-column prop="create_time" label="时间"/>
-          <el-table-column prop="status_desc" label="审核状态"/>
-          <!-- 右侧固定列 展示详情信息 -->
-          <el-table-column fixed="right" label="操作" min-width="60">
-            <template v-slot="scope">
-              <el-button type="danger" size="small" :disabled="scope.row.status !== 1" @click="removeCourseApply(scope.row.id)">取消</el-button>
-            </template>
-          </el-table-column>
-        </el-table>
+      <el-table-column prop="class_id" label="ID" width="50" />
+      <el-table-column prop="class_name" label="班级名"/>
+      <el-table-column prop="create_time" label="时间"/>
+      <el-table-column prop="status_desc" label="审核状态"/>
+      <!-- 右侧固定列 展示详情信息 -->
+      <el-table-column fixed="right" label="操作" min-width="60">
+        <template v-slot="scope">
+          <el-button type="danger" size="small" :disabled="scope.row.status !== 1" @click="removeCourseApply(scope.row.id)">取消</el-button>
+        </template>
+      </el-table-column>
+    </el-table>
   </el-dialog>
 </template>
 
@@ -275,7 +252,13 @@ const applyStatus = [
 .course-list {
   @apply flex flex-col mt-4 mr-2;
 }
-.heading {
-  @apply text-xl font-semibold ml-2 text-sky-400;
+.class-tabs {
+  height: 100%;
+  width: 100%;
+}
+/* 展示列表样式 */
+.des-form {
+  height: 100%;
+  width: 100%;
 }
 </style>

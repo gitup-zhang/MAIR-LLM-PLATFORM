@@ -26,3 +26,16 @@ export const getUserReportList = (
     withCredentials: true,
   });
 };
+
+// 创建新的课程报告
+export const createCourseReport = (form: object) => {
+  return httpInstance({
+    url: "/course_report/",
+    method: "POST",
+    data: JSON.stringify(form),
+    headers: {
+      "content-type": "application/json",
+    },
+    withCredentials: true,
+  });
+};

@@ -101,7 +101,7 @@ const router = createRouter({
           component:ExamResult
         },
         {
-          path: '/examPaperDetail',          
+          path: '/examPaperDetail/:id/',          
           name: 'examPaperDetail',
           component: ExamPaperDetail
         },

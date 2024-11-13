@@ -12,7 +12,7 @@ export const useUserStore = defineStore({
     name: '',
     email: '',
     phone: '',
-    roleId: 2,
+    roleId: 1,
     role: '',
     personId: '',
     areaId: 1,

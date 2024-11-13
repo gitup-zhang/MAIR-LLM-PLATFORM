@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { onMounted, reactive } from 'vue';
+import { onMounted, reactive, ref } from 'vue';
 import { useRoute } from 'vue-router'
 import { getExamPaperInfo } from '@/apis/exam'
 
@@ -7,6 +7,7 @@ const route = useRoute();
 
 const data = reactive({
   title: '',
+  desc: '',
   canScore: false,
   canAnswer: false,
   countDown: {
@@ -16,9 +17,9 @@ const data = reactive({
     sec: 0
   },
   // 简答题答案
-
   questionList: [],
   examPaperId: route.query.id,
+  type: route.query.type,
   // 各部分题目可见性
   jugementQuestionVisible: false,
   singleChoiceQuestionVisible: false,
@@ -32,9 +33,20 @@ const getExamPaperDetail = async () => {
   const res = await getExamPaperInfo(Number(data.examPaperId))
   console.log("!!!!!", res)
   data.title = res.data.title;
+  data.questionList = res.data.question_list;
+  data.desc = res.data.desc;
+  data.canAnswer = res.data.can_answer && data.type === 'student';
+  data.canScore = res.data.can_score && data.type === 'teacher';
+  // 倒计时，暂时取消
+  // if (data.canAnswer) {
+  //   countdown(res.data.end_time)
+  // }
+
+
+
   // 判断是否有判断题
   if(res.data.question_list.judgment.length > 0){
-    data.jugementQuestionVisible = true
+    data.jugementQuestionVisible = true;
   }
   // 判断是否有单选题
   if(res.data.question_list.single_choice.length > 0){
@@ -59,35 +71,64 @@ const getExamPaperDetail = async () => {
 onMounted(() => {
   // 挂载试卷详情信息
   getExamPaperDetail()
+
+  testdatamanage()
 })
+
+const testdatamanage = () => {
+  data.jugementQuestionVisible = true;
+  data.canAnswer = false;
+  data.canScore = true;
+}
+const titileTest = ref('考试1')
+const examTest = reactive(
+  {
+    judgment: 
+      [
+        {
+          content: '今天我是不是吃了一个小面包',
+          question_score: 1,
+          answer: true,
+          answer_score: 4
+        },
+        {
+          content: '今天我是不是吃了一个小面包',
+          question_score: 1,
+          answer: true,
+          answer_score: 4
+        },
+      ]
+  }
+)
 
 </script>
 
 <template>
   <div class="exam-paper-page">
-    <!-- 考试题目 -->
-    <div class="exam-paper-title">
-      <span>{{ data.title }}</span>
+    <!-- 考试头部 -->
+    <div class="exam-paper-heading">
+      <span class="exam-paper-title">{{ titileTest }}</span>
+      <!-- 考试注意事项 -->
+      <div v-if="data.canAnswer" class="exam-paper-caution">注意：（1）到达截止时间后，试卷将不可提交，请及时保存。（2）提交试卷后，试卷将不可修改，请谨慎提交。</div>
+      <div v-if="data.canScore" class="exam-paper-caution">注意：（1）提交评分后，试卷将不可修改，请谨慎提交</div>
     </div>
-    <!-- 考试注意事项 -->
-    <div class="exam-paper-caution">
-      <span>⚠️注意：（1）到达截止时间后，试卷将不可提交，请及时保存。（2）提交试卷后，试卷将不可修改，请谨慎提交。</span>
-    </div>
-    <div class="exam-paper-caution">
-      <span>⚠️注意：（1）提交评分后，试卷将不可修改，请谨慎提交。</span>
-    </div>
-    <!-- 分割线 -->
-    <el-divider/>
-
-    <div>
-      <!-- 结束时间 -->
-      <div>
-            距离结束:1天1:1:1
-      </div>
-    </div>
-
-    <div v-if="data.jugementQuestionVisible">
-      判断题问题列表
+    <!-- 判断题 -->
+    <div v-if="data.jugementQuestionVisible" class="exam-item">
+      <div class="exam-item-type">简答题</div>
+      <template v-for="(item, index) in examTest.judgment">
+        <div class="exam-item-content">
+          {{index+1}} 、{{item.content}}({{item.question_score}}分)
+        </div>
+        <div class="exam-item-answer">
+          <el-radio v-model="item.answer" :disabled="!data.canAnswer" label="1">Y</el-radio>
+          <el-radio v-model="item.answer" :disabled="!data.canAnswer" label="2">N</el-radio>
+        </div>
+        <template v-if="!data.canAnswer">
+          <div class="exam-item-answer"> 
+            <el-tag type="primary">得分：{{item.answer_score}}分</el-tag>
+          </div>
+        </template>
+      </template>
     </div>
 
     <div v-if="data.singleChoiceQuestionVisible">
@@ -146,21 +187,49 @@ onMounted(() => {
   box-shadow: 1px 1px 2px #d1d5db;
   @apply bg-light-50 p-1 rounded-md;
 }
-.exam-paper-title {
+/* 试卷头部 */
+.exam-paper-heading {
   width: 100%;
+  height: 10vh;
   text-align: center;
-  overflow: hidden;
-  @apply bg-sky-100 text-3xl text-sky-300 rounded-md p-1;
+  background-image: linear-gradient(120deg, #a1c4fd 0%, #c2e9fb 100%);
+  @apply rounded-md p-2;
 }
+/* 试卷标题 */
+.exam-paper-title {
+  @apply text-3xl italic font-semibold text-light-50;
+}
+/* 试卷提示 */
 .exam-paper-caution {
+  @apply mt-1 text-light-50;
+}
+/* 每个问题项 */
+.exam-item {
+  width: 100%;
+  @apply mt-3 bg-sky-50;
+}
+/* 问题类型 */
+.exam-item-type {
+  width: 100%;
+  background-image: linear-gradient(120deg, #a1c4fd 0%, #c2e9fb 100%);
+  @apply p-1 text-light-50 text-xl;
+}
+.exam-item-content {
+  width: 100%;
+  @apply p-1 text-base text-gray-700 font-normal mt-1;
+}
+.exam-item-answer {
+  width: 100%;
+  @apply p-1;
+}
+
+/* .exam-paper-caution {
   width: 100%;
   text-align: center;
   @apply text-base mt-6 text-gray-400;
-}
+} */
 
-.question-type {
-  @apply text-3xl text-sky-300;
-}
+
 /* 问题项样式 */
 .question-box {
   @apply p-2 text-base bg-sky-100 rounded-md mb-3;

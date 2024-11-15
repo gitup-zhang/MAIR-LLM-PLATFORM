@@ -1,7 +1,8 @@
 <script setup lang="ts">
 import { onMounted, reactive, ref } from 'vue';
+import { ElMessage } from 'element-plus'
 import { useRoute } from 'vue-router'
-import { getExamPaperInfo } from '@/apis/exam'
+import { getExamPaperInfo, getExamComment, saveExamScore, saveExamAnswer } from '@/apis/exam'
 
 const route = useRoute();
 
@@ -18,20 +19,21 @@ const data = reactive({
   },
   // 简答题答案
   questionList: [],
-  examPaperId: route.query.id,
+  examPaperId: route.query.userExamId as any,
   type: route.query.type,
   // 各部分题目可见性
   jugementQuestionVisible: false,
   singleChoiceQuestionVisible: false,
   multipleChoiceQuestionVisible: false,
   gapFillQuestionVisible: false,
-  easyQuestionVisible:false
+  easyQuestionVisible:false,
+  // 是否生成自动评论
+  isCommentsFetched: false
 })
 
 // 获取试卷详情
 const getExamPaperDetail = async () => {
   const res = await getExamPaperInfo(Number(data.examPaperId))
-  console.log("!!!!!", res)
   data.title = res.data.title;
   data.questionList = res.data.question_list;
   data.desc = res.data.desc;
@@ -41,10 +43,7 @@ const getExamPaperDetail = async () => {
   // if (data.canAnswer) {
   //   countdown(res.data.end_time)
   // }
-
-
-
-  // 判断是否有判断题
+  //  判断是否有判断题
   if(res.data.question_list.judgment.length > 0){
     data.jugementQuestionVisible = true;
   }
@@ -64,19 +63,113 @@ const getExamPaperDetail = async () => {
   if(res.data.question_list.essay_question.length > 0){
     data.easyQuestionVisible = true
   }
-
   data.questionList = res.data.question_list
+}
+// 自动获取试卷评分
+const fetchComments = async () => {
+  const res = await getExamComment(data.examPaperId);
+  if(res.status === 0){
+    ElMessage({
+      message: '大模型已成功生成评语',
+      type: 'success',
+      plain: true,
+    })
+  } else {
+    ElMessage({
+      message: '大模型生成评语失败',
+      type: 'warning',
+      plain: true,
+    })
+  }
+  data.isCommentsFetched = true;
+  getExamPaperDetail();
+}
+// 保存评分
+const saveScore = async (operation: string) => {
+  const res = await saveExamScore(data.examPaperId, data.questionList, operation);
+  if(res.status === 0){
+    ElMessage({
+      message: '评分已成功保存',
+      type: 'success',
+      plain: true,
+    })
+  } else {
+    ElMessage({
+      message: '评分保存失败',
+      type: 'warning',
+      plain: true,
+    })
+  }
+  getExamPaperDetail();
+}
+// 提交评分
+const submitScore = async () => {
+  const res = await saveExamScore(data.examPaperId, data.questionList, 'submit');
+  if(res.status === 0){
+    ElMessage({
+      message: '评分已提交',
+      type: 'success',
+      plain: true,
+    })
+  } else {
+    ElMessage({
+      message: '评分提交失败',
+      type: 'warning',
+      plain: true,
+    })
+  }
+  getExamPaperDetail();
+}
+// 保存作答结果
+const saveAnswer = async (operation: string) => {
+  const res = await saveExamAnswer(data.examPaperId, data.questionList, operation);
+  if(res.status === 0){
+    ElMessage({
+      message: '作答结果保存成功',
+      type: 'success',
+      plain: true,
+    })
+  } else {
+    ElMessage({
+      message: '作答结果保存失败',
+      type: 'warning',
+      plain: true,
+    })
+  }
+  getExamPaperDetail();
+}
+// 提交作答结果
+const submitAnswer = async () => {
+  const res = await saveExamAnswer(data.examPaperId, data.questionList, 'submit');
+  if(res.status === 0){
+    ElMessage({
+      message: '作答结果保存成功',
+      type: 'success',
+      plain: true,
+    })
+  } else {
+    ElMessage({
+      message: '作答结果保存失败',
+      type: 'warning',
+      plain: true,
+    })
+  }
+  getExamPaperDetail();
 }
 
 onMounted(() => {
   // 挂载试卷详情信息
   getExamPaperDetail()
 
-  testdatamanage()
+  // testdatamanage()
 })
 
 const testdatamanage = () => {
   data.jugementQuestionVisible = true;
+  data.singleChoiceQuestionVisible = true;
+  data.multipleChoiceQuestionVisible = true;
+  data.gapFillQuestionVisible = true;
+  data.easyQuestionVisible = true;
   data.canAnswer = false;
   data.canScore = true;
 }
@@ -97,7 +190,71 @@ const examTest = reactive(
           answer: true,
           answer_score: 4
         },
-      ]
+      ],
+    single_choice: [
+      {
+        content: '今天是星期几',
+        answer_option: [ 
+          '星期一',
+          '星期二',
+          '星期三',
+          '星期四'
+        ],
+        question_score: 1,
+        answer: true,
+        answer_score: 4
+      },
+    ],
+    multiple_choice: [
+    {
+        content: '昨天是星期几',
+        answer_option: [ 
+          '星期一',
+          '星期二',
+          '星期三',
+          '星期四'
+        ],
+        question_score: 1,
+        answer: 1,
+        answer_score: 4
+      },
+    ],
+    gap_filling: [
+      {
+        content: '今天我吃了个什么牌子的小面包',
+        question_score: 1,
+        answer: true,
+        answer_score: 4,
+        answer_words_limit: 20,
+        comment: ''
+      },
+      {
+        content: '今天我吃了个什么牌子的小面包',
+        question_score: 1,
+        answer: true,
+        answer_score: 4,
+        answer_words_limit: 20,
+        comment: ''
+      },
+      {
+        content: '今天我吃了个什么牌子的小面包',
+        question_score: 1,
+        answer: true,
+        answer_score: 4,
+        answer_words_limit: 20,
+        comment: ''
+      },
+    ],
+    essay_question: [
+      {
+        content: '今天我吃了个什么牌子的小面包',
+        question_score: 1,
+        answer: true,
+        answer_score: 4,
+        answer_words_limit: 20,
+        comment: ''
+      },
+    ]
   }
 )
 
@@ -115,9 +272,15 @@ const examTest = reactive(
     <!-- 判断题 -->
     <div v-if="data.jugementQuestionVisible" class="exam-item">
       <div class="exam-item-type">简答题</div>
-      <template v-for="(item, index) in examTest.judgment">
+      <template v-for="(item, index) in data.questionList.judgment">
         <div class="exam-item-content">
-          {{index+1}} 、{{item.content}}({{item.question_score}}分)
+          <el-tag round type="primary">
+            {{index+1}}
+          </el-tag>
+          {{item.content}}
+          <el-tag type="primary">
+            分值:{{item.question_score}}分
+          </el-tag>
         </div>
         <div class="exam-item-answer">
           <el-radio v-model="item.answer" :disabled="!data.canAnswer" label="1">Y</el-radio>
@@ -125,57 +288,152 @@ const examTest = reactive(
         </div>
         <template v-if="!data.canAnswer">
           <div class="exam-item-answer"> 
-            <el-tag type="primary">得分：{{item.answer_score}}分</el-tag>
+            <el-tag type="primary" effect="dark">得分：{{item.answer_score}}分</el-tag>
           </div>
         </template>
       </template>
     </div>
-
-    <div v-if="data.singleChoiceQuestionVisible">
-      单选题问题列表
+    <!-- 单选题 -->
+    <div v-if="data.singleChoiceQuestionVisible" class="exam-item">
+      <div class="exam-item-type">单选题</div>
+      <template v-for="(item, index) in data.questionList.single_choice">
+        <div class="exam-item-content">
+          <el-tag round type="primary">
+            {{index+1}}
+          </el-tag>
+          {{item.content}}
+          <el-tag type="primary">
+            分值:{{item.question_score}}分
+          </el-tag>
+        </div>
+        <div class="exam-item-answer">
+          <template v-for="(choice, j) in item.answer_option">
+            <el-radio v-model="item.answer" :disabled="!data.canAnswer" :label="(j+1).toString()">{{choice}}</el-radio>
+          </template>
+        </div>
+        <template v-if="!data.canAnswer">
+          <div class="exam-item-answer"> 
+            <el-tag type="primary" effect="dark">得分：{{item.answer_score}}分</el-tag>
+          </div>
+        </template>
+      </template>
     </div>
-
-    <div v-if="data.multipleChoiceQuestionVisible">
-      多选题问题列表
+    <!-- 多选题 -->
+    <div v-if="data.multipleChoiceQuestionVisible" class="exam-item">
+      <div class="exam-item-type">多选题</div>
+      <template v-for="(item, index) in data.questionList.multiple_choice">
+        <div class="exam-item-content">
+          <el-tag round type="primary">
+            {{index+1}}
+          </el-tag>
+          {{item.content}}
+          <el-tag type="primary">
+            分值:{{item.question_score}}分
+          </el-tag>
+        </div>
+        <div class="exam-item-answer">
+          <el-checkbox-group v-model="item.answer" :disabled="!data.canAnswer">
+            <el-checkbox v-for="(choice, j) in item.answer_option" :label="(j+1).toString()" :key="j">{{choice}}</el-checkbox>
+          </el-checkbox-group>
+        </div>
+        <template v-if="!data.canAnswer">
+          <div class="exam-item-answer"> 
+            <el-tag type="primary" effect="dark">得分：{{item.answer_score}}分</el-tag>
+          </div>
+        </template>
+      </template>
     </div>
-
-    <div v-if="data.gapFillQuestionVisible">
-      判断题问题列表
+    <!-- 填空题 -->
+    <div v-if="data.gapFillQuestionVisible" class="exam-item">
+      <div class="exam-item-type">填空题</div>
+      <template v-for="(item, index) in data.questionList.gap_filling">
+        <div class="exam-item-content">
+          <el-tag round type="primary">
+            {{index+1}}
+          </el-tag>
+          {{item.content}}
+          <el-tag type="primary">
+            分值:{{item.question_score}}分
+          </el-tag>
+        </div>
+        <div class="exam-item-answer">
+          <el-input style="width: 100%" :disabled="!data.canAnswer" :maxlength="item.answer_words_limit" show-word-limit placeholder="请输入答案" v-model="item.answer" />
+        </div>
+        <template v-if="!data.canAnswer">
+          <div class="exam-item-answer"> 
+            <el-tag type="primary" effect="dark">得分：{{item.answer_score}}分</el-tag>
+          </div>
+        </template>
+        <template v-if="data.canScore">
+          <div class="exam-item-answer">
+            <el-input type="textarea" style="width: 100%" :autosize="{ minRows: 2, maxRows: 10}" placeholder="请输入评论" v-model="item.comment"/>
+          </div>
+        </template>
+      </template>
     </div>
-
-    <div v-if="data.easyQuestionVisible">
-      <div class="question-type">简答题</div>
+    <!-- 问答题 -->
+    <div v-if="data.easyQuestionVisible" class="exam-item">
+      <div class="exam-item-type">问答题</div>
       <template v-for="(item, index) in data.questionList.essay_question">
-        <!-- 问题项 -->
-        <div class="question-box">
-          <div class="question-title">{{index+1}} 、{{item.content}}({{item.question_score}}分，{{item.answer_words_limit}}字内)</div>
-          <el-input
-            v-model="item.answer"
-            :rows="4"
-            type="textarea"
-            placeholder="请输入你的答案"
-          />
-          <!-- 分割线 -->
-          <el-divider/>
-          <!-- 教师手动评分 -->
-          <div class="question-title">
-            得分：
-            <el-input-number v-model="item.answer_score" :min="0" :max="item.question_score"/>
-            分
+        <div class="exam-item-content">
+          <el-tag round type="primary">
+            {{index+1}}
+          </el-tag>
+          {{item.content}}
+          <el-tag type="primary">
+            分值:{{item.question_score}}分
+          </el-tag>
+          <el-tag type="primary" class="ml-2">
+            {{item.answer_words_limit}}字内
+          </el-tag>
+          <div class="exam-item-answer">
+            <el-input
+              v-model="item.answer"
+              :rows="4"
+              type="textarea"
+              placeholder="请输入你的答案"
+              :disabled="!data.canAnswer" 
+              :maxlength="item.answer_words_limit"
+            />
           </div>
-          <!-- 最终得分 -->
-          <div class="question-title">
-            <div class="question">得分：{{item.answer_score}}分</div>
-          </div>
+          <template v-if="data.canScore" class="exam-item-answer">
+            <div class="exam-item-content">
+              得分：
+              <el-input-number v-model="item.answer_score" :min="0" :max="item.question_score"/>
+              分
+            </div>
+          </template>
+          <template v-if="!data.canAnswer">
+            <div class="exam-item-answer"> 
+              <el-tag type="primary" effect="dark">得分：{{item.answer_score}}分</el-tag>
+            </div>
+          </template>
           <!-- 自动评分 -->
-          <div class="question">
-            <el-input type="textarea" style="width: 700px" :autosize="{ minRows: 2, maxRows: 10}" placeholder="请输入评论" v-model="item.comment"/>
-            <el-button size="mini" type="primary" @click="fetchComments">获取评论</el-button>
-          </div>
+          <template v-if="data.canScore">
+            <div class="exam-item-answer">
+              <el-row class="auto-judge-box">
+                <el-col :span="20">
+                  <el-input type="textarea" :autosize="{ minRows: 2, maxRows: 10}" placeholder="请输入评论" v-model="item.comment"/>
+                </el-col>
+                <el-col :span="4" class="p-2">
+                  <el-button size="mini" type="primary" @click="fetchComments">自动获取评语</el-button>
+                </el-col>
+              </el-row>
+            </div>
+          </template>
         </div>
       </template>
     </div>
-
+    <div class="btn-box">
+      <template v-if="data.canScore">
+        <el-button size="mini" type="primary" @click="saveScore('score')">保存评分</el-button>
+        <el-button size="mini" type="primary" @click="submitScore()">提交评分</el-button>
+      </template>
+      <template v-if="data.canAnswer">
+        <el-button size="mini" type="primary" @click="saveAnswer('save')">保存作答</el-button>
+        <el-button size="mini" type="primary" @click="submitAnswer()">提交试卷</el-button>
+      </template>
+    </div>
   </div>
 </template>
 
@@ -190,7 +448,6 @@ const examTest = reactive(
 /* 试卷头部 */
 .exam-paper-heading {
   width: 100%;
-  height: 10vh;
   text-align: center;
   background-image: linear-gradient(120deg, #a1c4fd 0%, #c2e9fb 100%);
   @apply rounded-md p-2;
@@ -222,19 +479,10 @@ const examTest = reactive(
   width: 100%;
   @apply p-1;
 }
-
-/* .exam-paper-caution {
+.auto-judge-box {
   width: 100%;
-  text-align: center;
-  @apply text-base mt-6 text-gray-400;
-} */
-
-
-/* 问题项样式 */
-.question-box {
-  @apply p-2 text-base bg-sky-100 rounded-md mb-3;
 }
-.question-title {
-  @apply mb-2;
+.btn-box {
+  @apply mt-2 mb-2 flex flex-row justify-center;
 }
 </style>

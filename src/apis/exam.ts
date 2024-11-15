@@ -116,3 +116,51 @@ export const getUserExamId = (id: number) => {
     withCredentials: true
   })
 }
+
+// 自动获取试卷评分
+export const getExamComment = (id: number) => {
+  return httpInstance({
+    url:'/exammarkapi/',
+    method: "POST",
+    data: {
+      user_exam_id: id
+    },
+    headers: {
+      "content-type": "application/json",
+    },
+    withCredentials: true
+  })
+}
+
+// 保存评分
+export const saveExamScore = (id: number, questionList: any, operation: string) => {
+  return httpInstance({
+    url:'/user_exam/score/' + id + '/',
+    method: "PUT",
+    data: JSON.stringify({
+      new_answer_info: questionList,
+      operation: operation
+    }),
+    headers: {
+      "content-type": "application/json",
+    },
+    withCredentials: true
+  })
+}
+
+
+// 保存作答结果
+export const saveExamAnswer = (id: number, questionList: any, operation: string) => {
+  return httpInstance({
+    url:'/user_exam/save/' + id + '/',
+    method: "PUT",
+    data: JSON.stringify({
+      new_answer_info: questionList,
+      operation: operation
+    }),
+    headers: {
+      "content-type": "application/json",
+    },
+    withCredentials: true
+  })
+}

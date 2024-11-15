@@ -177,84 +177,11 @@ const openStudyProgressModal = async (id: number) => {
     data.studyProgressList = res.data.list;
   }
 }
-
 // 进入实验
 const openExperiment = () => {
   data.experimentDetailModalVisible = false
-  router.push("/experimentConduct")
+  window.open('http://8.155.19.142:30049/lab?')
 }
-
-// 测试数据
-// const chapterData = [
-//   {
-//     id: '1',
-//     name: 'test1',
-//     description: '描述',
-//     progress: '0%',
-//     function: '操作',
-//   },
-//   {
-//     id: '2',
-//     name: 'test2',
-//     description: '描述',
-//     progress: '0%',
-//     function: '操作',
-//   },
-//   {
-//     id: '3',
-//     name: 'test3',
-//     description: '描述',
-//     progress: '0%',
-//     function: '操作',
-//   },
-//   {
-//     id: '4',
-//     name: 'test4',
-//     description: '描述',
-//     progress: '0%',
-//     function: '操作',
-//   },
-// ]
-
-// 学习进度测试
-// const classList = ref(
-//   [
-//     {
-//       id: 1,
-//       name: '测试1',
-//       student_num: 10,
-//     },
-//     {
-//       id: 2,
-//       name: '测试2',
-//       student_num: 20,
-//     },
-//   ]
-// )
-// const learningData = [{
-//   subcourse_name: '测试',
-//   user_id_number: 1,
-//   user_name: '王小波',
-//   learn_time: 3,
-//   use_time: 4,
-// }]
-
-// 自定义班级通知
-// const notificationData = [
-//   {
-//     id: '1',
-//     content: '测试',
-//     files_info: [
-//         {
-//           name: '文件1',
-//         },
-//         {
-//           name: '文件2'
-//         }
-//     ],
-//     time: '2024-09-20 10:19:54'
-//   }
-// ]
 
 onMounted( async () => {
   // 判断用户类型
@@ -297,7 +224,11 @@ onMounted( async () => {
         <el-table-column prop="id" label="章节" width="60" />
         <el-table-column prop="name" label="名称" width="80" />
         <el-table-column prop="desc" label="描述" />
-        <el-table-column prop="rate" label="进度" />
+        <el-table-column label="进度" >
+          <template v-slot="scope">
+            <span>{{ scope.row.rate }}%</span>
+          </template>
+        </el-table-column>
         <!-- 右侧固定列 展示详情信息 -->
         <el-table-column fixed="right" label="操作" min-width="60">
           <template v-slot="scope">

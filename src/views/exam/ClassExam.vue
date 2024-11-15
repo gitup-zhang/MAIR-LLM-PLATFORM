@@ -19,7 +19,9 @@ const data = reactive({
 
 // 搜索考试安排列表
 const searchExam = async () => {
+  console.log(data.courseId)
   const res = await getExamList(data.searchText, data.courseId, data.page, data.count)
+  console.log(res);
   data.examList = res.data.list;
   data.total = res.data.total;
 }
@@ -34,10 +36,10 @@ const checkExamResult = (examDetail: any) => {
 }
 // 查看试卷
 const checkExamDetail = async (id: number) => {
-  // const res = await getUserExamId(id);
+  const res = await getUserExamId(id);
   router.push({
-    // path: '/examPaperDetail/',
-    path: '/examPaperDetail/' + 1 + '/',
+    path: '/examPaperDetail/',
+    // path: '/examPaperDetail/' + 1 + '/',
     query: {
       type: 'student',
       userExamId: res.data.user_exam_id
@@ -46,10 +48,10 @@ const checkExamDetail = async (id: number) => {
 }
 // 查看练习
 const checkPracticeDetail = async (id: number) => {
-    // const res = await getUserExamId(id);
+    const res = await getUserExamId(id);
     router.push({
-    // path: '/examPaperDetail/',
-    path: '/examPaperDetail/' + 1 + '/',
+    path: '/examPaperDetail/',
+    // path: '/examPaperDetail/' + 1 + '/',
     query: {
       type: 'student',
       userExamId: res.data.user_exam_id
@@ -58,10 +60,10 @@ const checkPracticeDetail = async (id: number) => {
 }
 // 进入考试
 const enterExam = async (id: number) => {
-    // const res = await getUserExamId(id);
+    const res = await getUserExamId(id);
     router.push({
-    // path: '/examPaperDetail/',
-    path: '/examPaperDetail/' + 1 + '/',
+    path: '/examPaperDetail/',
+    // path: '/examPaperDetail/' + 1 + '/',
     query: {
       type: 'student',
       userExamId: res.data.user_exam_id
@@ -70,9 +72,8 @@ const enterExam = async (id: number) => {
 }
 // 进入练习
 const enterPractice = async (id: number) => {
-    // const res = await getUserExamId(id);
+    const res = await getUserExamId(id);
     router.push({
-    // path: '/examPaperDetail/',
     path: '/examPaperDetail/',
     query: {
       type: 'student',
@@ -117,7 +118,7 @@ const examListTest = reactive([
       </div>
       <!-- 所有考试安排信息展示 -->
       <div class="exam-list">
-        <el-table :data="examListTest" border style="width: 100%">
+        <el-table :data="data.examList" border style="width: 100%">
           <el-table-column prop="id" label="ID" width="50" />
           <el-table-column prop="desc" label="描述"/>
           <el-table-column prop="exam_paper_title" label="试卷"/>

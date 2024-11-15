@@ -140,3 +140,18 @@ export const getTeachedClassList = (page: number, count: number) => {
     withCredentials: true,
   });
 };
+
+// 申请新的班级
+export const attentClass = (id: number) => {
+  return httpInstance({
+    url: '/course_application/',
+    method: "POST",
+    data: JSON.stringify({
+      class_id: id
+    }),
+    headers: {
+      "content-type": "application/json",
+    },
+    withCredentials: true,
+  });
+};

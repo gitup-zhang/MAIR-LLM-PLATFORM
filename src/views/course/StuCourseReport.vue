@@ -10,16 +10,16 @@ const route = useRoute();
 const data = reactive({
   searchText: '',
   fileLimit: 1,
-  fileUploadUrl: '',
+  fileUploadUrl: '' as any,
   courseReportList: [],
   currentReportDetail:[],
   // 新建报告表单
   newCourseReportForm: {
-    id: -1,
     title: '',
     content: '',
-    class_id: -1,
     files_info: [] as any,
+    subcourse_id: route.query.subcourseId,
+    class_id: route.query.courseId,
     status: 1
   },
   courseId: route.query.courseId,
@@ -89,6 +89,7 @@ const beforeUpload = (rawFile: any) => {
 // 创建新的课程报告
 const submitCourseReportCreate = async () => {
   const res = await createCourseReport(data.newCourseReportForm);
+  console.log(res);
   if(res.status === 0){
     ElMessage({
       message: '报告创建成功',
@@ -108,24 +109,9 @@ const submitCourseReportCreate = async () => {
 onMounted(async () => {
   // 挂载报告列表
   searchUserReport();
-  const res = await getFileUploadUrl();
-  data.fileUploadUrl = res.data;
+  data.fileUploadUrl = 'http://8.155.19.142:30027/olexp_server/file/';
+  
 })
-
-
-// 测试数据
-// const reportList = [
-//   {
-//     id: 1,
-//     title: '测试1',
-//     files_info: [
-//       {
-//         name: '文件1',
-//         ulr: 'www.baidu.com'
-//       }
-//     ]
-//   }
-// ]
 </script>
 
 <template>

@@ -12,10 +12,15 @@ const router = useRouter();
 const data = reactive({
   aboutUsVisible : false,
   settingVisible : false,
-  // userType: sessionStorage.userType
-  userType: '1'
+  userType: sessionStorage.userType
+  // userType: '2'
 })
 const { aboutUsVisible, settingVisible } = toRefs(data)
+
+// 打开对话框
+const openLLMWindow = () => {
+  window.open('http://localhost:3001/');
+}
 
 // 退出系统
 const quit = () => {
@@ -50,6 +55,13 @@ const quit = () => {
           <icon-experiment  size="33" strokeWidth="3" class="mt-2"/>
           <div class="icon-text">实验</div>
         </RouterLink>
+
+        <!-- 与大模型对话 学生 -->
+        <div v-if="data.userType === '1'" class="sider-nav-icon" @click="openLLMWindow()">
+          <icon-robot size="33" strokeWidth="3" class="mt-2"/>
+          <div class="icon-text">对话</div>
+        </div>
+
 
         <!-- 个人信息 教师 -->
         <RouterLink v-if="data.userType === '2'" class="sider-nav-icon" to="/teacherMe">
@@ -107,13 +119,7 @@ const quit = () => {
           <div class="icon-text">实验</div>
         </RouterLink>
 
-        <!-- 与大模型对话 -->
-        <ChatMain v-if="data.userType === '1'">
-          <template #default>
-            <icon-robot size="33" strokeWidth="3" class="mt-2"/>
-            <div class="icon-text">对话</div>
-          </template>
-        </ChatMain>
+
 
         <About>
           <template #default>

@@ -1,8 +1,10 @@
 <script setup lang="ts">
 import { onMounted, reactive, ref } from "vue"
 import { useRouter } from 'vue-router'
+import { ElMessage } from 'element-plus';
 import { getCourseList, getCourseApplyRecord, deleteCourseApply, getEnrolledClassList } from '@/apis/course'
-import { useUserStore } from '@/stores/user'
+import { useUserStore } from '@/stores/user';
+import { attentClass } from '@/apis/class';
 
 const router = useRouter();
 const userStore = useUserStore();
@@ -35,7 +37,25 @@ const getEnrolledClass = async () => {
   const res = await  getEnrolledClassList(data.page, data.count);
   data.enrolledClassList = res.data.list;
 }
-
+// 申请新班级
+const applyNewClass = async (id: number) => {
+  const res = await attentClass(id);
+  if(res.status === 0){
+    ElMessage({
+      message: '班级申请已发送，请等待审核',
+      type: 'success',
+      plain: true,
+    })
+  } else {
+    ElMessage({
+      message: '班级申请发送失败，请重新提交',
+      type: 'warning',
+      plain: true,
+    })
+  }
+  searchCourse();
+  getEnrolledClass();
+}
 // 查看课程申请记录
 const getCourseApplyDetail = async () => {
   data.courseApplyDetailVisible = true;
@@ -44,8 +64,21 @@ const getCourseApplyDetail = async () => {
 }
 // 取消申请
 const removeCourseApply = async (applyId:number) => {
-  const res = deleteCourseApply(applyId);
-  // 刷新
+  const res = await deleteCourseApply(applyId);
+  if(res.status === 0){
+    ElMessage({
+      message: '班级申请删除',
+      type: 'success',
+      plain: true,
+    })
+  } else {
+    ElMessage({
+      message: '班级申请删除失败',
+      type: 'warning',
+      plain: true,
+    })
+  }
+  searchCourse();
   getCourseApplyDetail()
 }
 // 查看课程详情
@@ -69,67 +102,6 @@ onMounted(() => {
   // 挂载已经报名的课程信息
   getEnrolledClass();
 })
-
-
-// 测试数据
-const course = ref('')
-const apply = ref('')
-const coursesType = [
-  {
-    value: '计算机科学',
-    label: '计算机科学',
-  },
-  {
-    value: '机器学习',
-    label: '机器学习',
-  },
-  {
-    value: '大语言模型',
-    label: '大语言模型',
-  },
-  {
-    value: '深度学习',
-    label: '深度学习',
-  },
-]
-const applyStatus = [
-  {
-    value: '申请成功',
-    label: '申请成功',
-  },
-  {
-    value: '申请失败',
-    label: '申请失败',
-  },
-  {
-    value: '审核中',
-    label: '审核中',
-  }
-]
-const courseListTest = reactive([
-  {
-    id: 1,
-    name: '测试1',
-    course_name: '人工智能1',
-    teacher_name: '王小波',
-    capacity: 14,
-    end_time: '20240909',
-    college_name: '北京邮电大学',
-    not_apply_reason: '拒绝'
-  }
-])
-const enrolledClassListTest = reactive([
-  {
-    id: 1,
-    name: '测试1',
-    course_name: '人工智能1',
-    teacher_name: '王小波',
-    capacity: 14,
-    end_time: '20240909',
-    college_name: '北京邮电大学',
-    not_apply_reason: '拒绝'
-  }
-])
 </script>
 
 <template>
@@ -160,6 +132,7 @@ const enrolledClassListTest = reactive([
               <el-table-column fixed="right" label="操作" min-width="60">
                 <template v-slot="scope">
                   <el-button link type="primary" size="small" @click="getCourseDetail(scope.row)">详情</el-button>
+                  <el-button v-if="scope.row.can_apply" link type="primary" size="small" @click="applyNewClass(scope.row.id)">班级申请</el-button>
                 </template>
               </el-table-column>
             </el-table>
@@ -173,7 +146,7 @@ const enrolledClassListTest = reactive([
         <div class="course-main">
           <!-- 班级列表 -->
           <div class="course-list">
-            <el-table :data="enrolledClassListTest" border style="width: 100%">
+            <el-table :data="data.enrolledClassList" border style="width: 100%">
               <el-table-column prop="id" label="ID" width="50" />
               <el-table-column prop="name" label="班级名"/>
               <el-table-column prop="course_name" label="课程名"/>

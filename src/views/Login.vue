@@ -75,7 +75,7 @@ const checkPass = (confirmPassword: string) => {
 
 // 登录
 const loginSubmit = async () => {
-  router.push('/window')
+  // router.push('/window')
   // 检查手机号格式
   if(!validatePhone(loginForm.value.phone)){
     ElMessage({

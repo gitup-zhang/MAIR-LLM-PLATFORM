@@ -275,6 +275,78 @@ onMounted(() => {
 //     desc: '描述2'
 //   },
 // ])
+
+// 测试数据
+const chapterData = [
+  {
+    id: '1',
+    name: 'test1',
+    description: '描述',
+    progress: '0%',
+    function: '操作',
+  },
+  {
+    id: '2',
+    name: 'test2',
+    description: '描述',
+    progress: '0%',
+    function: '操作',
+  },
+  {
+    id: '3',
+    name: 'test3',
+    description: '描述',
+    progress: '0%',
+    function: '操作',
+  },
+  {
+    id: '4',
+    name: 'test4',
+    description: '描述',
+    progress: '0%',
+    function: '操作',
+  },
+]
+
+// 学习进度测试
+const classList = reactive(
+  [
+    {
+      id: 1,
+      name: '测试1',
+      student_num: 10,
+    },
+    {
+      id: 2,
+      name: '测试2',
+      student_num: 20,
+    },
+  ]
+)
+const learningData = [{
+  subcourse_name: '测试',
+  user_id_number: 1,
+  user_name: '王小波',
+  learn_time: 3,
+  use_time: 4,
+}]
+
+// 自定义班级通知
+const notificationData = [
+  {
+    id: '1',
+    content: '测试',
+    files_info: [
+        {
+          name: '文件1',
+        },
+        {
+          name: '文件2'
+        }
+    ],
+    time: '2024-09-20 10:19:54'
+  }
+]
 </script>
 
 <template>
@@ -378,18 +450,20 @@ onMounted(() => {
           <el-empty description="暂无管理的班级信息" />
         </div>
       </el-tab-pane>
-      <el-tab-pane label="已选实验" name="fourth" class="course-pane">
+      <!-- <el-tab-pane label="已选实验" name="fourth" class="course-pane">
         <el-row v-if="data.experimentList.length != 0" class="card-main">
-          <el-col :span="8" v-for="experiemnt in data.experimentList" :key="experiemnt.id">
+          <el-col :span="8" v-for="experiemnt in data.experimentList" :key="experiemnt.id"> -->
             <!-- 课程卡片 -->
-            <el-card body-style="padding:0px" class="course-card">
+            <!-- <el-card body-style="padding:0px" class="course-card"> -->
               <!-- 配图 -->
-              <img src="@/assets/img/course.png" style="width: 100%"/>
+              <!-- <img src="@/assets/img/course.png" style="width: 100%"/>
               <div class="course-card-main">
                 <span class="course-title">{{ experiemnt.name }}</span>
                 <el-button type='primary' text>{{ experiemnt.student_num }}课时</el-button>
                 <el-button type='primary' text @click="openClassNotificationModal(experiemnt.id)">班级通知</el-button>
                 <el-button type='primary' text @click="openExperimentDetailModal(experiemnt.id)">进入课程</el-button>
+                <el-button type='primary' text @click="openClassNotificationModal(experiemnt.id)">查看容器</el-button>
+                <el-button type='primary' text @click="openExperimentDetailModal(experiemnt.id)">学习进度</el-button>
               </div>
             </el-card>
           </el-col>
@@ -397,7 +471,7 @@ onMounted(() => {
         <div v-else>
           <el-empty description="暂无已选实验信息" />
         </div>
-      </el-tab-pane>
+      </el-tab-pane> -->
       <el-tab-pane label="授课实验" name="fifth" class="course-pane">
         <el-row v-if="data.teachExperimentList.length != 0" class="card-main">
           <el-col :span="8" v-for="experiemnt in data.teachExperimentList" :key="experiemnt.id">
@@ -408,7 +482,10 @@ onMounted(() => {
               <div class="course-card-main">
                 <span class="course-title">{{ experiemnt.name }}</span>
                 <el-button type='primary' text>{{ experiemnt.student_num }}课时</el-button>
+                <el-button type='primary' text @click="openClassNotificationModal(experiemnt.id)">班级通知</el-button>
                 <el-button type='primary' text @click="openExperimentDetailModal(experiemnt.id)">进入课程</el-button>
+                <el-button type='primary' text @click="openClassNotificationModal(experiemnt.id)">查看容器</el-button>
+                <el-button type='primary' text @click="openExperimentDetailModal(experiemnt.id)">学习进度</el-button>
               </div>
             </el-card>
           </el-col>
@@ -701,6 +778,7 @@ onMounted(() => {
 }
 .course-title {
   display: block;
+  @apply font-medium;
 }
 .notification-header {
   @apply mb-2;

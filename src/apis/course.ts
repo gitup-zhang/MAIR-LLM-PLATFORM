@@ -54,7 +54,7 @@ export const getEnrolledClassList = (page: number, count: number) => {
   // 删除申请
   export const deleteCourseApply = (applyId: number) => {
     return httpInstance({
-      url:'/course_application/' + `${applyId}`,
+      url:'/course_application/' + applyId + '/',
       method: "DELETE",
       headers: {
         "content-type": "application/json",

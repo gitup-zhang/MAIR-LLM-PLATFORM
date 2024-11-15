@@ -35,6 +35,7 @@ export const createCourseReport = (form: object) => {
     data: JSON.stringify(form),
     headers: {
       "content-type": "application/json",
+      "charset": "utf-8"
     },
     withCredentials: true,
   });

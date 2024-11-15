@@ -5,10 +5,10 @@ import DiscussPlatform from '@/components/experiment/DiscussPlatform.vue';
 
 <template>
   <el-row class="experiment-page">
-    <el-col :span="16" class="course-list">
+    <el-col :span="18" class="course-list">
       <CourseList />
     </el-col>
-    <el-col :span="8" class="discuss-platform">
+    <el-col :span="6" >
       <div class="side-poster">
         <img src="../../assets/img/poster.png" class="banner" alt="大模型实训平台">
       </div>
@@ -20,8 +20,8 @@ import DiscussPlatform from '@/components/experiment/DiscussPlatform.vue';
 <style scoped>
 /* 整体页面设置 */
 .experiment-page {
-  width: 100vw;
-  height: 100vh;
+  width: 100%;
+  height: 100%;
 }
 .course-list {
   width: 100%;
@@ -40,8 +40,9 @@ import DiscussPlatform from '@/components/experiment/DiscussPlatform.vue';
   @apply bg-light-50 p-3 rounded-md;
 }
 .banner {
-  width: 99%;
+  width: 93%;
   height: 100%;
+  box-sizing: border-box;
   @apply rounded-md;
 }
 </style>

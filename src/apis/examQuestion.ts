@@ -100,3 +100,16 @@ export const deleteQuestionRelation = (id: number) => {
     withCredentials: true
   })
 }
+
+// 提交试题修改
+export const modifyQuestion = (id: number, form: object) => {
+  return httpInstance({
+    url: '/question/' + id + '/',
+    method: "PUT",
+    data: JSON.stringify(form),
+    headers: {
+      "content-type": "application/json",
+    },
+    withCredentials: true
+  })
+}

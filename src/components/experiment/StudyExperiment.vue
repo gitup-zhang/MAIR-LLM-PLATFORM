@@ -40,7 +40,7 @@ import DiscussPlatform from '@/components/experiment/DiscussPlatform.vue';
   @apply bg-light-50 p-3 rounded-md;
 }
 .banner {
-  width: 93%;
+  width: 88%;
   height: 100%;
   box-sizing: border-box;
   @apply rounded-md;

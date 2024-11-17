@@ -5,7 +5,7 @@ import { ElMessage } from 'element-plus';
 import { Document, Edit, Filter } from '@element-plus/icons-vue'
 import { getCourseDetailInfo } from '@/apis/experiment'
 import { getCourseList, getCourseApplyRecord, deleteCourseApply } from '@/apis/course'
-import { getClassList, getManagedClassList, getTeachedClassList } from '@/apis/class'
+import { getClassList, getManagedClassList, getTeachedClassList, passClassApply, refuseClassApply } from '@/apis/class'
 import { getImageInfo, deleteImage, createImage, buildImage } from '@/apis/image'
 import { useUserStore } from '@/stores/user'
 import { useRouter } from "vue-router"
@@ -71,6 +71,40 @@ const getCourseApplyDetail = async () => {
   data.courseApplyDetailVisible = true;
   const res = await getCourseApplyRecord(userStore.id, data.page, data.count);
   data.courseApplyList = res.data.list;
+}
+// 通过班级申请
+const passClassApplication = async (id: number) => {
+  const res = await passClassApply(id);
+  if(res.status === 0){
+    ElMessage({
+      message: '班级申请已通过',
+      type: 'success',
+      plain: true,
+    })
+  }else {
+    ElMessage({
+      message: '班级申请通过失败',
+      type: 'success',
+      plain: true,
+    })
+  }
+}
+// 拒绝班级申请
+const refuseClassApplication = async (id: number) => {
+  const res = await refuseClassApply(id);
+  if(res.status === 0){
+    ElMessage({
+      message: '班级申请拒绝成功',
+      type: 'success',
+      plain: true,
+    })
+  }else {
+    ElMessage({
+      message: '班级申请拒绝失败',
+      type: 'success',
+      plain: true,
+    })
+  }
 }
 // 搜索管理的班级
 const searchManagedClass = async () => {
@@ -527,49 +561,34 @@ const notificationData = [
   <!-- 班级详情模态框 -->
   <el-dialog v-model="data.courseDetailVisible" title="班级详细信息" width="600">
     <div class="course-detail-dialog">
-      <el-form :model="data.currentCourseDetail" class="w-[40rem]">
-        <!-- 班级名 -->
-        <el-form-item label="班级名:">
-          <span>{{ data.currentCourseDetail.name }}</span>
-        </el-form-item>
-        <!-- 教师名 -->
-        <el-form-item label="教师名:">
-          <span>{{ data.currentCourseDetail.teacher_name }}</span>
-        </el-form-item>
-        <!-- 课程名: -->
-        <el-form-item label="课程名:">
-          <span>{{ data.currentCourseDetail.course_name }}</span>
-        </el-form-item>
-        <!-- 容量 -->
-        <el-form-item label="容量:">
-          <span>{{ data.currentCourseDetail.capacity }}</span>
-        </el-form-item>
-        <!-- 起止时间 -->
-        <el-form-item label="起止时间:">
-          <span>{{ data.currentCourseDetail.start_time + '--' + data.currentCourseDetail.end_time}}</span>
-        </el-form-item>
-        <!-- 描述 -->
-        <el-form-item label="描述:">
-          <span>{{ data.currentCourseDetail.desc }}</span>
-        </el-form-item>
-        <!-- 教学单位名 -->
-        <el-form-item label="教学单位名:">
-          <span>{{ data.currentCourseDetail.college_name }}</span>
-        </el-form-item>
-      </el-form>
+      <el-descriptions
+        direction="vertical"
+        :column="4"
+        border
+      >
+        <el-descriptions-item label="班级名" :span="2">{{ data.currentCourseDetail.name }}</el-descriptions-item>
+        <el-descriptions-item label="教师名" :span="2">{{ data.currentCourseDetail.teacher_name }}</el-descriptions-item>
+        <el-descriptions-item label="课程名" :span="2">{{ data.currentCourseDetail.course_name }}</el-descriptions-item>
+        <el-descriptions-item label="容量" :span="2">{{ data.currentCourseDetail.capacity }}</el-descriptions-item>
+        <el-descriptions-item label="起止时间" :span="4">{{ data.currentCourseDetail.start_time + '--' + data.currentCourseDetail.end_time}}</el-descriptions-item>
+        <el-descriptions-item label="描述" :span="4">{{ data.currentCourseDetail.desc }}</el-descriptions-item>
+        <el-descriptions-item label="教学单位名" :span="4">{{ data.currentCourseDetail.college_name }}</el-descriptions-item>
+      </el-descriptions>
     </div>
   </el-dialog>
   <!-- 班级申请记录模态框 -->
   <el-dialog v-model="data.courseApplyDetailVisible" title="课程申请记录" width="800">
     <el-table :data="data.courseApplyList" border style="width: 100%">
-          <el-table-column prop="class_id" label="ID" width="50" />
+          <el-table-column prop="class_id" label="ID"/>
           <el-table-column prop="class_name" label="班级名"/>
           <el-table-column prop="create_time" label="时间"/>
           <el-table-column prop="status_desc" label="审核状态"/>
           <!-- 右侧固定列 展示详情信息 -->
-          <el-table-column fixed="right" label="操作" min-width="60">
+          <el-table-column fixed="right" label="操作">
             <template v-slot="scope">
-              <el-button type="danger" size="small" :disabled="scope.row.status !== 1" @click="removeCourseApply(scope.row.id)">取消</el-button>
+              <el-button v-if="scope.row.status === 1" size="small" type="success" @click="passClassApplication(scope.row.id)">通过</el-button>
+              <el-button v-if="scope.row.status === 1" size="small" type="danger" @click="refuseClassApplication(scope.row.id)">不通过</el-button>
+              <el-button v-if="scope.row.status !== 1" type="danger" size="small" :disabled="scope.row.status !== 1" @click="removeCourseApply(scope.row.id)">取消</el-button>
             </template>
           </el-table-column>
         </el-table>

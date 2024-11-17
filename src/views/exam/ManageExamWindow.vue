@@ -5,7 +5,7 @@ import { Document, Files, Filter, Warning, Check, CollectionTag } from '@element
 import { getClassOptions } from '@/apis/class';
 import { getExamInfoList, createExam, deleteExam, getExamDetail } from '@/apis/exam';
 import { getExamPaperList, createExamPaper, getExamPaperDetail, modifyExamPaper, deleteExamPaper, getExamPaperOptions } from '@/apis/examPaper';
-import { getExamQuestionList, getExamQuestionDetail, createQuestion, getQuestionRelation, getQuestionOptions, createQuestionRelation, deleteQuestionRelation } from '@/apis/examQuestion';
+import { getExamQuestionList, getExamQuestionDetail, createQuestion, getQuestionRelation, getQuestionOptions, createQuestionRelation, deleteQuestionRelation, modifyQuestion } from '@/apis/examQuestion';
 import { getExamResultList } from '@/apis/examResult';
 
 const data = reactive({
@@ -30,6 +30,7 @@ const data = reactive({
   currentExamPaperQuestion: [],
   currentExamPaperQuestionList: [],
   // 表单
+  modifyQuestionForm: {} as any,
   questionForm: {
     answer_limit: '',
     answer_option: [],
@@ -109,6 +110,7 @@ const data = reactive({
   checkExamPaperDetailModalVisible: false,
   createExamModalVisible: false,
   checkExamDetailModalVisible: false,
+  modifyQuestionModalVisible: false,
   // 类型
   typeOptions: [
     {
@@ -382,6 +384,60 @@ const submitQuestionCreate = async (status: number) => {
   data.createQuestionModalVisible = false;
   searchExamQuestion();
 }
+// 修改试题
+const openModifyQuestionModal = async (id: number) => {
+  data.modifyQuestionModalVisible = true;
+  const res = await getExamQuestionDetail(id);
+  data.modifyQuestionForm = res.data;
+}
+// 新增选项 
+const addModifyOption = () => {
+  data.modifyQuestionForm.answer_option.push('');
+}
+// 删除选项
+const removeModifyOption = (option: string) => {
+  let index = data.modifyQuestionForm.answer_option.indexOf(option);
+  if(index !== -1) {
+    data.modifyQuestionForm.answer_option.splice(index, 1);
+  }
+}
+// 提交修改
+const submitQuestionModify = async (status: number) => {
+  data.modifyQuestionForm.status = status;
+  const res = await modifyQuestion(data.modifyQuestionForm.id, data.modifyQuestionForm);
+  if(status === 1){
+    if(res.status === 0){
+      ElMessage({
+        message: '试题修改成功',
+        type: 'success',
+        plain: true,
+      })
+    } else {
+      ElMessage({
+        message: '试题修改失败',
+        type: 'warning',
+        plain: true,
+      })
+    }
+  } else {
+    if(res.status === 0){
+      ElMessage({
+        message: '试题修改已保存',
+        type: 'success',
+        plain: true,
+      })
+    } else {
+      ElMessage({
+        message: '试题修改保存失败',
+        type: 'warning',
+        plain: true,
+      })
+    }
+  }
+  data.modifyQuestionModalVisible = false;
+  searchExamQuestion();
+}
+
 
 // 打开创建考试模态框
 const openCreateExamModal = async () => {
@@ -486,7 +542,7 @@ onMounted(() => {
             <el-table-column prop="status_desc" label="状态" width="100"/>
             <el-table-column fixed="right" label="操作" width="200">
               <template v-slot="scope">
-                <el-button v-if="scope.row.status===3" link type="primary" size="small" @click="">修改</el-button>
+                <el-button v-if="scope.row.status===3" link type="primary" size="small" @click="openModifyQuestionModal(scope.row.id)">修改</el-button>
                 <el-button v-else-if="scope.row.status===1" link type="primary" size="small" @click="checkQuestionDetail(scope.row.id)">查看详情</el-button>
               </template>
             </el-table-column>
@@ -604,6 +660,7 @@ onMounted(() => {
       <el-descriptions
         direction="vertical"
         :column="2"
+        class="exam-description"
         border
       >
         <el-descriptions-item label="类型">{{ data.questionForm.type_desc }}</el-descriptions-item>
@@ -747,6 +804,142 @@ onMounted(() => {
       </el-form>
     </div>
   </el-dialog>
+
+  <!-- 修改试题框 -->
+  <el-dialog v-model="data.modifyQuestionModalVisible" title="修改试题" width="600">
+    <div class="exam-dialog">
+      <el-form :model="data.modifyQuestionForm" class="w-[30rem]">
+        <!-- 内容 -->
+        <el-form-item>
+          <el-input v-model="data.modifyQuestionForm.content" placeholder="请输入题目内容">
+            <!-- 图标 -->
+            <template #prefix>
+              <el-icon color="#409efc" class="no-inherit">
+                <Document />
+              </el-icon>
+            </template>
+          </el-input>
+        </el-form-item>
+        <!-- 描述 -->
+        <el-form-item>
+          <el-input v-model="data.modifyQuestionForm.desc" placeholder="请输入题目描述">
+            <!-- 图标 -->
+            <template #prefix>
+              <el-icon color="#409efc" class="no-inherit">
+                <Files />
+              </el-icon>
+            </template>
+          </el-input>
+        </el-form-item>
+        <!-- 类型 -->
+        <el-form-item>
+          <el-select v-model="data.modifyQuestionForm.type" placeholder="请选择题目类型" class="w-[30rem]" @change="changeType()">
+            <!-- 图标 -->
+            <template #prefix>
+              <el-icon color="#409efc" class="no-inherit">
+                <Filter />
+              </el-icon>
+            </template>
+            <el-option
+              v-for="item in data.typeOptions"
+              :key="item.value"
+              :label="item.label"
+              :value="item.value"
+            />
+          </el-select>
+        </el-form-item>
+        <!-- 问答题 -->
+        <template v-if="data.modifyQuestionForm.type===1">
+          <el-form-item>
+            <el-input-number class="w-[30rem]" v-model="data.modifyQuestionForm.answer_words_limit" :min="1" placeholder="请输入回答字数限制" />
+          </el-form-item>
+        </template>
+        <!-- 单选题 -->
+        <template v-if="data.modifyQuestionForm.type===2">
+          <el-form-item 
+            v-for="(option, index) in data.modifyQuestionForm.answer_option" 
+            :label="'选项' + (index+1)"
+            :key="index" 
+            :prop="'answer_option[' + index + ']'" 
+            style="width: 100%"
+          >
+            <el-input v-model="data.modifyQuestionForm.answer_option[index]" style="width: 80%"/>
+            <el-button type="primary" class="ml-2" @click.prevent="removeModifyOption(option)">删除</el-button>
+          </el-form-item>
+          <el-form-item>
+            <el-button class="w-[30rem]" type="primary" @click="addModifyOption()">新增选项</el-button>
+          </el-form-item>
+          <el-form-item>
+            <el-radio-group v-model="data.modifyQuestionForm.right_answer">
+              <el-radio v-for="(option, i) in data.modifyQuestionForm.answer_option" :label="(i+1).toString()" border>{{ option }}</el-radio>
+              </el-radio-group>
+          </el-form-item>
+        </template>
+        <!-- 多选题 -->
+        <template v-if="data.modifyQuestionForm.type===3">
+          <el-form-item 
+            v-for="(option, index) in data.modifyQuestionForm.answer_option" 
+            :label="'选项' + (index+1)"
+            :key="index" 
+            :prop="'answer_option[' + index + ']'" 
+            style="width: 100%"
+          >
+            <el-input v-model="data.modifyQuestionForm.answer_option[index]" style="width: 80%"/>
+            <el-button type="primary" class="ml-2" @click.prevent="removeModifyOption(option)">删除</el-button>
+          </el-form-item>
+          <el-form-item>
+            <el-button class="w-[30rem]" type="primary" @click="addModifyOption()">新增选项</el-button>
+          </el-form-item>
+          <el-form-item>
+            <el-checkbox-group v-model="data.modifyQuestionForm.right_answer">
+              <el-checkbox v-for="(option, index) in data.modifyQuestionForm.answer_option" :key="index" :label="(index+1).toString()" :value="option">
+                {{ option }}
+              </el-checkbox>
+            </el-checkbox-group>
+          </el-form-item>
+        </template>
+        <!-- 填空题 -->
+        <template v-if="data.modifyQuestionForm.type===4">
+          <el-form-item>
+            <el-input v-model="data.modifyQuestionForm.right_answer" placeholder="请输入正确答案">
+              <!-- 图标 -->
+              <template #prefix>
+                <el-icon color="#409efc" class="no-inherit">
+                  <Check />
+                </el-icon>
+              </template>
+            </el-input>
+          </el-form-item>
+          <el-form-item>
+            <el-input v-model="data.modifyQuestionForm.answer_words_limit" placeholder="请输入回答字数限制">
+              <!-- 图标 -->
+              <template #prefix>
+                <el-icon color="#409efc" class="no-inherit">
+                  <Warning />
+                </el-icon>
+              </template>
+            </el-input>
+          </el-form-item>
+        </template>
+        <!-- 判断题 -->
+        <template v-if="data.modifyQuestionForm.type===5">
+          <el-form-item>
+            <el-radio v-model="data.modifyQuestionForm.right_answer" label="1">正确</el-radio>
+            <el-radio v-model="data.modifyQuestionForm.right_answer" label="2">错误</el-radio>
+          </el-form-item>
+        </template>
+        <!-- 创建按钮 -->
+        <el-form-item>
+          <el-button class="w-[30rem]" type="primary" @click="submitQuestionModify(1)">修改试题</el-button>
+        </el-form-item>
+        <el-form-item>
+          <el-button class="w-[30rem]" type="primary" @click="submitQuestionModify(3)">存为草稿</el-button>
+        </el-form-item>
+      </el-form>
+    </div>
+  </el-dialog>
+
+
   <!-- 创建新试卷 -->
   <el-dialog v-model="data.createExamPaperModalVisible" title="创建新试卷" width="600">
     <div class="exam-dialog">
@@ -894,6 +1087,7 @@ onMounted(() => {
         </div>
     </div>
   </el-dialog>
+  
   <!-- 查看试卷详情 -->
   <el-dialog v-model="data.checkExamPaperDetailModalVisible" title="试题详情" width="1000">
     <div class="exampaper-dialog">
@@ -1044,6 +1238,7 @@ onMounted(() => {
 }
 /* 模态框 */
 .exam-dialog {
+  width: 100%;
   @apply flex items-center justify-center flex-col;
 }
 .select-exam {

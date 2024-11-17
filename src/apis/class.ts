@@ -155,3 +155,33 @@ export const attentClass = (id: number) => {
     withCredentials: true,
   });
 };
+
+// 通过班级申请
+export const passClassApply = (id: number) => {
+  return httpInstance({
+    url: '/course_application/' + id + '/',
+    method: "PUT",
+    data: {
+      status: 2
+    },
+    headers: {
+      "content-type": "application/json",
+    },
+    withCredentials: true,
+  });
+};
+
+// 通过班级申请
+export const refuseClassApply = (id: number) => {
+  return httpInstance({
+    url: '/course_application/' + id + '/',
+    method: "PUT",
+    data: {
+      status: 3
+    },
+    headers: {
+      "content-type": "application/json",
+    },
+    withCredentials: true,
+  });
+};

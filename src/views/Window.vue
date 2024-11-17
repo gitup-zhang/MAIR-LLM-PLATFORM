@@ -1,15 +1,14 @@
 <script setup lang="ts">
 import { useRouter, RouterView, RouterLink } from "vue-router"
-import { reactive, toRefs } from "vue";
+import { onMounted, reactive, toRefs } from "vue";
 
 // 引入模态框组件
-import Setting from '@/components/modal/Setting.vue'
 import About from '@/components/modal/About.vue'
-import ChatMain from "@/components/chat/ChatMain.vue";
 
 const router = useRouter();
 
 const data = reactive({
+  currentPage: '',
   aboutUsVisible : false,
   settingVisible : false,
   userType: sessionStorage.userType
@@ -25,8 +24,26 @@ const openLLMWindow = () => {
 // 退出系统
 const quit = () => {
   router.push("/")
-  console.log('data:', typeof(data.userType))
 }
+
+// 判断是否是当前页
+const isCurrentPage = (pageName: string) => {
+  return pageName === data.currentPage;
+}
+
+const changePage = (pageName: string) => {
+  data.currentPage = pageName;
+}
+
+onMounted(() => {
+  if(sessionStorage.userType === '1'){
+    data.currentPage = 'me';
+  } else if (sessionStorage.userType === '2') {
+    data.currentPage = 'teacherMe';
+  } else {
+    data.currentPage = 'adminMe';
+  }
+})
 </script>
 
 <template>
@@ -39,19 +56,19 @@ const quit = () => {
         <span class="h-[0.15rem] w-14 bg-gray-200 mb-2 mt-2"></span>
 
         <!-- 个人信息 学生 -->
-        <RouterLink v-if="data.userType === '1'" class="sider-nav-icon" to="/me">
+        <RouterLink v-if="data.userType === '1'" class="sider-nav-icon" to="/me" @click="changePage('me')" :class="{ active: isCurrentPage('me') }">
           <icon-user  size="33" strokeWidth="3" class="mt-2"/>
           <div class="icon-text">我的</div>
         </RouterLink>
 
         <!-- 课程信息 学生 -->
-        <RouterLink v-if="data.userType === '1'" class="sider-nav-icon" to="/course">
+        <RouterLink v-if="data.userType === '1'" class="sider-nav-icon" to="/course" @click="changePage('course')" :class="{ active: isCurrentPage('course') }">
           <icon-book  size="33" strokeWidth="3" class="mt-2"/>
           <div class="icon-text">课程</div>
         </RouterLink>
 
         <!-- 实验平台 学生 -->
-        <RouterLink v-if="data.userType === '1'" class="sider-nav-icon" to="/experiment">
+        <RouterLink v-if="data.userType === '1'" class="sider-nav-icon" to="/experiment" @click="changePage('experiment')" :class="{ active: isCurrentPage('experiment')}">
           <icon-experiment  size="33" strokeWidth="3" class="mt-2"/>
           <div class="icon-text">实验</div>
         </RouterLink>
@@ -64,13 +81,13 @@ const quit = () => {
 
 
         <!-- 个人信息 教师 -->
-        <RouterLink v-if="data.userType === '2'" class="sider-nav-icon" to="/teacherMe">
+        <RouterLink v-if="data.userType === '2'" class="sider-nav-icon" to="/teacherMe" @click="changePage('teacherMe')"  :class="{ active: isCurrentPage('teacherMe')}">
           <icon-user  size="33" strokeWidth="3" class="mt-2"/>
           <div class="icon-text">我的</div>
         </RouterLink>
 
         <!-- 课程信息 教师 -->
-        <RouterLink v-if="data.userType === '2'" class="sider-nav-icon" to="/adminClass">
+        <RouterLink v-if="data.userType === '2'" class="sider-nav-icon" to="/adminClass" @click="changePage('adminClass')" :class="{ active: isCurrentPage('adminClass')}">
           <icon-book  size="33" strokeWidth="3" class="mt-2"/>
           <div class="icon-text">课程</div>
         </RouterLink>
@@ -78,43 +95,43 @@ const quit = () => {
 
 
         <!-- 个人信息 教务 -->
-        <RouterLink v-if="data.userType === '3'" class="sider-nav-icon" to="/adminMe">
+        <RouterLink v-if="data.userType === '3'" class="sider-nav-icon" to="/adminMe" @click="changePage('adminMe')" :class="{ active: isCurrentPage('adminMe') }">
           <icon-user  size="33" strokeWidth="3" class="mt-2"/>
           <div class="icon-text">我的</div>
         </RouterLink>
 
         <!-- 个人信息 教务 -->
-        <RouterLink v-if="data.userType === '3'" class="sider-nav-icon" to="/adminClass">
+        <RouterLink v-if="data.userType === '3'" class="sider-nav-icon" to="/adminClass" @click="changePage('adminClass')" :class="{ active: isCurrentPage('adminClass') }">
           <icon-home  size="33" strokeWidth="3" class="mt-2"/>
           <div class="icon-text">班级</div>
         </RouterLink>
 
         <!-- 用户管理 教务 -->
-        <RouterLink v-if="data.userType === '3'" class="sider-nav-icon" to="/userManageWindow">
+        <RouterLink v-if="data.userType === '3'" class="sider-nav-icon" to="/userManageWindow" @click="changePage('userManageWindow')" :class="{ active: isCurrentPage('userManageWindow') }"> 
           <icon-user-group  size="33" strokeWidth="3" class="mt-2"/>
           <div class="icon-text">用户</div>
         </RouterLink>
 
         <!-- 教务管理 教务 -->
-        <RouterLink v-if="data.userType === '3'" class="sider-nav-icon" to="/educationWindow">
+        <RouterLink v-if="data.userType === '3'" class="sider-nav-icon" to="/educationWindow" @click="changePage('educationWindow')" :class="{ active: isCurrentPage('educationWindow')}">
           <icon-interaction size="33" strokeWidth="3" class="mt-2"/>
           <div class="icon-text">教务</div>
         </RouterLink>
 
         <!-- 课程管理 教务 -->
-        <RouterLink v-if="data.userType === '3'" class="sider-nav-icon" to="/manageCourseWindow">
+        <RouterLink v-if="data.userType === '3'" class="sider-nav-icon" to="/manageCourseWindow" @click="changePage('manageCourseWindow')" :class="{ active: isCurrentPage('manageCourseWindow')}">
           <icon-book size="33" strokeWidth="3" class="mt-2"/>
           <div class="icon-text">课程</div>
         </RouterLink>
 
         <!-- 课程管理 教务 -->
-        <RouterLink v-if="data.userType === '3'" class="sider-nav-icon" to="/manageExamWindow">
+        <RouterLink v-if="data.userType === '3'" class="sider-nav-icon" to="/manageExamWindow" @click="changePage('manageExamWindow')" :class="{ active: isCurrentPage('manageExamWindow')}">
           <icon-bar-chart size="33" strokeWidth="3" class="mt-2"/>
           <div class="icon-text">考试</div>
         </RouterLink>
 
         <!-- 实验管理 教务 -->
-        <RouterLink v-if="data.userType === '3'" class="sider-nav-icon" to="/manageExperimentWindow">
+        <RouterLink v-if="data.userType === '3'" class="sider-nav-icon" to="/manageExperimentWindow" @click="changePage('manageExperimentWindow')" :class="{ active: isCurrentPage('manageExperimentWindow')}">
           <icon-experiment size="33" strokeWidth="3" class="mt-2"/>
           <div class="icon-text">实验</div>
         </RouterLink>
@@ -170,6 +187,9 @@ const quit = () => {
 }
 .sider-nav-icon:hover{
     @apply text-blue-500 bg-sky-50;
+}
+.active {
+  @apply text-blue-500 bg-sky-50;
 }
 .icon-text {
     @apply mt-1 text-xs font-medium ;

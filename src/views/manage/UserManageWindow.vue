@@ -4,6 +4,7 @@ import { ElMessage } from 'element-plus'
 import { User, Star, Message, Iphone, Aim, Location, House, Lock, Postcard } from '@element-plus/icons-vue'
 import { getUserList, getTeacherList, createUser, getUserDetail, editUserInfo } from '@/apis/user'
 import { getRoleApplyList, evaluateRoleApply } from '@/apis/role'
+import { getLocationOption } from '@/apis/location';
 
 const data = reactive({
   activeName: 'first',
@@ -47,6 +48,7 @@ const data = reactive({
   page: 1,
   count: 10,
   total: 0,
+  locationOptions: [],
   userRoleOptions: [
     {
       value: 1,
@@ -103,6 +105,7 @@ const createNewUser = async () => {
       plain: true,
     })
   }else {
+    console.log(data.newUserForm);
     const res = await createUser(data.newUserForm);
     //  输出新用户创建成功或失败提示
     if(res.status === 0){
@@ -198,11 +201,13 @@ const rejectRoleApply = async (currentRoleApply: object) => {
   }
   searchApplyList();
 }
-onMounted(() => {
+onMounted(async () => {
   // 挂载信息
   searchUser();
   searchTeacher();
   searchApplyList();
+  const res = await getLocationOption();
+  data.locationOptions = res.data;
 })
 </script>
 
@@ -366,14 +371,14 @@ onMounted(() => {
         </el-form-item>
         <!-- 所属地区 -->
         <el-form-item>
-          <el-input v-model="data.newUserForm.area_id" placeholder="请输入所属地区">
-          <!-- 图标 -->
+          <el-cascader v-model="data.newUserForm.area_id" :options="data.locationOptions" :props="{ checkStrictly: true }" style="width:100%" clearable placeholder="请选择所属地区" >
+            <!-- 图标 -->
             <template #prefix>
               <el-icon color="#409efc" class="no-inherit">
                 <Location />
               </el-icon>
             </template>
-          </el-input>
+          </el-cascader>
         </el-form-item>
         <!-- 身份证号码 -->
         <el-form-item>

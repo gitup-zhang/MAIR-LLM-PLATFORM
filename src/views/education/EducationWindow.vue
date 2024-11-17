@@ -3,7 +3,7 @@ import { onMounted, reactive } from 'vue';
 import { useRouter } from 'vue-router'
 import { ElMessage } from 'element-plus';
 import { OfficeBuilding, User, Notebook, Location } from '@element-plus/icons-vue'
-import { getLocationList, deleteLocation, getLocationDetail, modifyLocationDetail, createLocation } from '@/apis/location';
+import { getLocationList, deleteLocation, getLocationDetail, modifyLocationDetail, createLocation, getLocationOption } from '@/apis/location';
 import { getCollegeList, getCollegeDetail, submitCollegeModifyInfo, createCollege, deleteCollege, getCollegeOptions } from '@/apis/college';
 import { getCourseList, getCourseOptions } from '@/apis/course';
 import { getClassApplyList, evaluateClassApply, createClass, getClassDetail, modifyClass } from '@/apis/class';
@@ -66,6 +66,7 @@ const data = reactive({
   collegeOptions: [],
   courseOptions: [],
   teacherOptions: [],
+  locationOptions: [] as any, 
   page: 1,
   count: 10,
   total: 0
@@ -102,8 +103,6 @@ const submitLocationCreate = async () => {
       type: 'success',
       plain: true,
     })
-    // 刷新数据
-    searchLocation();
     data.createLocationModalVisible = false;
   } else {
     ElMessage({
@@ -113,10 +112,11 @@ const submitLocationCreate = async () => {
     })
   }
   searchLocation();
+  searchCollege();
 }
 // 提交教学单位创建
 const submitCollegeCreate = async () => {
-  data.newCollegeForm.area_id = Number(data.newCollegeForm.area_id);
+  data.newCollegeForm.area_id = data.newCollegeForm.area_id;
   const res = await createCollege(data.newCollegeForm);
   if(res.status === 0){
     ElMessage({
@@ -351,11 +351,14 @@ const checkExamDetail = async (id: number) => {
   })
 }
 
-onMounted(() => {
+onMounted(async () => {
   // 挂载地区信息
   searchLocation();
   searchCollege();
   searchClass();
+
+  const res = await getLocationOption();
+  data.locationOptions = res.data;
 })
 
 </script>
@@ -515,7 +518,7 @@ onMounted(() => {
         </el-form-item>
         <!-- 上级地区 -->
         <el-form-item>
-          <el-input v-model="data.newLocationForm.parent_id" placeholder="请输入上级地区" />
+          <el-cascader v-model="data.newLocationForm.parent_id" :options="data.locationOptions" :props="{ checkStrictly: true }" style="width:100%" clearable placeholder="请选择上级地区" />
         </el-form-item>
         <!-- 注册按钮 -->
         <el-form-item>
@@ -535,7 +538,7 @@ onMounted(() => {
         </el-form-item>
         <!-- 上级地区 -->
         <el-form-item>
-          <el-input v-model="data.newCollegeForm.area_id" placeholder="请输入所属地区" />
+          <el-cascader v-model="data.newCollegeForm.area_id" :options="data.locationOptions" style="width:100%" clearable placeholder="请选择所属地区" />
         </el-form-item>
         <!-- 注册按钮 -->
         <el-form-item>

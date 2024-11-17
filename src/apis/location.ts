@@ -59,7 +59,6 @@ export const modifyLocationDetail = (id: number, name: string, parentId: number)
 
 //  创建地区
 export const createLocation = (form: object) => {
-    console.log(typeof(form))
     return httpInstance({
       url:'/area/',
       method: "POST",
@@ -70,4 +69,17 @@ export const createLocation = (form: object) => {
       },
       withCredentials: true
     })
+}
+
+//  获取地区选项
+export const getLocationOption = () => {
+  return httpInstance({
+    url:'/area/option/',
+    method: "GET",
+    headers: {
+      "content-type": "application/json",
+      "charset": "utf-8"
+    },
+    withCredentials: true
+  })
 }

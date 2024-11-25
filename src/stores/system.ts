@@ -16,7 +16,8 @@ export const useSystemStore = defineStore({
     // 个人头像修改模态框是否可见
     userAvatarEditVisible: false,
     // 聊天模态框是否可见
-    chatWindowVisible: false
+    chatWindowVisible: false,
+    currentPage: ''
   }),
   actions: {
     // 打开设置模态框

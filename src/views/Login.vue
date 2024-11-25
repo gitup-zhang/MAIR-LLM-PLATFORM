@@ -5,14 +5,13 @@ import { Iphone, Lock, User, Document } from '@element-plus/icons-vue'
 import { ElMessage } from 'element-plus'
 import { getUserData } from '@/apis/login'
 import { registerUserData } from '@/apis/login'
-// 引入 User 状态
-import { useUserStore } from '@/stores/user'
+import { useSystemStore } from '@/stores/system'
 // 引入国际化组件
 import { useI18n } from "vue-i18n";
 
 const { t } = useI18n();
 const router = useRouter();
-const userStore = useUserStore();
+const systemStore = useSystemStore();
 
 // 页面运行相关数据
 const data = reactive({
@@ -111,14 +110,22 @@ const loginSubmit = async () => {
       sessionStorage.idcard = userData.data.idcard;
       // 设置登录状态
       localStorage.setItem('loginflag', 'true');
+      // 设置当前页激活
+      if(sessionStorage.userType === '1'){
+        systemStore.currentPage = 'studentMe';
+      } else if (sessionStorage.userType === '2') {
+        systemStore.currentPage = 'teacherMe';
+      } else {
+        systemStore.currentPage = 'adminMe';
+      }
     }
   }
   if(sessionStorage.userType === '3'){
-    router.push('/AdminMe');
+    router.push('/adminMe');
   } else if (sessionStorage.userType === '2') {
-    router.push('/TeacherMe');
+    router.push('/teacherMe');
   } else {
-    router.push('/Me');
+    router.push('/studentMe');
   }
 }
 
@@ -144,9 +151,7 @@ const registerSubmit = async () => {
       plain: true,
     })
   } else {
-    console.log('registerForm', registerForm)
     const newUserData = await registerUserData(registerForm);
-    console.log('!!!!', newUserData)
     registerVisible.value = false
   } 
 }

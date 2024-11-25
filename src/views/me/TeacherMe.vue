@@ -60,17 +60,17 @@ const userRoleOptions = ref([
   {
     value: 1,
     label: '学生',
-    disabled: Number(userInfoForm.type) >= 1
+    disabled: Number(sessionStorage.userType) >= 1
   },
   {
     value: 2,
     label: '教师',
-    disabled: Number(userInfoForm.type) >= 2
+    disabled: Number(sessionStorage.userType) >= 2
   },
   {
     value: 3,
     label: '教务',
-    disabled: Number(userInfoForm.type) >= 3
+    disabled: Number(sessionStorage.userType) >= 3
   }
 ])
 
@@ -112,7 +112,6 @@ const getAndStoreUserData = async () => {
   userStore.email = userData.data.email;
   userStore.phone = userData.data.phone;
   userStore.role = getUserType(userData.data.type);
-  userStore.roleId = userData.data.type;
   userStore.personId = userData.data.idcard;
   userStore.createTime = userData.data.create_time;
   userStore.modifyTime = userData.data.modify_time;
@@ -216,8 +215,8 @@ const modifyPassword = async () => {
       check_password: data.modifyPassword.checkPassword
     }
     const res = await submitModifyPassword(newForm);
-    // 输出密码修改成功或失败提示
-    if(res.status === 0){
+        // 输出密码修改成功或失败提示
+        if(res.status === 0){
       ElMessage({
         message: '密码修改成功',
         type: 'success',
@@ -245,17 +244,15 @@ onMounted(() => {
   <el-row class="me-page">
     <el-col :lg="20" class="left-main">
       <div class="me-container">
-        
         <!-- 顶部轮播图 -->
         <el-carousel indicator-position="outside">
           <el-carousel-item>
-            <img src="../assets/img/carousel/carousel-1.png"alt="大模型实训平台">
+            <img src="../../assets/img/carousel/carousel-1.png"alt="大模型实训平台">
           </el-carousel-item>
           <el-carousel-item>
-            <img src="../assets/img/carousel/carousel-2.png"alt="大模型实训平台">
+            <img src="../../assets/img/carousel/carousel-2.png"alt="大模型实训平台">
           </el-carousel-item>
         </el-carousel>
-
         <!-- 个人信息展示 -->
         <el-descriptions border>
           <el-descriptions-item
@@ -281,12 +278,11 @@ onMounted(() => {
           </el-descriptions-item>
           <el-descriptions-item label="地址">西土城路10号, 海淀区, 北京市</el-descriptions-item>
         </el-descriptions>
-
-        <!-- 角色申请记录 -->
-        <el-row class="role-apply">
+        
+        <el-row class="edit-info">
           <el-col :span="8">
             <!-- 选择新角色 -->
-            <el-select v-model="data.newType" placeholder="请选择角色" style="width: 240px" class="mr-2">
+            <el-select v-model="data.newType" placeholder="请选择角色" style="width: 240px">
               <el-option
                 v-for="item in userRoleOptions"
                 :key="item.value"
@@ -297,7 +293,6 @@ onMounted(() => {
             </el-select>
             <el-button type="primary" class="ml-2" @click="submitRoleApply()">申请</el-button>
           </el-col>
-          
           <el-col :span="16">
             <!-- 密码修改 -->
             <el-form :model="data.modifyPassword" class="w-[40rem] flex flex-row">
@@ -340,16 +335,16 @@ onMounted(() => {
               </el-form-item>
             </el-form>
           </el-col>
-          
-          <!-- 角色申请记录 -->
-          <el-table :data="data.applicationList" border style="width: 100%">
-              <el-table-column prop="user_id_number" label="号码" />
-              <el-table-column prop="user_name" label="昵称" width="80"/>
-              <el-table-column prop="new_type_desc" label="申请角色" width="90"/>
-              <el-table-column prop="create_time" label="时间"/>
-              <el-table-column prop="status_desc" label="审核状态"/>
-          </el-table>
         </el-row>
+
+        <!-- 角色申请记录 -->
+        <el-table :data="data.applicationList" border style="width: 100%">
+          <el-table-column prop="user_id_number" label="号码" />
+          <el-table-column prop="user_name" label="昵称"/>
+          <el-table-column prop="new_type_desc" label="申请角色"/>
+          <el-table-column prop="create_time" label="时间"/>
+          <el-table-column prop="status_desc" label="审核状态"/>
+        </el-table>
       </div>
     </el-col>
 
@@ -362,59 +357,59 @@ onMounted(() => {
         类型：{{ userStore.role }}
       </div>
       <!-- 用户信息概览 -->
-      <!-- <el-row class="overview"> -->
+      <el-row class="overview">
         <!-- 课程数量信息概览 -->
-        <!-- <el-col :span="8">
+        <el-col :span="8">
           <div class="overview-title">
             课程数量
           </div>
-          <div class="overview-content"> -->
+          <div class="overview-content">
             <!-- 图标 -->
-            <!-- <el-icon class="no-inherit text-sky-600">
+            <el-icon class="no-inherit text-sky-600">
               <DataBoard />
             </el-icon>
             8
           </div>
-        </el-col> -->
+        </el-col>
 
         <!-- 实验数量信息概览 -->
-        <!-- <el-col  :span="8">
+        <el-col  :span="8">
           <div class="overview-title">
             实验次数
           </div>
-          <div class="overview-content"> -->
+          <div class="overview-content">
             <!-- 图标 -->
-            <!-- <el-icon class="no-inherit text-sky-600">
+            <el-icon class="no-inherit text-sky-600">
               <SetUp />
             </el-icon>
             3
           </div>
-        </el-col> -->
+        </el-col>
 
-          <!-- <el-col  :span="8" class="overview-title">
+          <el-col  :span="8" class="overview-title">
             <div class="overview-title">
               考试数量
             </div>
-            <div class="overview-content"> -->
+            <div class="overview-content">
               <!-- 图标 -->
-              <!-- <el-icon class="no-inherit text-sky-600">
+              <el-icon class="no-inherit text-sky-600">
                 <Document />
               </el-icon>
               2
             </div>
           </el-col>
-        </el-row> -->
+        </el-row>
         <!-- 与大模型对话按钮 -->
         <el-button type="primary" class="font-bold">与大模型对话</el-button>
     </el-col>
   </el-row>
 
   <!-- 修改头像框 -->
-  <el-dialog v-model="systemStore.userAvatarEditVisible" title="修改个人信息" width="400">
+  <el-dialog v-model="systemStore.userAvatarEditVisible" title="修改个人信息" width="400" center>
   </el-dialog>
 
   <!-- 修改个人信息框 -->
-  <el-dialog v-model="systemStore.userInfoEditVisible" title="修改个人信息" width="400">
+  <el-dialog v-model="systemStore.userInfoEditVisible" title="修改个人信息" width="400" center>
     <div class="edit-dialog">
       <el-form :model="userInfoForm" class="w-[20rem]">
         
@@ -529,6 +524,9 @@ onMounted(() => {
   width: 100%;
   height: 100%;
 }
+.edit-info {
+  @apply mt-3;
+}
 /* 左侧区域 */
 .left-main {
   width: 100%;
@@ -542,6 +540,7 @@ onMounted(() => {
   @apply bg-light-50 p-3 rounded-md;
 }
 .role-apply {
+  width: 100%;
   @apply mt-3;
 }
 .role-apply-display {

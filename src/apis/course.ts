@@ -147,3 +147,49 @@ export const modifyCourse = (id: number, form: object) => {
     withCredentials: true
   })
 }
+
+// 获取课程的章节列表
+export const getCourseChapterList = (id: number, page: number, count: number) => {
+  return httpInstance({
+    url:'/course_relation/',
+    method: "GET",
+    params: {
+      course_id: id,
+      page: page,
+      count: count,
+      order: '-'
+    },
+    headers: {
+      "content-type": "application/json",
+    },
+    withCredentials: true
+  })
+}
+
+// 删除课程中的章节
+export const deleteCourseChapter = (id: number) => {
+  return httpInstance({
+    url:'/course_relation/' + id + '/',
+    method: "DELETE",
+    headers: {
+      "content-type": "application/json",
+    },
+    withCredentials: true
+  })
+}
+
+// 向课程添加章节
+export const addChapter = (courseId: number, chapterId: number) => {
+  return httpInstance({
+    url:'/course_relation/',
+    method: "POST",
+    data: {
+      course_id: courseId,
+      subcourse_id: chapterId
+    },
+    headers: {
+      "content-type": "application/json",
+    },
+    withCredentials: true
+  })
+}

@@ -45,9 +45,15 @@ const data = reactive({
     area_id: 4,
     idcard: ''
   },
-  page: 1,
-  count: 10,
-  total: 0,
+  userPage: 1,
+  userCount: 10,
+  userTotal: 0,
+  teacherPage: 1,
+  teacherCount: 10,
+  teacherTotal: 0,
+  applyPage: 1,
+  applyCount: 10,
+  applyTotal: 0,
   locationOptions: [],
   userRoleOptions: [
     {
@@ -67,19 +73,17 @@ const data = reactive({
 
 // 搜索用户列表
 const searchUser = async () => {
-  const res = await getUserList(data.inputUserName, data.inputUserId, data.page, data.count);
-  console.log(res)
+  const res = await getUserList(data.inputUserName, data.inputUserId, data.userPage, data.userCount);
   data.userList = res.data.list;
+  data.userTotal = res.data.total;
 }
-// 搜索教师列表
-const searchTeacher = async () => {
-  const res = await getTeacherList(data.inputTeacherName, data.inputTeacherId, data.page, data.count);
-  data.teacherList = res.data.list;
+// 用户分页
+const userSizeChange = (val: any) => {
+  searchUser();
 }
-// 搜索申请列表
-const searchApplyList = async () => {
-  const res = await getRoleApplyList(data.inputRoleApllyId, data.page, data.count);
-  data.roleApplyList = res.data.list;
+const userCurrentChange = (val: any) => {
+  data.userPage = val;
+  searchUser();
 }
 // 创建用户
 const createNewUser = async () => {
@@ -105,7 +109,6 @@ const createNewUser = async () => {
       plain: true,
     })
   }else {
-    console.log(data.newUserForm);
     const res = await createUser(data.newUserForm);
     //  输出新用户创建成功或失败提示
     if(res.status === 0){
@@ -143,7 +146,7 @@ const checkPassword = (newPassword: string, confirmPassword: string) => {
   }
 }
 // 打开并初始化用户信息修改框
-const openModifyUserModal = async (currentUserInfo: object) => {
+const openModifyUserModal = async (currentUserInfo: any) => {
   data.modifyUserModalVisible = true;
   const res = await getUserDetail(currentUserInfo.id);
   data.currentUserId = currentUserInfo.id;
@@ -175,8 +178,39 @@ const modifyUserInfo = async () => {
   data.modifyUserModalVisible = false;
   searchUser();
 }
+
+
+// 搜索教师列表
+const searchTeacher = async () => {
+  const res = await getTeacherList(data.inputTeacherName, data.inputTeacherId, data.teacherPage, data.teacherCount);
+  data.teacherList = res.data.list;
+  data.teacherTotal = res.data.total;
+}
+// 教师分页
+const teacherSizeChange = (val: any) => {
+  searchTeacher();
+}
+const teacherCurrentChange = (val: any) => {
+  data.teacherPage = val;
+  searchTeacher();
+}
+
+// 搜索申请列表
+const searchApplyList = async () => {
+  const res = await getRoleApplyList(data.inputRoleApllyId, data.applyPage, data.applyCount);
+  data.roleApplyList = res.data.list;
+  data.applyTotal = res.data.total;
+}
+// 申请分页
+const applySizeChange = (val: any) => {
+  searchApplyList();
+}
+const applyCurrentChange = (val: any) => {
+  data.applyPage = val;
+  searchApplyList();
+}
 // 通过角色申请
-const passRoleApply = async (currentRoleApply: object) => {
+const passRoleApply = async (currentRoleApply: any) => {
   const res = await evaluateRoleApply(currentRoleApply.id, 2);
   //  输出角色申请成功或失败提示
   if(res.status === 0){
@@ -185,11 +219,17 @@ const passRoleApply = async (currentRoleApply: object) => {
       type: 'success',
         plain: true,
     })
+  } else {
+    ElMessage({
+      message: '通过该申请失败',
+      type: 'warning',
+        plain: true,
+    })
   }
   searchApplyList();
 }
 // 拒绝角色申请
-const rejectRoleApply = async (currentRoleApply: object) => {
+const rejectRoleApply = async (currentRoleApply: any) => {
   const res = await evaluateRoleApply(currentRoleApply.id, 3);
   //  输出角色申请成功或失败提示
   if(res.status === 0){
@@ -198,9 +238,16 @@ const rejectRoleApply = async (currentRoleApply: object) => {
       type: 'success',
       plain: true,
     })
+  } else {
+    ElMessage({
+      message: '拒绝申请失败',
+      type: 'warning',
+      plain: true,
+    })
   }
   searchApplyList();
 }
+
 onMounted(async () => {
   // 挂载信息
   searchUser();
@@ -213,7 +260,7 @@ onMounted(async () => {
 
 <template>
   <div class="manage-page">
-    <el-tabs v-model="data.activeName" type="border-card" class="user-tabs" @tab-click="handleClick">
+    <el-tabs v-model="data.activeName" type="border-card" class="user-tabs">
       <el-tab-pane label="用户管理" name="first">
         <!-- 检索用户 -->
         <div class="manage-box">
@@ -241,7 +288,15 @@ onMounted(async () => {
             </el-table-column>
           </el-table>
           <!-- 分页 -->
-          <el-pagination background layout="prev, pager, next" :total="1" class="mt-4 mx-auto"/>
+          <el-pagination 
+            background 
+            layout="prev, pager, next"
+            :total="data.userTotal" 
+            :page-size="data.userCount"
+            @size-change="userSizeChange"
+            @current-change="userCurrentChange"
+            class="mt-4 mx-auto"
+          />
         </div>
       </el-tab-pane>
       <el-tab-pane label="教师管理" name="second">
@@ -265,7 +320,15 @@ onMounted(async () => {
             <el-table-column prop="area_name" label="所属地区"/>
           </el-table>
           <!-- 分页 -->
-          <el-pagination background layout="prev, pager, next" :total="1" class="mt-4 mx-auto"/>
+          <el-pagination 
+            background 
+            layout="prev, pager, next"
+            :total="data.teacherTotal" 
+            :page-size="data.teacherCount"
+            @size-change="teacherSizeChange"
+            @current-change="teacherCurrentChange"
+            class="mt-4 mx-auto"
+          />
         </div>
       </el-tab-pane>
       <el-tab-pane label="角色申请管理" name="third">
@@ -294,14 +357,22 @@ onMounted(async () => {
             </el-table-column>
           </el-table>
           <!-- 分页 -->
-          <el-pagination background layout="prev, pager, next" :total="1" class="mt-4 mx-auto"/>
+          <el-pagination 
+            background 
+            layout="prev, pager, next"
+            :total="data.applyTotal" 
+            :page-size="data.applyCount"
+            @size-change="applySizeChange"
+            @current-change="applyCurrentChange"
+            class="mt-4 mx-auto"
+          />
         </div>
       </el-tab-pane>
     </el-tabs>
   </div>
 
   <!-- 创建用户框 -->
-  <el-dialog v-model="data.createUserModalVisible" title="创建新用户" width="400">
+  <el-dialog v-model="data.createUserModalVisible" title="创建新用户" width="400" center>
     <div class="user-dialog">
       <el-form :model="data.newUserForm" class="w-[20rem]">
         <!-- 昵称 -->
@@ -421,7 +492,7 @@ onMounted(async () => {
     </div>
   </el-dialog>
   <!-- 修改用户信息框 -->
-  <el-dialog v-model="data.modifyUserModalVisible" title="修改用户信息" width="400">
+  <el-dialog v-model="data.modifyUserModalVisible" title="修改用户信息" width="400" center>
     <div class="user-dialog">
       <el-form :model="data.currentUserForm" class="w-[20rem]">
         <!-- 昵称 -->
@@ -491,14 +562,14 @@ onMounted(async () => {
         </el-form-item>
         <!-- 所属地区 -->
         <el-form-item>
-          <el-input v-model="data.currentUserForm.area_id" placeholder="请输入所属地区">
-          <!-- 图标 -->
+          <el-cascader v-model="data.currentUserForm.area_id" :options="data.locationOptions" style="width:100%" clearable placeholder="请选择所属地区">
+            <!-- 图标 -->
             <template #prefix>
               <el-icon color="#409efc" class="no-inherit">
                 <Location />
               </el-icon>
             </template>
-          </el-input>
+          </el-cascader>
         </el-form-item>
         <!-- 身份证号码 -->
         <el-form-item>

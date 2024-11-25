@@ -29,7 +29,7 @@ const data = reactive({
   locationForm: {
     id: 0,
     name: '',
-    collegeId: 0
+    parentId: 0
   },
   collegeForm: {},
   // 创建表单
@@ -67,32 +67,27 @@ const data = reactive({
   courseOptions: [],
   teacherOptions: [],
   locationOptions: [] as any, 
-  page: 1,
-  count: 10,
-  total: 0
+  // 分页
+  locationTotal: 0,
+  locationPage: 1,
+  locationCount: 10,
+  collegeTotal: 0,
+  collegePage: 1,
+  collegeCount: 10,
+  classTotal: 0,
+  classPage: 1,
+  classCount: 10,
+  classApplyTotal: 0,
+  classApplyPage: 1,
+  classApplyCount: 10,
 })
 
 // 搜索地区
 const searchLocation = async () => {
-  const res = await getLocationList(data.inputLocation, data.page, data.count)
-  data.locationList = res.data.list
+  const res = await getLocationList(data.inputLocation, data.locationPage, data.locationCount);
+  data.locationList = res.data.list;
+  data.locationTotal = res.data.total;
 }
-// 搜索教学单位
-const searchCollege = async () => {
-  const res = await getCollegeList(data.inputCollege, data.page, data.count);
-  data.collegeList = res.data.list;
-}
-// 搜索班级
-const searchClass = async () => {
-  const res = await getCourseList(data.inputClass, data.page, data.count);
-  data.classList = res.data.list;
-}
-// 搜索班级申请记录
-const searchClassApply = async () => {
-  const res = await getClassApplyList(data.inputClassApply, data.page, data.count);
-  data.classApplyList = res.data.list;
-}
-
 // 提交地区创建
 const submitLocationCreate = async () => {
   data.newLocationForm.parent_id = Number(data.newLocationForm.parent_id);
@@ -114,6 +109,71 @@ const submitLocationCreate = async () => {
   searchLocation();
   searchCollege();
 }
+// 删除地区
+const removeLocation = async (id: number) => {
+  const res = await deleteLocation(id);
+  if(res.status === 0){
+    ElMessage({
+      message: '删除成功',
+      type: 'success',
+      plain: true,
+    })
+    // 刷新数据
+    searchLocation();
+  } else {
+    ElMessage({
+      message: '删除失败',
+      type: 'warning',
+      plain: true,
+    })
+  }
+}
+// 修改地区
+const modityLocationDetail = async (id: number) => {
+  // 打开模态框
+  data.modifyLocationModalVisible = true;
+  const res = await getLocationDetail(id);
+  data.locationForm.name = res.data.name;
+  data.locationForm.parentId = res.data.parent_id;
+  data.locationForm.id = res.data.id;
+}
+// 提交地区修改
+const submitLocationModify = async () => {
+  const res = await modifyLocationDetail(data.locationForm.id, data.locationForm.name, data.locationForm.collegeId)
+  if(res.status === 0){
+    ElMessage({
+      message: '修改成功',
+      type: 'success',
+      plain: true,
+    })
+    // 刷新数据
+    searchLocation();
+    data.modifyLocationModalVisible = false;
+  } else {
+    ElMessage({
+      message: '修改失败',
+      type: 'warning',
+      plain: true,
+    })
+  }
+  searchLocation();
+}
+// 地区分页
+const locationSizeChange = (val: any) => {
+  searchLocation();
+}
+const locationCurrentChange = (val: any) => {
+  data.locationPage = val;
+  searchLocation();
+}
+
+
+// 搜索教学单位
+const searchCollege = async () => {
+  const res = await getCollegeList(data.inputCollege, data.collegePage, data.collegeCount);
+  data.collegeList = res.data.list;
+  data.collegeTotal = res.data.total;
+}
 // 提交教学单位创建
 const submitCollegeCreate = async () => {
   data.newCollegeForm.area_id = data.newCollegeForm.area_id;
@@ -133,6 +193,68 @@ const submitCollegeCreate = async () => {
     })
   }
   searchCollege();
+}
+// 删除教学单位
+const removeCollege = async (id: number) => {
+  const res = await deleteCollege(id);
+  if(res.status === 0){
+    ElMessage({
+      message: '删除成功',
+      type: 'success',
+      plain: true,
+    })
+  } else {
+    ElMessage({
+      message: '删除失败',
+      type: 'warning',
+      plain: true,
+    })
+  }
+  searchCollege();
+}
+// 修改教学单位
+const modityCollegeDetail = async (id: number) => {
+  // 打开模态框
+  data.modifyCollegeModalVisible = true;
+  const res = await getCollegeDetail(id);
+  data.collegeForm = res.data;
+}
+// 提交教学单位修改
+const submitCollegeModify = async () => {
+  const res = await submitCollegeModifyInfo(data.collegeForm.id, data.collegeForm);
+  if(res.status === 0){
+    ElMessage({
+      message: '修改成功',
+      type: 'success',
+      plain: true,
+    })
+    // 刷新数据
+    searchLocation();
+    data.modifyCollegeModalVisible = false;
+  } else {
+    ElMessage({
+      message: '修改失败',
+      type: 'warning',
+      plain: true,
+    })
+  }
+  searchCollege();
+}
+// 教学单位分页
+const collegeSizeChange = (val: any) => {
+  searchCollege();
+}
+const collegeCurrentChange = (val: any) => {
+  data.collegePage = val;
+  searchCollege();
+}
+
+
+// 搜索班级
+const searchClass = async () => {
+  const res = await getCourseList(data.inputClass, data.classPage, data.classCount);
+  data.classList = res.data.list;
+  data.classTotal = res.data.total;
 }
 // 提交新班级创建
 const submitClassCreate = async () => {
@@ -156,110 +278,12 @@ const submitClassCreate = async () => {
   }
   searchClass();
 }
-
-// 删除地区
-const removeLocation = async (id: number) => {
-  const res = await deleteLocation(id);
-  if(res.status === 0){
-    ElMessage({
-      message: '删除成功',
-      type: 'success',
-      plain: true,
-    })
-    // 刷新数据
-    searchLocation();
-  } else {
-    ElMessage({
-      message: '删除失败',
-      type: 'warning',
-      plain: true,
-    })
-  }
-}
-// 删除教学单位
-const removeCollege = async (id: number) => {
-  const res = await deleteCollege(id);
-  if(res.status === 0){
-    ElMessage({
-      message: '删除成功',
-      type: 'success',
-      plain: true,
-    })
-  } else {
-    ElMessage({
-      message: '删除失败',
-      type: 'warning',
-      plain: true,
-    })
-  }
-  searchCollege();
-}
-
-// 修改地区
-const modityLocationDetail = async (id: number) => {
-  // 打开模态框
-  data.modifyLocationModalVisible = true;
-  const res = await getLocationDetail(id);
-  data.locationForm.name = res.data.name;
-  data.locationForm.collegeId = res.data.parent_id;
-  data.locationForm.id = res.data.id;
-}
-// 修改教学单位
-const modityCollegeDetail = async (id: number) => {
-  // 打开模态框
-  data.modifyCollegeModalVisible = true;
-  const res = await getCollegeDetail(id);
-  data.collegeForm = res.data;
-}
 // 班级修改
 const modifyClassDetail = async (id: number) => {
   data.modifyClassModalVisible = true;
   const res = await getClassDetail(id);
   data.currentClass = res.data;
   data.currentClassId = id;
-}
-
-// 提交地区修改
-const submitLocationModify = async () => {
-  const res = await modifyLocationDetail(data.locationForm.id, data.locationForm.name, data.locationForm.collegeId)
-  if(res.status === 0){
-    ElMessage({
-      message: '修改成功',
-      type: 'success',
-      plain: true,
-    })
-    // 刷新数据
-    searchLocation();
-    data.modifyLocationModalVisible = false;
-  } else {
-    ElMessage({
-      message: '修改失败',
-      type: 'warning',
-      plain: true,
-    })
-  }
-  searchLocation();
-}
-// 提交教学单位修改
-const submitCollegeModify = async () => {
-  const res = await submitCollegeModifyInfo(data.collegeForm.id, data.collegeForm);
-  if(res.status === 0){
-    ElMessage({
-      message: '修改成功',
-      type: 'success',
-      plain: true,
-    })
-    // 刷新数据
-    searchLocation();
-    data.modifyCollegeModalVisible = false;
-  } else {
-    ElMessage({
-      message: '修改失败',
-      type: 'warning',
-      plain: true,
-    })
-  }
-  searchCollege();
 }
 // 提交班级信息修改
 const submitClassModify = async () => {
@@ -284,7 +308,6 @@ const submitClassModify = async () => {
   }
   searchClass();
 }
-
 // 打开班级申请记录框
 const openClassApplyModal = async () => {
   data.classApplyModalVisible = true;
@@ -301,7 +324,21 @@ const openCreateClassModal = async () => {
   res = await getTeacherOptions();
   data.teacherOptions = res.data;
 }
+// 班级分页
+const classSizeChange = (val: any) => {
+  searchClass();
+}
+const classCurrentChange = (val: any) => {
+  data.classPage = val;
+  searchClass();
+}
 
+
+// 搜索班级申请记录
+const searchClassApply = async () => {
+  const res = await getClassApplyList(data.inputClassApply, data.classApplyPage, data.classApplyCount);
+  data.classApplyList = res.data.list;
+}
 // 通过班级申请
 const passClassApply = async (id: number) => {
   const res = await evaluateClassApply(id, 2);
@@ -340,6 +377,14 @@ const rejectClassApply = async (id: number) => {
   }
   searchClassApply();
 }
+// 班级申请记录分页
+const classApplySizeChange = (val: any) => {
+  searchClassApply();
+}
+const classApplyCurrentChange = (val: any) => {
+  data.classApplyPage = val;
+  searchClassApply();
+}
 
 // 查看考试安排
 const checkExamDetail = async (id: number) => {
@@ -356,7 +401,6 @@ onMounted(async () => {
   searchLocation();
   searchCollege();
   searchClass();
-
   const res = await getLocationOption();
   data.locationOptions = res.data;
 })
@@ -365,7 +409,7 @@ onMounted(async () => {
 
 <template>
   <div class="education-page">
-    <el-tabs v-model="data.activeName" type="border-card" class="education-tabs" @tab-click="handleClick">
+    <el-tabs v-model="data.activeName" type="border-card" class="education-tabs">
       <!-- 地区管理 -->
       <el-tab-pane label="地区管理" name="first" class="education-pane">
         <div class="search-box">
@@ -392,7 +436,15 @@ onMounted(async () => {
             </el-table-column>
           </el-table>
           <!-- 分页 -->
-          <el-pagination background layout="prev, pager, next" :total="1" class="mt-4 mx-auto" />
+          <el-pagination 
+            background 
+            layout="prev, pager, next"
+            :total="data.locationTotal" 
+            :page-size="data.locationCount"
+            @size-change="locationSizeChange"
+            @current-change="locationCurrentChange"
+            class="mt-4 mx-auto"
+          />
         </div>
       </el-tab-pane>
       <!-- 教学单位管理 -->
@@ -420,7 +472,15 @@ onMounted(async () => {
             </el-table-column>
           </el-table>
           <!-- 分页 -->
-          <el-pagination background layout="prev, pager, next" :total="1" class="mt-4 mx-auto" />
+          <el-pagination
+            background 
+            layout="prev, pager, next"
+            :total="data.collegeTotal" 
+            :page-size="data.collegeCount"
+            @size-change="collegeSizeChange"
+            @current-change="collegeCurrentChange"
+            class="mt-4 mx-auto"
+          />
         </div>
       </el-tab-pane>
       <!-- 班级管理 -->
@@ -461,55 +521,22 @@ onMounted(async () => {
             </el-table-column>
           </el-table>
           <!-- 分页 -->
-          <el-pagination background layout="prev, pager, next" :total="1" class="mt-4 mx-auto" />
+          <el-pagination
+            background 
+            layout="prev, pager, next"
+            :total="data.classTotal" 
+            :page-size="data.classCount"
+            @size-change="classSizeChange"
+            @current-change="classCurrentChange"
+            class="mt-4 mx-auto"
+          />
         </div>
       </el-tab-pane>
     </el-tabs>
-
   </div>
 
-  <!-- 修改地区框 -->
-  <el-dialog v-model="data.modifyLocationModalVisible" title="地区修改" width="400">
-    <div class="education-dialog">
-      <el-form :model="data.locationForm" class="w-[20rem]">
-        <!-- 地区 -->
-        <el-form-item>
-          <el-input v-model="data.locationForm.name" placeholder="请输入地区名称" />
-        </el-form-item>
-        <!-- 上级地区 -->
-        <el-form-item>
-          <el-input v-model="data.locationForm.collegeId" placeholder="请输入上级地区" disabled />
-        </el-form-item>
-        <!-- 注册按钮 -->
-        <el-form-item>
-          <el-button class="w-[20rem]" type="primary" @click="submitLocationModify()">提交修改</el-button>
-        </el-form-item>
-      </el-form>
-    </div>
-  </el-dialog>
-
-  <!-- 修改教学单位框 -->
-  <el-dialog v-model="data.modifyCollegeModalVisible" title="教学单位修改" width="400">
-    <div class="education-dialog">
-      <el-form :model="data.collegeForm" class="w-[20rem]">
-        <!-- 地区 -->
-        <el-form-item>
-          <el-input v-model="data.collegeForm.name" placeholder="请输入教学单位名称" />
-        </el-form-item>
-        <!-- 上级地区 -->
-        <el-form-item>
-          <el-input v-model="data.collegeForm.area_id" placeholder="请输入所属地区" disabled />
-        </el-form-item>
-        <!-- 注册按钮 -->
-        <el-form-item>
-          <el-button class="w-[20rem]" type="primary" @click="submitCollegeModify()">提交修改</el-button>
-        </el-form-item>
-      </el-form>
-    </div>
-  </el-dialog>
-
   <!-- 创建地区框 -->
-  <el-dialog v-model="data.createLocationModalVisible" title="地区创建" width="400">
+  <el-dialog v-model="data.createLocationModalVisible" title="地区创建" width="400" center>
     <div class="education-dialog">
       <el-form :model="data.newLocationForm" class="w-[20rem]">
         <!-- 地区 -->
@@ -527,9 +554,28 @@ onMounted(async () => {
       </el-form>
     </div>
   </el-dialog>
+  <!-- 修改地区框 -->
+  <el-dialog v-model="data.modifyLocationModalVisible" title="地区修改" width="400" center>
+    <div class="education-dialog">
+      <el-form :model="data.locationForm" class="w-[20rem]">
+        <!-- 地区 -->
+        <el-form-item>
+          <el-input v-model="data.locationForm.name" placeholder="请输入地区名称" />
+        </el-form-item>
+        <!-- 上级地区 -->
+        <el-form-item>
+          <el-cascader v-model="data.locationForm.parentId" :options="data.locationOptions" :props="{ checkStrictly: true }" style="width:100%" clearable disabled placeholder="无" />
+        </el-form-item>
+        <!-- 注册按钮 -->
+        <el-form-item>
+          <el-button class="w-[20rem]" type="primary" @click="submitLocationModify()">提交修改</el-button>
+        </el-form-item>
+      </el-form>
+    </div>
+  </el-dialog>
 
   <!-- 创建教学单位框 -->
-  <el-dialog v-model="data.createCollegeModalVisible" title="教学单位创建" width="400">
+  <el-dialog v-model="data.createCollegeModalVisible" title="教学单位创建" width="400" center>
     <div class="education-dialog">
       <el-form :model="data.newCollegeForm" class="w-[20rem]">
         <!-- 地区 -->
@@ -547,9 +593,28 @@ onMounted(async () => {
       </el-form>
     </div>
   </el-dialog>
+  <!-- 修改教学单位框 -->
+  <el-dialog v-model="data.modifyCollegeModalVisible" title="教学单位修改" width="400" center>
+    <div class="education-dialog">
+      <el-form :model="data.collegeForm" class="w-[20rem]">
+        <!-- 地区 -->
+        <el-form-item>
+          <el-input v-model="data.collegeForm.name" placeholder="请输入教学单位名称" />
+        </el-form-item>
+        <!-- 上级地区 -->
+        <el-form-item>
+          <el-cascader v-model="data.collegeForm.area_id" :options="data.locationOptions" style="width:100%" disabled clearable placeholder="无" />
+        </el-form-item>
+        <!-- 注册按钮 -->
+        <el-form-item>
+          <el-button class="w-[20rem]" type="primary" @click="submitCollegeModify()">提交修改</el-button>
+        </el-form-item>
+      </el-form>
+    </div>
+  </el-dialog>
 
   <!-- 创建班级框 -->
-  <el-dialog v-model="data.createClassModalVisible" title="班级创建" width="600">
+  <el-dialog v-model="data.createClassModalVisible" title="班级创建" width="600" center>
     <div class="education-dialog">
       <el-form :model="data.newClassForm" class="w-[30rem]">
         <!-- 班级名 -->
@@ -654,9 +719,8 @@ onMounted(async () => {
       </el-form>
     </div>
   </el-dialog>
-
   <!-- 修改班级框 -->
-  <el-dialog v-model="data.modifyClassModalVisible" title="班级修改" width="600">
+  <el-dialog v-model="data.modifyClassModalVisible" title="班级修改" width="600" center>
       <div class="education-dialog">
       <el-form :model="data.currentClass" class="w-[30rem]">
         <!-- 班级名 -->
@@ -763,7 +827,7 @@ onMounted(async () => {
   </el-dialog>
 
   <!-- 班级申请记录框 -->
-  <el-dialog v-model="data.classApplyModalVisible" title="班级申请记录" width="1200">
+  <el-dialog v-model="data.classApplyModalVisible" title="班级申请记录" width="1200" center>
     <div class="education-dialog">
       <div class="dialog-search-box">
           <div class="search-title">班级申请记录</div>
@@ -789,7 +853,15 @@ onMounted(async () => {
             </el-table-column>
           </el-table>
           <!-- 分页 -->
-          <el-pagination background layout="prev, pager, next" :total="1" class="mt-4 mx-auto" />
+          <el-pagination
+            background 
+            layout="prev, pager, next"
+            :total="data.classApplyTotal" 
+            :page-size="data.classApplyCount"
+            @size-change="classApplySizeChange"
+            @current-change="classApplyCurrentChange"
+            class="mt-4 mx-auto"
+          />
         </div>
     </div>
   </el-dialog>

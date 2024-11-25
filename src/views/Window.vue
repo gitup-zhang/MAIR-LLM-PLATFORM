@@ -1,18 +1,17 @@
 <script setup lang="ts">
 import { useRouter, RouterView, RouterLink } from "vue-router"
-import { onMounted, reactive, toRefs } from "vue";
-
+import { onMounted, reactive, toRefs, watch } from "vue";
+import { useSystemStore } from '@/stores/system'
 // 引入模态框组件
 import About from '@/components/modal/About.vue'
 
 const router = useRouter();
-
+const systemStore = useSystemStore();
 const data = reactive({
   currentPage: '',
   aboutUsVisible : false,
   settingVisible : false,
   userType: sessionStorage.userType
-  // userType: '2'
 })
 const { aboutUsVisible, settingVisible } = toRefs(data)
 
@@ -20,30 +19,17 @@ const { aboutUsVisible, settingVisible } = toRefs(data)
 const openLLMWindow = () => {
   window.open('http://localhost:3001/');
 }
-
 // 退出系统
 const quit = () => {
   router.push("/")
 }
-
 // 判断是否是当前页
 const isCurrentPage = (pageName: string) => {
-  return pageName === data.currentPage;
+  return pageName === systemStore.currentPage;
 }
-
 const changePage = (pageName: string) => {
-  data.currentPage = pageName;
+  systemStore.currentPage = pageName;
 }
-
-onMounted(() => {
-  if(sessionStorage.userType === '1'){
-    data.currentPage = 'me';
-  } else if (sessionStorage.userType === '2') {
-    data.currentPage = 'teacherMe';
-  } else {
-    data.currentPage = 'adminMe';
-  }
-})
 </script>
 
 <template>
@@ -56,7 +42,7 @@ onMounted(() => {
         <span class="h-[0.15rem] w-14 bg-gray-200 mb-2 mt-2"></span>
 
         <!-- 个人信息 学生 -->
-        <RouterLink v-if="data.userType === '1'" class="sider-nav-icon" to="/me" @click="changePage('me')" :class="{ active: isCurrentPage('me') }">
+        <RouterLink v-if="data.userType === '1'" class="sider-nav-icon" to="/studentMe" @click="changePage('studentMe')" :class="{ active: isCurrentPage('studentMe') }">
           <icon-user  size="33" strokeWidth="3" class="mt-2"/>
           <div class="icon-text">我的</div>
         </RouterLink>
@@ -107,7 +93,7 @@ onMounted(() => {
         </RouterLink>
 
         <!-- 用户管理 教务 -->
-        <RouterLink v-if="data.userType === '3'" class="sider-nav-icon" to="/userManageWindow" @click="changePage('userManageWindow')" :class="{ active: isCurrentPage('userManageWindow') }"> 
+        <RouterLink v-if="data.userType === '3'" class="sider-nav-icon" to="/userManage" @click="changePage('userManage')" :class="{ active: isCurrentPage('userManage') }"> 
           <icon-user-group  size="33" strokeWidth="3" class="mt-2"/>
           <div class="icon-text">用户</div>
         </RouterLink>
@@ -125,7 +111,7 @@ onMounted(() => {
         </RouterLink>
 
         <!-- 课程管理 教务 -->
-        <RouterLink v-if="data.userType === '3'" class="sider-nav-icon" to="/manageExamWindow" @click="changePage('manageExamWindow')" :class="{ active: isCurrentPage('manageExamWindow')}">
+        <RouterLink v-if="data.userType === '3'" class="sider-nav-icon" to="/manageExam" @click="changePage('manageExam')" :class="{ active: isCurrentPage('manageExam')}">
           <icon-bar-chart size="33" strokeWidth="3" class="mt-2"/>
           <div class="icon-text">考试</div>
         </RouterLink>

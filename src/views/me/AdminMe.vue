@@ -1,6 +1,5 @@
 <script setup lang="ts">
 import { onMounted, reactive, ref, toRefs } from "vue"
-import { RouterLink, useRouter } from "vue-router"
 import { User, Star, Message, Iphone, Aim, Location, House, Lock } from '@element-plus/icons-vue'
 import { ElMessage } from 'element-plus'
 // 引入 User、System 状态
@@ -60,17 +59,17 @@ const userRoleOptions = ref([
   {
     value: 1,
     label: '学生',
-    disabled: Number(userInfoForm.type) >= 1
+    disabled: Number(sessionStorage.userType) >= 1
   },
   {
     value: 2,
     label: '教师',
-    disabled: Number(userInfoForm.type) >= 2
+    disabled: Number(sessionStorage.userType) >= 2
   },
   {
     value: 3,
     label: '教务',
-    disabled: Number(userInfoForm.type) >= 3
+    disabled: Number(sessionStorage.userType) >= 3
   }
 ])
 
@@ -243,14 +242,14 @@ onMounted(() => {
 <template>
   <el-row class="me-page">
     <el-col :lg="20" class="left-main">
-      <div class="me-container">
+        <div class="me-container">
         <!-- 顶部轮播图 -->
         <el-carousel indicator-position="outside">
           <el-carousel-item>
-            <img src="../assets/img/carousel/carousel-1.png"alt="大模型实训平台">
+            <img src="../../assets/img/carousel/carousel-1.png"alt="大模型实训平台">
           </el-carousel-item>
           <el-carousel-item>
-            <img src="../assets/img/carousel/carousel-2.png"alt="大模型实训平台">
+            <img src="../../assets/img/carousel/carousel-2.png"alt="大模型实训平台">
           </el-carousel-item>
         </el-carousel>
         <!-- 个人信息展示 -->
@@ -265,7 +264,6 @@ onMounted(() => {
             <el-image
               style="width: 100px; height: 100px"
               src="https://cube.elemecdn.com/0/88/03b0d39583f48206768a7534e55bcpng.png"
-              @click="systemStore.openUserAvatarEditModal()"
             />
             <el-button type="primary" @click="systemStore.openUserInfoEditModal()">修改我的信息</el-button>
           </el-descriptions-item>
@@ -348,8 +346,8 @@ onMounted(() => {
       </div>
     </el-col>
 
-    <!-- 右侧 用户信息区 -->
-    <el-col :lg="4" class="right-main">
+        <!-- 右侧 用户信息区 -->
+        <el-col :lg="4" class="right-main">
       <div class="username">
         欢迎 {{ userStore.name }} 用户登录
       </div>
@@ -404,15 +402,10 @@ onMounted(() => {
     </el-col>
   </el-row>
 
-  <!-- 修改头像框 -->
-  <el-dialog v-model="systemStore.userAvatarEditVisible" title="修改个人信息" width="400">
-  </el-dialog>
-
   <!-- 修改个人信息框 -->
-  <el-dialog v-model="systemStore.userInfoEditVisible" title="修改个人信息" width="400">
+  <el-dialog v-model="systemStore.userInfoEditVisible" title="修改个人信息" width="400" center>
     <div class="edit-dialog">
       <el-form :model="userInfoForm" class="w-[20rem]">
-        
         <!-- 昵称 -->
         <el-form-item>
           <el-input v-model="userInfoForm.name" placeholder="请输入昵称">

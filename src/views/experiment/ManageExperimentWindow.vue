@@ -314,7 +314,7 @@ onMounted(() => {
   </div>
 
     <!-- 创建镜像框 -->
-    <el-dialog v-model="data.createImageModalVisible" title="创建镜像" width="600">
+    <el-dialog v-model="data.createImageModalVisible" title="创建镜像" width="600" center>
     <div class="admin-class-dialog">
       <el-form :model="data.newImageForm" class="w-[30rem]">
         <!-- 选择源镜像 -->
@@ -367,7 +367,7 @@ onMounted(() => {
     </div>
   </el-dialog>
   <!-- 修改镜像框 -->
-  <el-dialog v-model="data.modifyImageModalVisible" title="修改镜像" width="600">
+  <el-dialog v-model="data.modifyImageModalVisible" title="修改镜像" width="600" center>
     <div class="admin-class-dialog">
       <el-form :model="data.newImageForm" class="w-[30rem]">
         <!-- 选择源镜像 -->
@@ -453,6 +453,9 @@ onMounted(() => {
   @apply flex flex-col mt-4 mr-2;
 }
 .image-dialog {
+  @apply flex items-center justify-center flex-col;
+}
+.admin-class-dialog {
   @apply flex items-center justify-center flex-col;
 }
 </style>

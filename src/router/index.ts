@@ -1,9 +1,15 @@
 import { createRouter, createWebHistory } from 'vue-router'
 import Login from '@/views/Login.vue'
 import Window from '@/views/Window.vue'
-import Me from '@/views/Me.vue'
-import TeacherMe from '@/views/TeacherMe.vue'
-import AdminMe from '@/views/AdminMe.vue'
+// 个人首页
+import StudentMe from '@/views/me/StudentMe.vue'
+import TeacherMe from '@/views/me/TeacherMe.vue'
+import AdminMe from '@/views/me/AdminMe.vue'
+// 用户相关
+import UserManage from '@/views/user/UserManage.vue'
+
+
+
 // 班级
 import AdminClass from '@/views/class/AdminClass.vue'
 // 课程
@@ -21,11 +27,11 @@ import ClassExam from '@/views/exam/ClassExam.vue'
 import ExamResult from '@/views/exam/ExamResult.vue'
 import ExamPaperDetail from '@/views/exam/ExamPaperDetail.vue'
 // 教务管理
-import UserManageWindow from '@/views/manage/UserManageWindow.vue'
+
 import EducationWindow from '@/views/education/EducationWindow.vue'
 import ManageCourseWindow from '@/views/course/ManageCourseWindow.vue'
 import ManageExperimentWindow from '@/views/experiment/ManageExperimentWindow.vue'
-import ManageExamWindow from '@/views/exam/ManageExamWindow.vue'
+import ManageExam from '@/views/exam/ManageExam.vue'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -61,9 +67,9 @@ const router = createRouter({
           component: StuCourseReport
         },
         {
-          path: '/me',
-          name: 'me',
-          component: Me
+          path: '/studentMe',
+          name: 'studentMe',
+          component: StudentMe
         },
         {
           path: '/teacherMe',
@@ -106,9 +112,9 @@ const router = createRouter({
           component: ExamPaperDetail
         },
         {
-          path: '/userManageWindow',          
-          name: 'userManageWindow',
-          component: UserManageWindow
+          path: '/userManage',          
+          name: 'userManage',
+          component: UserManage
         },
         {
           path: '/educationWindow',          
@@ -126,9 +132,9 @@ const router = createRouter({
           component: ManageExperimentWindow
         },
         {
-          path: '/manageExamWindow',          
-          name: 'manageExamWindow',
-          component: ManageExamWindow
+          path: '/manageExam',          
+          name: 'manageExam',
+          component: ManageExam
         },
         {
           path: '/adminClass',          

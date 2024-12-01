@@ -2,12 +2,14 @@
 import { onMounted, reactive } from 'vue';
 import { ElMessage } from 'element-plus';
 import { Document, Files, Filter, Warning, Check, CollectionTag } from '@element-plus/icons-vue';
+import { useRouter } from 'vue-router'
 import { getClassOptions } from '@/apis/class';
 import { getExamInfoList, createExam, deleteExam, getExamDetail } from '@/apis/exam';
 import { getExamPaperList, createExamPaper, getExamPaperDetail, modifyExamPaper, deleteExamPaper, getExamPaperOptions } from '@/apis/examPaper';
 import { getExamQuestionList, getExamQuestionDetail, createQuestion, getQuestionRelation, getQuestionOptions, createQuestionRelation, deleteQuestionRelation, modifyQuestion } from '@/apis/examQuestion';
 import { getExamResultList } from '@/apis/examResult';
 
+const router = useRouter();
 const data = reactive({
   activeName: 'first',
   // 数据项
@@ -146,10 +148,9 @@ const data = reactive({
   examPage: 1,
   examCount: 10,
   examTotal: 0,
-
-  page: 1,
-  count: 10,
-  total: 0
+  examResultPage: 1,
+  examResultCount: 10,
+  examResultTotal: 0
 })
 
 // 搜索试题
@@ -465,8 +466,9 @@ const examPaperCurrentChange = (val: any) => {
 
 // 搜索考试
 const searchExam = async () => {
-  const res = await getExamInfoList(data.inputExam, data.page, data.count);
+  const res = await getExamInfoList(data.inputExam, data.examPage, data.examCount);
   data.examList = res.data.list;
+  data.examTotal = res.data.total;
 }
 // 打开创建考试模态框
 const openCreateExamModal = async () => {
@@ -533,10 +535,38 @@ const checkExamDetail = async (id: number) => {
   data.examForm.type = res.data.type;
   data.examForm.type_desc = res.data.type_desc;
 }
+// 考试分页
+const examSizeChange = (val: any) => {
+  searchExam();
+}
+const examCurrentChange = (val: any) => {
+  data.examPage = val;
+  searchExam();
+}
+
 // 搜索考试结果
 const searchExamResult = async () => {
-  const res = await getExamResultList(data.inputExamResultId, data.inputExamResultStuId, data.page, data.count);
+  const res = await getExamResultList(data.inputExamResultId, data.inputExamResultStuId, data.examResultPage, data.examResultCount);
   data.examResultList = res.data.list;
+  data.examResultTotal = res.data.total;
+}
+// 查看考试详情
+const checkExamPaper = (id: number) => {
+  router.push({
+    path: "/examPaperDetail",
+    query: {
+      type: 'teacher',
+      userExamId: id
+    }
+  })
+}
+// 考试结果分页
+const examResultSizeChange = (val: any) => {
+  searchExamResult();
+}
+const examResultCurrentChange = (val: any) => {
+  data.examResultPage = val;
+  searchExamResult();
 }
 
 onMounted(() => {
@@ -658,7 +688,15 @@ onMounted(() => {
             </el-table-column>
           </el-table>
           <!-- 分页 -->
-          <el-pagination background layout="prev, pager, next" :total="1" class="mt-4 mx-auto" />
+          <el-pagination
+            background 
+            layout="prev, pager, next"
+            :total="data.examTotal" 
+            :page-size="data.examCount"
+            @size-change="examSizeChange"
+            @current-change="examCurrentChange"
+            class="mt-4 mx-auto"
+          />
         </div>
       </el-tab-pane>
       <el-tab-pane label="考试结果" name="Fourth">
@@ -687,12 +725,20 @@ onMounted(() => {
             </el-table-column>
             <el-table-column fixed="right" label="操作">
               <template v-slot="scope">
-                <el-button v-if="scope.row.status === 3" link type="primary" size="small" @click="checkExamPaperDetail()">查看试卷</el-button>
+                <el-button v-if="scope.row.status === 3" link type="primary" size="small" @click="checkExamPaper(scope.row.id)">查看试卷</el-button>
               </template>
             </el-table-column>
           </el-table>
           <!-- 分页 -->
-          <el-pagination background layout="prev, pager, next" :total="1" class="mt-4 mx-auto" />
+          <el-pagination
+            background 
+            layout="prev, pager, next"
+            :total="data.examResultTotal" 
+            :page-size="data.examResultCount"
+            @size-change="examResultSizeChange"
+            @current-change="examResultCurrentChange"
+            class="mt-4 mx-auto"
+          />
         </div>
       </el-tab-pane>
     </el-tabs>

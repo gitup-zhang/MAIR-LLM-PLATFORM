@@ -245,7 +245,7 @@ onMounted(() => {
 </script>
 
 <template>
-  <div class="education-page">
+  <div class="experiment-page">
     <el-tabs v-model="data.activeName" type="border-card" class="education-tabs" @tab-click="handleClick">
       <el-tab-pane label="镜像管理" name="first" class="education-pane">
         <div class="search-box">
@@ -424,7 +424,7 @@ onMounted(() => {
 
 <style scoped>
 /* 整体页面设置 */
-.education-page {
+.experiment-page {
   width: 100%;
   height: 100%;
   box-shadow: 1px 1px 2px #d1d5db;

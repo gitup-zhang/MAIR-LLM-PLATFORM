@@ -7,7 +7,10 @@ import TeacherMe from '@/views/me/TeacherMe.vue'
 import AdminMe from '@/views/me/AdminMe.vue'
 // 用户相关
 import UserManage from '@/views/user/UserManage.vue'
-
+// 考试
+import ManageExam from '@/views/exam/ManageExam.vue'
+// 实验
+import ManageExperiment from '@/views/experiment/ManageExperiment.vue'
 
 
 // 班级
@@ -30,8 +33,8 @@ import ExamPaperDetail from '@/views/exam/ExamPaperDetail.vue'
 
 import EducationWindow from '@/views/education/EducationWindow.vue'
 import ManageCourseWindow from '@/views/course/ManageCourseWindow.vue'
-import ManageExperimentWindow from '@/views/experiment/ManageExperimentWindow.vue'
-import ManageExam from '@/views/exam/ManageExam.vue'
+
+
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -127,9 +130,9 @@ const router = createRouter({
           component: ManageCourseWindow
         },
         {
-          path: '/manageExperimentWindow',          
-          name: 'manageExperimentWindow',
-          component: ManageExperimentWindow
+          path: '/manageExperiment',          
+          name: 'manageExperiment',
+          component: ManageExperiment
         },
         {
           path: '/manageExam',          

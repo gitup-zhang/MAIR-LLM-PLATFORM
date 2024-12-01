@@ -117,7 +117,7 @@ const changePage = (pageName: string) => {
         </RouterLink>
 
         <!-- 实验管理 教务 -->
-        <RouterLink v-if="data.userType === '3'" class="sider-nav-icon" to="/manageExperimentWindow" @click="changePage('manageExperimentWindow')" :class="{ active: isCurrentPage('manageExperimentWindow')}">
+        <RouterLink v-if="data.userType === '3'" class="sider-nav-icon" to="/manageExperiment" @click="changePage('manageExperiment')" :class="{ active: isCurrentPage('manageExperiment')}">
           <icon-experiment size="33" strokeWidth="3" class="mt-2"/>
           <div class="icon-text">实验</div>
         </RouterLink>

@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { reactive, ref, toRefs } from 'vue'
-import { RouterLink, useRouter } from "vue-router"
+import { useRouter } from "vue-router"
 import { Iphone, Lock, User, Document } from '@element-plus/icons-vue'
 import { ElMessage } from 'element-plus'
 import { getUserData } from '@/apis/login'
@@ -189,7 +189,7 @@ const registerSubmit = async () => {
         </el-form-item>
         <!-- 输入密码 -->
         <el-form-item>
-          <el-input v-model="loginForm.password" :placeholder="$t('login.inputPassword')">
+          <el-input type="password" v-model="loginForm.password" :placeholder="$t('login.inputPassword')">
             <!-- 图标 -->
             <template #prefix>
               <el-icon color="#0850f8" class="no-inherit">
@@ -385,10 +385,9 @@ const registerSubmit = async () => {
   @apply flex-row;
 }
 .login-link-item {
+  color: #0850f8;
   @apply m-4;
 }
-
-
 .register-dialog {
   width: 100%;
   @apply flex items-center justify-center flex-col pt-3;

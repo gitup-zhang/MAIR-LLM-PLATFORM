@@ -348,8 +348,7 @@ onMounted(() => {
             <!-- 右侧固定列 展示详情信息 -->
             <el-table-column fixed="right" label="操作" min-width="60">
               <template v-slot="scope">
-                <el-button link type="primary" size="small" @click="getCourseDetail(scope.row)">详情</el-button>
-                
+                <el-button link type="primary" size="small" @click="getCourseDetail(scope.row)">详情</el-button>  
               </template>
             </el-table-column>
           </el-table>

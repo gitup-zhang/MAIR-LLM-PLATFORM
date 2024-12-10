@@ -48,13 +48,13 @@ const changePage = (pageName: string) => {
         </RouterLink>
 
         <!-- 课程信息 学生 -->
-        <RouterLink v-if="data.userType === '1'" class="sider-nav-icon" to="/course" @click="changePage('course')" :class="{ active: isCurrentPage('course') }">
+        <RouterLink v-if="data.userType === '1'" class="sider-nav-icon" to="/studentClass" @click="changePage('studentClass')" :class="{ active: isCurrentPage('studentClass') }">
           <icon-book  size="33" strokeWidth="3" class="mt-2"/>
           <div class="icon-text">课程</div>
         </RouterLink>
 
         <!-- 实验平台 学生 -->
-        <RouterLink v-if="data.userType === '1'" class="sider-nav-icon" to="/experiment" @click="changePage('experiment')" :class="{ active: isCurrentPage('experiment')}">
+        <RouterLink v-if="data.userType === '1'" class="sider-nav-icon" to="/studentExperiment" @click="changePage('studentExperiment')" :class="{ active: isCurrentPage('studentExperiment')}">
           <icon-experiment  size="33" strokeWidth="3" class="mt-2"/>
           <div class="icon-text">实验</div>
         </RouterLink>

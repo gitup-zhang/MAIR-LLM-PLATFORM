@@ -1,12 +1,12 @@
 <script setup lang="ts">
 import { onMounted, reactive, ref, toRefs } from "vue"
-import { RouterLink, useRouter } from "vue-router"
 import { User, Star, Message, Iphone, Aim, Location, House, Lock } from '@element-plus/icons-vue'
 import { ElMessage } from 'element-plus'
 // 引入 User、System 状态
 import { useUserStore } from '@/stores/user'
 import { useSystemStore } from '@/stores/system'
 import { getUserInfo, editUserInfo, getApplyRoleList, submitModifyPassword, applyRole } from '@/apis/user'
+import { getRoleApplyList, cancelRoleApply } from '@/apis/role';
 
 const userStore = useUserStore();
 const systemStore = useSystemStore();
@@ -118,7 +118,6 @@ const getAndStoreUserData = async () => {
   userStore.modifyTime = userData.data.modify_time;
   userStore.areaId = userData.data.area_id;
 }
-
 // 提交修改
 const userInfoEditSubmit = async () => {
   const res = await editUserInfo(userInfoForm, userStore.id);
@@ -141,6 +140,13 @@ const userInfoEditSubmit = async () => {
   }
 }
 
+
+// 获取角色申请记录列表
+const getUserApplyRoleList = async () => {
+  const res = await getRoleApplyList(sessionStorage.userId, data.page, data.count);
+  data.applicationList = res.data.list;
+  data.total = res.data.total;
+}
 // 提交角色修改
 const submitRoleApply = async () => {
   const res = await applyRole(data.newType)
@@ -153,18 +159,29 @@ const submitRoleApply = async () => {
     getUserApplyRoleList();
   } else {
     ElMessage({
-      message: res.message,
+      message: '申请失败',
       type: 'warning',
       plain: true,
     })
   }
-  console.log(res)
 }
-
-// 获取角色申请记录列表
-const getUserApplyRoleList = async () => {
-  const res = await getApplyRoleList();
-  data.applicationList = res.data.list;
+// 取消角色修改
+const removeRoleApply = async (id: number) => {
+  const res = await cancelRoleApply(id);
+  if(res.status === 0){
+    ElMessage({
+      message: '角色申请已取消',
+      type: 'success',
+      plain: true,
+    })
+  } else {
+    ElMessage({
+      message: '角色申请取消失败',
+      type: 'warning',
+      plain: true,
+    })
+  }
+  getUserApplyRoleList();
 }
 
 // 检查密码格式
@@ -187,7 +204,7 @@ const checkPassword = (newPassword: string, confirmPassword: string) => {
 }
 
 // 提交密码修改
-const modifyPassword = async () => {
+const submitPasswordModify = async () => {
   // 检查非空
   if(data.modifyPassword.oldPassword === '' || data.modifyPassword.newPassowrd === '' || data.modifyPassword.checkPassword ===''){
     ElMessage({
@@ -233,6 +250,16 @@ const modifyPassword = async () => {
   }
 }
 
+
+// 分页
+const handleSizeChange = (val: any) => {
+  getUserApplyRoleList();
+}
+const handleCurrentChange = (val: any) => {
+  data.page = val;
+  getUserApplyRoleList();
+}
+
 onMounted(() => {
   // 挂载用户数据
   getAndStoreUserData();
@@ -242,176 +269,132 @@ onMounted(() => {
 </script>
 
 <template>
-  <el-row class="me-page">
-    <el-col :lg="20" class="left-main">
-      <div class="me-container">
-        
-        <!-- 顶部轮播图 -->
-        <el-carousel indicator-position="outside">
-          <el-carousel-item>
-            <img src="../../assets/img/carousel/carousel-1.png"alt="大模型实训平台">
-          </el-carousel-item>
-          <el-carousel-item>
-            <img src="../../assets/img/carousel/carousel-2.png"alt="大模型实训平台">
-          </el-carousel-item>
-        </el-carousel>
-
-        <!-- 个人信息展示 -->
-        <el-descriptions border>
-          <el-descriptions-item
+  <div class="me-page">
+    <div class="me-container">
+      <!-- 顶部轮播图 -->
+      <el-carousel indicator-position="outside">
+        <el-carousel-item>
+          <img src="../../assets/img/carousel/carousel-1.png" alt="大模型实训平台">
+        </el-carousel-item>
+        <el-carousel-item>
+          <img src="../../assets/img/carousel/carousel-2.png" alt="大模型实训平台">
+        </el-carousel-item>
+        <el-carousel-item>
+          <img src="../../assets/img/carousel/carousel-3.png" alt="大模型实训平台">
+        </el-carousel-item>
+        <el-carousel-item>
+          <img src="../../assets/img/carousel/carousel-4.png" alt="大模型实训平台">
+        </el-carousel-item>
+      </el-carousel>
+      <!-- 个人信息展示 -->
+      <el-descriptions border>
+        <el-descriptions-item
           :rowspan="2"
           :width="140"
           label="头像"
           align="center"
-          >
-            <!-- 头像照片 -->
-            <el-image
-              style="width: 100px; height: 100px"
-              src="https://cube.elemecdn.com/0/88/03b0d39583f48206768a7534e55bcpng.png"
-              @click="systemStore.openUserAvatarEditModal()"
+        >
+          <!-- 头像照片 -->
+          <el-image
+            style="width: 100px; height: 100px"
+            src="https://cube.elemecdn.com/0/88/03b0d39583f48206768a7534e55bcpng.png"
+            @click="systemStore.openUserAvatarEditModal()"
+          />
+          <el-button type="primary" @click="systemStore.openUserInfoEditModal()">修改我的信息</el-button>
+        </el-descriptions-item>
+        <el-descriptions-item label="用户名">{{ userStore.nickname }}</el-descriptions-item>
+        <el-descriptions-item label="手机号">{{ userStore.phone }}</el-descriptions-item>
+        <el-descriptions-item label="邮箱">{{ userStore.email }}</el-descriptions-item>
+        <el-descriptions-item label="学号">{{ userStore.stuId }}</el-descriptions-item>
+        <el-descriptions-item label="标签">
+          <el-tag size="small">北京邮电大学</el-tag>
+        </el-descriptions-item>
+        <el-descriptions-item label="地址">西土城路10号, 海淀区, 北京市</el-descriptions-item>
+      </el-descriptions>
+      <el-row class="role-apply">
+        <!-- 申请新角色 -->
+        <el-col :span="8">
+          <!-- 选择新角色 -->
+          <el-select v-model="data.newType" placeholder="请选择角色" style="width: 240px" class="mr-2">
+            <el-option
+              v-for="item in userRoleOptions"
+              :key="item.value"
+              :label="item.label"
+              :value="item.value"
+              :disabled="item.disabled"
             />
-            <el-button type="primary" @click="systemStore.openUserInfoEditModal()">修改我的信息</el-button>
-          </el-descriptions-item>
-          <el-descriptions-item label="用户名">{{ userStore.nickname }}</el-descriptions-item>
-          <el-descriptions-item label="手机号">{{ userStore.phone }}</el-descriptions-item>
-          <el-descriptions-item label="邮箱">{{ userStore.email }}</el-descriptions-item>
-          <el-descriptions-item label="学号">{{ userStore.stuId }}</el-descriptions-item>
-          <el-descriptions-item label="标签">
-            <el-tag size="small">北京邮电大学</el-tag>
-          </el-descriptions-item>
-          <el-descriptions-item label="地址">西土城路10号, 海淀区, 北京市</el-descriptions-item>
-        </el-descriptions>
-
+          </el-select>
+          <el-button type="primary" class="ml-2" @click="submitRoleApply()">申请</el-button>
+        </el-col>
+        <!-- 密码修改 -->
+        <el-col :span="16">
+          <el-form :model="data.modifyPassword" class="w-[40rem] flex flex-row">
+            <!-- 输入原密码 -->
+            <el-form-item class="mr-1">
+              <el-input type="password" v-model="data.modifyPassword.oldPassword" placeholder="请输入原始密码">
+                <!-- 图标 -->
+                <template #prefix>
+                  <el-icon color="#409efc" class="no-inherit">
+                    <Lock />
+                  </el-icon>
+                </template>
+              </el-input>
+            </el-form-item>
+            <!-- 输入新密码 -->
+            <el-form-item class="mr-1">
+              <el-input type="password" v-model="data.modifyPassword.newPassowrd" placeholder="请输入新密码">
+                <!-- 图标 -->
+                <template #prefix>
+                  <el-icon color="#409efc" class="no-inherit">
+                    <Lock />
+                  </el-icon>
+                </template>
+              </el-input>
+            </el-form-item>
+            <!-- 确认新密码 -->
+            <el-form-item class="mr-1">
+              <el-input type="password" v-model="data.modifyPassword.checkPassword" placeholder="请确认新密码">
+                <!-- 图标 -->
+                <template #prefix>
+                  <el-icon color="#409efc" class="no-inherit">
+                    <Lock />
+                  </el-icon>
+                </template>
+              </el-input>
+            </el-form-item>
+            <!-- 确认按钮 -->
+            <el-form-item>
+              <el-button class="w-[5rem]" type="primary" @click="submitPasswordModify()">确认修改</el-button>
+            </el-form-item>
+          </el-form>
+        </el-col>
+          
         <!-- 角色申请记录 -->
-        <el-row class="role-apply">
-          <el-col :span="8">
-            <!-- 选择新角色 -->
-            <el-select v-model="data.newType" placeholder="请选择角色" style="width: 240px" class="mr-2">
-              <el-option
-                v-for="item in userRoleOptions"
-                :key="item.value"
-                :label="item.label"
-                :value="item.value"
-                :disabled="item.disabled"
-              />
-            </el-select>
-            <el-button type="primary" class="ml-2" @click="submitRoleApply()">申请</el-button>
-          </el-col>
-          
-          <el-col :span="16">
-            <!-- 密码修改 -->
-            <el-form :model="data.modifyPassword" class="w-[40rem] flex flex-row">
-              <!-- 输入原密码 -->
-              <el-form-item class="mr-1">
-                <el-input v-model="data.modifyPassword.oldPassword" placeholder="请输入原始密码">
-                  <!-- 图标 -->
-                  <template #prefix>
-                    <el-icon color="#409efc" class="no-inherit">
-                      <Lock />
-                    </el-icon>
-                  </template>
-                </el-input>
-              </el-form-item>
-              <!-- 输入新密码 -->
-              <el-form-item class="mr-1">
-                <el-input v-model="data.modifyPassword.newPassowrd" placeholder="请输入新密码">
-                  <!-- 图标 -->
-                  <template #prefix>
-                    <el-icon color="#409efc" class="no-inherit">
-                      <Lock />
-                    </el-icon>
-                  </template>
-                </el-input>
-              </el-form-item>
-              <!-- 确认新密码 -->
-              <el-form-item class="mr-1">
-                <el-input v-model="data.modifyPassword.checkPassword" placeholder="请确认新密码">
-                  <!-- 图标 -->
-                  <template #prefix>
-                    <el-icon color="#409efc" class="no-inherit">
-                      <Lock />
-                    </el-icon>
-                  </template>
-                </el-input>
-              </el-form-item>
-              <!-- 确认按钮 -->
-              <el-form-item>
-                <el-button class="w-[5rem]" type="primary" @click="modifyPassword()">确认修改</el-button>
-              </el-form-item>
-            </el-form>
-          </el-col>
-          
-          <!-- 角色申请记录 -->
-          <el-table :data="data.applicationList" border style="width: 100%">
-              <el-table-column prop="user_id_number" label="号码" />
-              <el-table-column prop="user_name" label="昵称" width="80"/>
-              <el-table-column prop="new_type_desc" label="申请角色" width="90"/>
-              <el-table-column prop="create_time" label="时间"/>
-              <el-table-column prop="status_desc" label="审核状态"/>
-          </el-table>
-        </el-row>
-      </div>
-    </el-col>
-
-    <!-- 右侧 用户信息区 -->
-    <el-col :lg="4" class="right-main">
-      <div class="username">
-        欢迎 {{ userStore.name }} 用户登录
-      </div>
-      <div class="usertype">
-        类型：{{ userStore.role }}
-      </div>
-      <!-- 用户信息概览 -->
-      <!-- <el-row class="overview"> -->
-        <!-- 课程数量信息概览 -->
-        <!-- <el-col :span="8">
-          <div class="overview-title">
-            课程数量
-          </div>
-          <div class="overview-content"> -->
-            <!-- 图标 -->
-            <!-- <el-icon class="no-inherit text-sky-600">
-              <DataBoard />
-            </el-icon>
-            8
-          </div>
-        </el-col> -->
-
-        <!-- 实验数量信息概览 -->
-        <!-- <el-col  :span="8">
-          <div class="overview-title">
-            实验次数
-          </div>
-          <div class="overview-content"> -->
-            <!-- 图标 -->
-            <!-- <el-icon class="no-inherit text-sky-600">
-              <SetUp />
-            </el-icon>
-            3
-          </div>
-        </el-col> -->
-
-          <!-- <el-col  :span="8" class="overview-title">
-            <div class="overview-title">
-              考试数量
-            </div>
-            <div class="overview-content"> -->
-              <!-- 图标 -->
-              <!-- <el-icon class="no-inherit text-sky-600">
-                <Document />
-              </el-icon>
-              2
-            </div>
-          </el-col>
-        </el-row> -->
-        <!-- 与大模型对话按钮 -->
-        <el-button type="primary" class="font-bold">与大模型对话</el-button>
-    </el-col>
-  </el-row>
-
-  <!-- 修改头像框 -->
-  <el-dialog v-model="systemStore.userAvatarEditVisible" title="修改个人信息" width="400" center>
-  </el-dialog>
+        <el-table :data="data.applicationList" border style="width: 100%">
+          <el-table-column prop="user_id_number" label="号码" />
+          <el-table-column prop="user_name" label="昵称"/>
+          <el-table-column prop="new_type_desc" label="申请角色"/>
+          <el-table-column prop="create_time" label="时间"/>
+          <el-table-column prop="status_desc" label="审核状态"/>
+          <el-table-column fixed="right" label="操作">
+            <template v-slot="scope">
+              <el-button v-if="scope.row.status === 1" link type="primary" size="small" @click="removeRoleApply(scope.row.id)">取消</el-button>
+            </template>
+          </el-table-column>
+        </el-table>
+        <!-- 分页 -->
+        <el-pagination
+          background 
+          layout="prev, pager, next"
+          :total="data.total" 
+          :page-size="data.count"
+          @size-change="handleSizeChange"
+          @current-change="handleCurrentChange"
+          class="mt-4 mx-auto"
+        />
+      </el-row>
+    </div>
+  </div>
 
   <!-- 修改个人信息框 -->
   <el-dialog v-model="systemStore.userInfoEditVisible" title="修改个人信息" width="400" center>
@@ -528,11 +511,6 @@ onMounted(() => {
 .me-page {
   width: 100%;
   height: 100%;
-}
-/* 左侧区域 */
-.left-main {
-  width: 100%;
-  height: 100%;
   @apply bg-light-500 pr-1;
 }
 .me-container {
@@ -543,32 +521,6 @@ onMounted(() => {
 }
 .role-apply {
   @apply mt-3;
-}
-.role-apply-display {
-  @apply pr-2;
-}
-/* 右侧区域 */
-.right-main {
-  width: 100%;
-  height: 100%;
-  box-shadow: 1px 1px 2px #d1d5db;
-  @apply bg-sky-50 flex flex-col p-3 rounded-md;
-}
-.username {
-  @apply text-xl font-semibold text-sky-400;
-}
-.usertype {
-  @apply text-base text-sky-400;
-}
-.overview {
-  width: 100%;
-  @apply mt-3 mb-3;
-}
-.overview-title {
-  @apply text-sky-400 text-sm ;
-}
-.overview-content{
-  @apply text-sky-600 text-xl;
 }
 /* 模态框 */
 .edit-dialog {

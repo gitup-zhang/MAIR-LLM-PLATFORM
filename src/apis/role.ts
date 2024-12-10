@@ -9,7 +9,7 @@ export const getRoleApplyList = (
     url: "/user_application/",
     method: "GET",
     params: {
-      id_number: userId,
+      user_id: userId,
       page: page,
       count: count,
     },
@@ -28,6 +28,18 @@ export const evaluateRoleApply = (id: number, status: number) => {
     data: JSON.stringify({
       status: status
     }),
+    headers: {
+      "content-type": "application/json",
+    },
+    withCredentials: true
+  })
+}
+
+// 取消角色申请
+export const cancelRoleApply = (id: number) => {
+  return httpInstance({
+    url:'/user_application/' + id + '/',
+    method: "DELETE",
     headers: {
       "content-type": "application/json",
     },

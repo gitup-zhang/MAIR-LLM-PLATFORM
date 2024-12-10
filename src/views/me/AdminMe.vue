@@ -300,7 +300,7 @@ onMounted(() => {
           <el-form :model="data.modifyPassword" class="w-[40rem] flex flex-row">
             <!-- 输入原密码 -->
             <el-form-item class="mr-1">
-              <el-input v-model="data.modifyPassword.oldPassword" placeholder="请输入原始密码">
+              <el-input type="password" v-model="data.modifyPassword.oldPassword" placeholder="请输入原始密码">
                 <!-- 图标 -->
                 <template #prefix>
                   <el-icon color="#409efc" class="no-inherit">
@@ -311,7 +311,7 @@ onMounted(() => {
             </el-form-item>
             <!-- 输入新密码 -->
             <el-form-item class="mr-1">
-              <el-input v-model="data.modifyPassword.newPassowrd" placeholder="请输入新密码">
+              <el-input type="password" v-model="data.modifyPassword.newPassowrd" placeholder="请输入新密码">
                 <!-- 图标 -->
                 <template #prefix>
                   <el-icon color="#409efc" class="no-inherit">
@@ -322,7 +322,7 @@ onMounted(() => {
             </el-form-item>
             <!-- 确认新密码 -->
             <el-form-item class="mr-1">
-              <el-input v-model="data.modifyPassword.checkPassword" placeholder="请确认新密码">
+              <el-input type="password" v-model="data.modifyPassword.checkPassword" placeholder="请确认新密码">
                 <!-- 图标 -->
                 <template #prefix>
                   <el-icon color="#409efc" class="no-inherit">

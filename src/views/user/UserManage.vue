@@ -604,19 +604,11 @@ onMounted(async () => {
   width: 100%;
 }
 
-.manage-main {
-  position: relative;
-  @apply flex flex-col;
-}
 .manage-box {
   height: 10vh;
   width: 100%;
   background-image: linear-gradient(120deg, #a1c4fd 0%, #c2e9fb 100%);
   @apply flex flex-row items-center justify-center rounded-md;
-}
-.manage-main {
-  position: relative;
-  @apply flex flex-col;
 }
 .manage-title {
   position: absolute;

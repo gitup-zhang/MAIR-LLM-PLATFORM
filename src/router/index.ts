@@ -11,10 +11,13 @@ import UserManage from '@/views/user/UserManage.vue'
 import ManageExam from '@/views/exam/ManageExam.vue'
 // 实验
 import ManageExperiment from '@/views/experiment/ManageExperiment.vue'
-
-
+import StudentExperiment from '@/views/experiment/StudentExperiment.vue'
 // 班级
 import AdminClass from '@/views/class/AdminClass.vue'
+import StudentClass from '@/views/class/StudentClass.vue'
+
+
+
 // 课程
 import Course from '@/views/course/index.vue'
 import TeacherCourse from '@/views/course/TeacherCourse.vue'
@@ -50,6 +53,41 @@ const router = createRouter({
       component: Window,
       children: [
         {
+          path: '/studentMe',
+          name: 'studentMe',
+          component: StudentMe
+        },
+        {
+          path: '/teacherMe',
+          name: 'teacherMe',
+          component: TeacherMe
+        },
+        {
+          path: '/adminMe',
+          name: 'adminMe',
+          component: AdminMe
+        },
+        {
+          path: '/studentClass',
+          name: 'studentClass',
+          component: StudentClass
+        },
+        {
+          path: '/adminClass',          
+          name: 'adminClass',
+          component: AdminClass
+        },
+        {
+          path: '/studentExperiment',          
+          name: 'studentExperiment',
+          component: StudentExperiment
+        },
+
+
+
+
+
+        {
           path: '/experiment',
           name: 'experiment',
           component: Experiment
@@ -68,21 +106,6 @@ const router = createRouter({
           path: '/stuCourseReport',
           name: 'stuCourseReport',
           component: StuCourseReport
-        },
-        {
-          path: '/studentMe',
-          name: 'studentMe',
-          component: StudentMe
-        },
-        {
-          path: '/teacherMe',
-          name: 'teacherMe',
-          component: TeacherMe
-        },
-        {
-          path: '/adminMe',
-          name: 'adminMe',
-          component: AdminMe
         },
         {
           path: '/course',
@@ -138,11 +161,6 @@ const router = createRouter({
           path: '/manageExam',          
           name: 'manageExam',
           component: ManageExam
-        },
-        {
-          path: '/adminClass',          
-          name: 'adminClass',
-          component: AdminClass
         },
       ]
     }

@@ -76,7 +76,7 @@ const openExperimentDetailModal = (courseId: number) => {
 const openStuReport = (courseId: number, subcourseId: number) => {
   data.experimentDetailModalVisible = false
   router.push({
-    path: "/stuCourseReport",
+    path: "/studentReport",
     query: {
       courseId: courseId, 
       subcourseId: subcourseId
@@ -248,7 +248,8 @@ onMounted( async () => {
       </el-col>
       <el-col :span="16">
         <el-row class="experiment-list-container">
-          <el-col :span="8" v-for="course in data.courseList" :key="course.id">
+          <el-empty v-if="data.courseList.length === 0" description="暂无课程实验信息" />
+          <el-col v-if="data.courseList.length !== 0" :span="8" v-for="course in data.courseList" :key="course.id">
             <div class="class-card">
               <img src="@/assets/img/course.png" style="width: 100%" />
               <div class="course-card-main">
@@ -265,6 +266,7 @@ onMounted( async () => {
           </el-col>
           <!-- 分页 -->
           <el-pagination
+            v-if="data.courseList.length !== 0"
             background 
             layout="prev, pager, next"
             :total="data.total" 
@@ -276,124 +278,133 @@ onMounted( async () => {
         </el-row>
       </el-col>
     </el-row>
+  </div>
+  <!-- 实验详情框 -->
+  <el-dialog v-model="data.experimentDetailModalVisible" title="实验详情" width="1200" center>
+    <!-- 章节列表 -->
+    <div class="experiment-dialog">
+      <el-empty v-if="data.subcourseList.length === 0" description="暂无章节信息" />
+      <el-table v-else :data="data.subcourseList" stripe border style="width: 100%">
+        <el-table-column prop="id" label="章节" width="60" />
+        <el-table-column prop="name" label="名称" width="80" />
+        <el-table-column prop="desc" label="描述" />
+        <el-table-column label="进度">
+          <template v-slot="scope">
+            <span>{{ scope.row.rate }}%</span>
+          </template>
+        </el-table-column>
+        <!-- 右侧固定列 展示详情信息 -->
+        <el-table-column fixed="right" label="操作" min-width="60">
+          <template v-slot="scope">
+            <el-button link type="primary" size="small" @click="openExperiment()">进入实验</el-button>
+            <el-button v-if="userStore.roleId <= 1" link type="primary" size="small"  @click="openStudyProgressModal(scope.row.id)">学习进度</el-button>
+            <el-button link type="primary" size="small" @click="openStuReport(data.currentExperimentId, scope.row.id)">学习报告</el-button>
+          </template>
+        </el-table-column>
+      </el-table>
     </div>
-
-    <!-- 实验详情框 -->
-    <el-dialog v-model="data.experimentDetailModalVisible" title="实验详情" class="experimentDetailModal" center>
-        <!-- 章节列表 -->
-        <div class="chapter-list">
-            <el-table :data="data.subcourseList" stripe border style="width: 100%">
-                <el-table-column prop="id" label="章节" width="60" />
-                <el-table-column prop="name" label="名称" width="80" />
-                <el-table-column prop="desc" label="描述" />
-                <el-table-column label="进度">
-                    <template v-slot="scope">
-                        <span>{{ scope.row.rate }}%</span>
-                    </template>
-                </el-table-column>
-                <!-- 右侧固定列 展示详情信息 -->
-                <el-table-column fixed="right" label="操作" min-width="60">
-                    <template v-slot="scope">
-                        <el-button link type="primary" size="small" @click="openExperiment()">进入实验</el-button>
-                        <el-button v-if="userStore.roleId <= 1" link type="primary" size="small"
-                            @click="openStudyProgressModal(scope.row.id)">学习进度</el-button>
-                        <el-button link type="primary" size="small"
-                            @click="openStuReport(data.currentExperimentId, scope.row.id)">学习报告</el-button>
-                    </template>
-                </el-table-column>
-            </el-table>
-        </div>
-    </el-dialog>
-
-
-    <!-- 班级通知框 -->
-    <el-dialog v-model="data.classNotificationModalVisible" title="班级通知" width="600" center>
-        <!-- 搜索框 -->
-        <div class="notification-header">
-            <el-input v-model="data.inputNotification" style="width: 240px" class="mr-3" placeholder="请输入通知标题" />
-            <el-button type="primary" class="mr-3" @click="searchNotification(data.currentExperimentId)">搜索</el-button>
-            <el-button v-if="data.canOperate" type="primary" class="mr-3"
-                @click="openCreateNotificationModal(data.currentExperimentId)">创建新通知</el-button>
-        </div>
-        <!-- 通知列表 -->
-        <div class="notification-list">
-            <el-table :data="data.notificationList" border style="width: 100%">
-                <el-table-column prop="id" label="ID" width="60" />
-                <el-table-column prop="content" label="通知内容" />
-                <el-table-column prop="file" label="文件">
-                    <template v-slot="scope">
-                        <template v-for="(file, index) in scope.row.files_info">
-                            {{ file.name }} <br>
-                        </template>
-                    </template>
-                </el-table-column>
-                <el-table-column prop="create_time" label="发布时间" />
-                <el-table-column v-if="data.canOperate" fixed="right" label="操作">
-                    <template v-slot="scope">
-                        <el-button link type="primary" size="small"
-                            @click="removeNotification(scope.row.id)">删除</el-button>
-                    </template>
-                </el-table-column>
-            </el-table>
-        </div>
-    </el-dialog>
-    <!-- 创建班级通知框 -->
-    <el-dialog v-model="data.createNotificationModalVisible" title="创建班级通知" width="600" center>
-        <div class="course-dialog">
-            <el-form :model="data.newNotificationForm" class="w-[30rem]">
-                <!-- 输入通知标题 -->
-                <el-form-item>
-                    <el-input v-model="data.newNotificationForm.content" placeholder="请输入通知标题">
-                        <!-- 图标 -->
-                        <template #prefix>
-                            <el-icon color="#409efc" class="no-inherit">
-                                <Document />
-                            </el-icon>
-                        </template>
-                    </el-input>
-                </el-form-item>
-                <!-- 文件列表 -->
-                <el-form-item>
-                    <el-upload class="upload-demo" drag :action="data.fileUploadUrl" :on-remove="handleRemove"
-                        :before-remove="beforeRemove" :on-exceed="handleExceed" :on-success="handleSuccess"
-                        :before-upload="beforeUpload" :file-list="data.newNotificationForm.files_info"
-                        :limit="data.fileLimit" multiple>
-                        <el-icon class="el-icon--upload"><upload-filled /></el-icon>
-                        <div class="el-upload__text">
-                            把文件拖拽到此处<em>点击上传</em>
-                        </div>
-                        <template #tip>
-                            <div class="el-upload__tip">
-                                上传单个文件大小不能超过 20MB
-                            </div>
-                        </template>
-                    </el-upload>
-                </el-form-item>
-                <el-form-item>
-                    <el-button class="w-[30rem]" type="primary" @click="submitNotificationCreate()">创建新通知</el-button>
-                </el-form-item>
-            </el-form>
-        </div>
-    </el-dialog>
-    <!-- 学习进度框 -->
-    <el-dialog v-model="data.studyProgressModalVisible" title="学习进度" class="experimentDetailModal" center>
-        <!-- 学习进度列表 -->
-        <div class="notification-list">
-            <el-table :data="data.studyProgressList" border style="width: 100%">
-                <el-table-column prop="subcourse_name" label="章节名" />
-                <el-table-column v-if="userStore.roleId > 1" prop="user_id_number" label="学生学号" />
-                <el-table-column v-if="userStore.roleId > 1" prop="user_name" label="学生姓名" />
-                <el-table-column prop="learn_time" label="已学习时间" />
-                <el-table-column prop="use_time" label="规定时间" />
-                <el-table-column label="是否完成">
-                    <template v-slot="scope">
-                        <span v-if="scope.row.use_time <= scope.row.learn_time">是</span>
-                        <span v-if="scope.row.use_time > scope.row.learn_time">否</span>
-                    </template>
-                </el-table-column>
-            </el-table>
-        </div>
-    </el-dialog>
+  </el-dialog>
+    
+  <!-- 班级通知框 -->
+  <el-dialog v-model="data.classNotificationModalVisible" title="班级通知" width="1200" center>
+    <div class="experiment-dialog">
+      <!-- 搜索框 -->
+      <div class="dialog-search-box">
+        <div class="search-title">班级通知</div>
+        <el-input v-model="data.inputNotification" style="width: 240px" class="mr-3" placeholder="请输入通知标题" />
+        <el-button type="primary" class="mr-3" @click="searchNotification(data.currentExperimentId)">搜索</el-button>
+        <el-button v-if="data.canOperate" type="primary" class="mr-3" @click="openCreateNotificationModal()">创建新通知</el-button>
+      </div>
+      <!-- 通知列表 -->
+      <div class="notification-list">
+        <el-empty v-if="data.notificationList.length === 0" description="暂无通知" />
+        <el-table v-else :data="data.notificationList" border style="width: 100%">
+          <el-table-column prop="id" label="ID" width="60" />
+          <el-table-column prop="content" label="通知内容" />
+          <el-table-column prop="file" label="文件">
+            <template v-slot="scope">
+              <template v-for="(file, index) in scope.row.files_info">
+                {{ file.name }} <br>
+              </template>
+            </template>
+          </el-table-column>
+          <el-table-column prop="create_time" label="发布时间" />
+          <el-table-column v-if="data.canOperate" fixed="right" label="操作">
+            <template v-slot="scope">
+              <el-button link type="primary" size="small" @click="removeNotification(scope.row.id)">删除</el-button>
+            </template>
+          </el-table-column>
+        </el-table>
+      </div>
+    </div>
+  </el-dialog>
+  
+  <!-- 创建班级通知框 -->
+  <el-dialog v-model="data.createNotificationModalVisible" title="创建班级通知" width="600" center>
+    <div class="experiment-dialog">
+      <el-form :model="data.newNotificationForm" class="w-[30rem]">
+        <!-- 输入通知标题 -->
+        <el-form-item>
+          <el-input v-model="data.newNotificationForm.content" placeholder="请输入通知标题">
+            <!-- 图标 -->
+            <template #prefix>
+              <el-icon color="#409efc" class="no-inherit">
+                <Document />
+              </el-icon>
+            </template>
+          </el-input>
+        </el-form-item>
+        <!-- 文件列表 -->
+        <el-form-item>
+          <el-upload 
+            class="upload-demo" 
+            drag 
+            :action="data.fileUploadUrl" 
+            :on-remove="handleRemove"
+            :before-remove="beforeRemove" 
+            :on-exceed="handleExceed" 
+            :on-success="handleSuccess"
+            :before-upload="beforeUpload" 
+            :file-list="data.newNotificationForm.files_info"
+            :limit="data.fileLimit" 
+            multiple
+          >
+            <el-icon class="el-icon--upload"><upload-filled /></el-icon>
+            <div class="el-upload__text">
+              把文件拖拽到此处<em>点击上传</em>
+            </div>
+            <template #tip>
+              <div class="el-upload__tip">上传单个文件大小不能超过 20MB</div>
+            </template>
+          </el-upload>
+        </el-form-item>
+        <el-form-item>
+          <el-button class="w-[30rem]" type="primary" @click="submitNotificationCreate()">创建新通知</el-button>
+        </el-form-item>
+      </el-form>
+    </div>
+  </el-dialog>
+    
+  <!-- 学习进度框 -->
+  <el-dialog v-model="data.studyProgressModalVisible" title="学习进度" width="1200" center>
+    <!-- 学习进度列表 -->
+    <div class="notification-list">
+      <el-empty v-if="data.notificationList.length === 0" description="暂无学习进度情况" />
+      <el-table v-else :data="data.studyProgressList" border style="width: 100%">
+        <el-table-column prop="subcourse_name" label="章节名" />
+        <el-table-column v-if="userStore.roleId > 1" prop="user_id_number" label="学生学号" />
+        <el-table-column v-if="userStore.roleId > 1" prop="user_name" label="学生姓名" />
+        <el-table-column prop="learn_time" label="已学习时间" />
+        <el-table-column prop="use_time" label="规定时间" />
+        <el-table-column label="是否完成">
+          <template v-slot="scope">
+            <span v-if="scope.row.use_time <= scope.row.learn_time">是</span>
+            <span v-if="scope.row.use_time > scope.row.learn_time">否</span>
+          </template>
+        </el-table-column>
+      </el-table>
+    </div>
+  </el-dialog>
 </template>
 
 <style scoped>
@@ -448,21 +459,6 @@ onMounted( async () => {
 .class-card:hover {
   transform: scale(1.05);
 }
-
-
-.experiment-list-container-left {
-  width: 60%;
-  height: 80%;
-  @apply p-1;
-}
-.experiment-list-container-right {
-  width: 40%;
-  height: 80%;
-  @apply p-1;
-}
-
-
-
 .course-card-main {
   @apply p-3 text-sky-500;
 }
@@ -473,22 +469,29 @@ onMounted( async () => {
   display: block;
   @apply mt-1;
 }
-
-/* 顶部图设计 */
-.banner {
-  width: 100%;
-  height: 20%;
-  @apply rounded-md;
-}
-
-
-
-
-.notification-header {
-  @apply mb-2;
-}
 /* 模态框 */
-.course-dialog {
+.experiment-dialog {
   @apply flex items-center justify-center flex-col;
+}
+.dialog-search-box {
+  height: 10vh;
+  width: 100%;
+  background-image: linear-gradient(120deg, #a1c4fd 0%, #c2e9fb 100%);
+  @apply flex flex-row items-center justify-center rounded-md;
+}
+.search-box {
+  height: 10vh;
+  width: 100%;
+  background-image: linear-gradient(120deg, #a1c4fd 0%, #c2e9fb 100%);
+  @apply flex flex-row items-center justify-center rounded-md;
+}
+.search-title {
+  position: absolute;
+  left: 2rem;
+  @apply text-2xl italic font-semibold text-light-50;
+}
+.notification-list {
+  width: 100%;
+  @apply flex flex-col mt-4;
 }
 </style>

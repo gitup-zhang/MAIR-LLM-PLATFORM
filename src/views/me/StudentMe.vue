@@ -22,7 +22,7 @@ const data = reactive({
     checkPassword: ''
   },
   page: 1,
-  count: 10,
+  count: 5,
   total: 0
 })
 const { newType, applicationList, page, count, total } = toRefs(data)
@@ -87,7 +87,6 @@ const getUserType = (userType: number) => {
     return '教务'
   }
 }
-
 // 获取用户信息，并存储到状态中
 const getAndStoreUserData = async () => {
   // 获取用户数据
@@ -183,6 +182,14 @@ const removeRoleApply = async (id: number) => {
   }
   getUserApplyRoleList();
 }
+// 分页
+const handleSizeChange = (val: any) => {
+  getUserApplyRoleList();
+}
+const handleCurrentChange = (val: any) => {
+  data.page = val;
+  getUserApplyRoleList();
+}
 
 // 检查密码格式
 const validatePassword = (password: string) => {
@@ -193,7 +200,6 @@ const validatePassword = (password: string) => {
     return true;
   }
 }
-
 // 检查两次输入密码
 const checkPassword = (newPassword: string, confirmPassword: string) => {
   if(confirmPassword != newPassword){
@@ -202,7 +208,6 @@ const checkPassword = (newPassword: string, confirmPassword: string) => {
     return true;
   }
 }
-
 // 提交密码修改
 const submitPasswordModify = async () => {
   // 检查非空
@@ -250,16 +255,6 @@ const submitPasswordModify = async () => {
   }
 }
 
-
-// 分页
-const handleSizeChange = (val: any) => {
-  getUserApplyRoleList();
-}
-const handleCurrentChange = (val: any) => {
-  data.page = val;
-  getUserApplyRoleList();
-}
-
 onMounted(() => {
   // 挂载用户数据
   getAndStoreUserData();
@@ -292,11 +287,10 @@ onMounted(() => {
           :rowspan="2"
           :width="140"
           label="头像"
-          align="center"
         >
           <!-- 头像照片 -->
           <el-image
-            style="width: 100px; height: 100px"
+            style="width: 100%; height: 100%;"
             src="https://cube.elemecdn.com/0/88/03b0d39583f48206768a7534e55bcpng.png"
             @click="systemStore.openUserAvatarEditModal()"
           />
@@ -368,9 +362,11 @@ onMounted(() => {
             </el-form-item>
           </el-form>
         </el-col>
-          
-        <!-- 角色申请记录 -->
-        <el-table :data="data.applicationList" border style="width: 100%">
+      </el-row>
+      <!-- 角色申请记录 -->
+      <div class="edit-dialog">
+        <el-empty v-if="data.applicationList.length === 0" description="暂无角色申请记录" />
+        <el-table v-if="data.applicationList.length !== 0" :data="data.applicationList" border style="width: 100%">
           <el-table-column prop="user_id_number" label="号码" />
           <el-table-column prop="user_name" label="昵称"/>
           <el-table-column prop="new_type_desc" label="申请角色"/>
@@ -384,6 +380,7 @@ onMounted(() => {
         </el-table>
         <!-- 分页 -->
         <el-pagination
+          v-if="data.applicationList.length !== 0"
           background 
           layout="prev, pager, next"
           :total="data.total" 
@@ -392,7 +389,7 @@ onMounted(() => {
           @current-change="handleCurrentChange"
           class="mt-4 mx-auto"
         />
-      </el-row>
+      </div>
     </div>
   </div>
 
@@ -400,7 +397,6 @@ onMounted(() => {
   <el-dialog v-model="systemStore.userInfoEditVisible" title="修改个人信息" width="400" center>
     <div class="edit-dialog">
       <el-form :model="userInfoForm" class="w-[20rem]">
-        
         <!-- 昵称 -->
         <el-form-item>
           <el-input v-model="userInfoForm.name" placeholder="请输入昵称">
@@ -412,7 +408,6 @@ onMounted(() => {
             </template>
           </el-input>
         </el-form-item>
-
         <!-- 学号 -->
         <el-form-item>
           <el-input v-model="userInfoForm.id_number" placeholder="请输入学号" disabled>
@@ -424,7 +419,6 @@ onMounted(() => {
             </template>
           </el-input>
         </el-form-item>
-
         <!-- 邮箱 -->
         <el-form-item>
           <el-input v-model="userInfoForm.email" placeholder="请输入邮箱">
@@ -436,7 +430,6 @@ onMounted(() => {
             </template>
           </el-input>
         </el-form-item>
-
         <!-- 手机号 -->
         <el-form-item>
           <el-input v-model="userInfoForm.phone" placeholder="请输入手机号">
@@ -448,7 +441,6 @@ onMounted(() => {
             </template>
           </el-input>
         </el-form-item>
-
         <!-- 角色 -->
         <el-form-item>
           <el-input v-model="userInfoForm.type" placeholder="角色" disabled>
@@ -460,7 +452,6 @@ onMounted(() => {
             </template>
           </el-input>
         </el-form-item>
-
         <!-- 真实姓名 -->
         <el-form-item>
           <el-input v-model="userInfoForm.user_name" placeholder="请输入真实姓名">
@@ -472,7 +463,6 @@ onMounted(() => {
             </template>
           </el-input>
         </el-form-item>
-
         <!-- 所属地区 -->
         <el-form-item>
           <el-input v-model="userInfoForm.area_id" placeholder="请输入您的所属地区">
@@ -484,7 +474,6 @@ onMounted(() => {
             </template>
           </el-input>
         </el-form-item>
-
         <!-- 所属地区 -->
         <el-form-item>
           <el-input v-model="userInfoForm.idcard" placeholder="请输入您的身份证号">
@@ -496,7 +485,6 @@ onMounted(() => {
             </template>
           </el-input>
         </el-form-item>
-
         <!-- 注册按钮 -->
         <el-form-item>
           <el-button class="w-[20rem]" type="primary" @click="userInfoEditSubmit()">提交修改</el-button>
@@ -520,6 +508,7 @@ onMounted(() => {
   @apply bg-light-50 p-3 rounded-md;
 }
 .role-apply {
+  width: 100%;
   @apply mt-3;
 }
 /* 模态框 */

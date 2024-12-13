@@ -152,7 +152,7 @@ const openExperiment = () => {
 const openStuReport = (courseId: number, subcourseId: number) => {
   data.experimentDetailVisible = false
   router.push({
-    path: "/stuCourseReport",
+    path: "/studentReport",
     query: {
       courseId: courseId, 
       subcourseId: subcourseId

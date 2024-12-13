@@ -40,7 +40,7 @@ const openExperimentDetailModal = (courseId: number) => {
 const openStuReport = (courseId: number, subcourseId: number) => {
   systemStore.experimentDetailVisible = false
   router.push({
-    path: "/stuCourseReport",
+    path: "/studentReport",
     query: {
       courseId: courseId, 
       subcourseId: subcourseId

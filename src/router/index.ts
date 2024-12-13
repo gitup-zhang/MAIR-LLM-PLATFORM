@@ -15,7 +15,8 @@ import StudentExperiment from '@/views/experiment/StudentExperiment.vue'
 // 班级
 import AdminClass from '@/views/class/AdminClass.vue'
 import StudentClass from '@/views/class/StudentClass.vue'
-
+// 报告
+import StudentReport from '@/views/report/StudentReport.vue'
 
 
 // 课程
@@ -81,6 +82,11 @@ const router = createRouter({
           path: '/studentExperiment',          
           name: 'studentExperiment',
           component: StudentExperiment
+        },
+        {
+          path: '/studentReport',          
+          name: 'studentReport',
+          component: StudentReport
         },
 
 

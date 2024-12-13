@@ -154,7 +154,8 @@ onMounted(() => {
           </div>
           <!-- 所有班级列表展示 -->
           <div class="course-list">
-            <el-table :data="data.courseList" border style="width: 100%">
+            <el-empty v-if="data.courseList.length === 0" description="暂无班级信息" />
+            <el-table v-if="data.courseList.length !== 0" :data="data.courseList" border style="width: 100%">
               <el-table-column prop="id" label="ID" width="50" />
               <el-table-column prop="name" label="班级名"/>
               <el-table-column prop="course_name" label="课程名"/>
@@ -173,6 +174,7 @@ onMounted(() => {
             </el-table>
             <!-- 分页 -->
             <el-pagination
+              v-if="data.courseList.length !== 0"
               background 
               layout="prev, pager, next"
               :total="data.classTotal" 
@@ -189,7 +191,8 @@ onMounted(() => {
         <div class="course-main">
           <!-- 班级列表 -->
           <div class="course-list">
-            <el-table :data="data.enrolledClassList" border style="width: 100%">
+            <el-empty v-if="data.enrolledClassList.length === 0" description="暂无已报名班级信息" />
+            <el-table v-if="data.enrolledClassList.length !== 0" :data="data.enrolledClassList" border style="width: 100%">
               <el-table-column prop="id" label="ID" width="50" />
               <el-table-column prop="name" label="班级名"/>
               <el-table-column prop="course_name" label="课程名"/>
@@ -206,6 +209,7 @@ onMounted(() => {
             </el-table>
             <!-- 分页 -->
             <el-pagination
+              v-if="data.enrolledClassList.length !== 0"
               background 
               layout="prev, pager, next"
               :total="data.enrolledClassTotal" 
@@ -219,6 +223,7 @@ onMounted(() => {
       </el-tab-pane>
     </el-tabs>
   </div>
+
   <!-- 班级详情模态框 -->
   <el-dialog v-model="data.courseDetailVisible" title="班级详细信息" width="600" center>
     <el-descriptions
@@ -235,6 +240,7 @@ onMounted(() => {
       <el-descriptions-item label="描述" :span="4">{{ data.currentCourseDetail.desc }}</el-descriptions-item>
     </el-descriptions>
   </el-dialog>
+
   <!-- 班级申请记录模态框 -->
   <el-dialog v-model="data.courseApplyDetailVisible" title="课程申请记录" width="800" center>
     <div class="student-class-dialog">

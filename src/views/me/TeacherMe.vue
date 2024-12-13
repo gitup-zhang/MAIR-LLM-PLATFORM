@@ -256,18 +256,16 @@ onMounted(() => {
           <img src="../../assets/img/carousel/carousel-4.png" alt="大模型实训平台">
         </el-carousel-item>
       </el-carousel>
-
       <!-- 个人信息展示 -->
       <el-descriptions border>
         <el-descriptions-item
           :rowspan="2"
           :width="140"
           label="头像"
-          align="center"
         >
           <!-- 头像照片 -->
           <el-image
-            style="width: 100px; height: 100px"
+            style="width: 100%; height: 100%;"
             src="https://cube.elemecdn.com/0/88/03b0d39583f48206768a7534e55bcpng.png"
             @click="systemStore.openUserAvatarEditModal()"
           />
@@ -282,7 +280,6 @@ onMounted(() => {
         </el-descriptions-item>
         <el-descriptions-item label="地址">西土城路10号, 海淀区, 北京市</el-descriptions-item>
       </el-descriptions>
-        
       <el-row class="edit-info">
         <!-- 选择新角色 -->
         <el-col :span="8">

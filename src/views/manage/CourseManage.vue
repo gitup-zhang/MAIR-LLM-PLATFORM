@@ -371,6 +371,7 @@ onMounted(() => {
 <template>
   <div class="course-page">
     <el-tabs v-model="data.activeName" type="border-card" class="course-tabs">
+      <!-- 章节管理 -->
       <el-tab-pane label="章节管理" name="first" class="course-pane">
         <div class="search-box">
           <div class="search-title">章节管理</div>
@@ -383,7 +384,8 @@ onMounted(() => {
         </div>
         <!-- 所有章节信息展示 -->
         <div class="show-list">
-          <el-table :data="data.chapterList" border style="width: 100%">
+          <el-empty v-if="data.chapterList.length === 0" description="暂无章节信息"/>
+          <el-table v-if="data.chapterList.length !== 0" :data="data.chapterList" border style="width: 100%">
             <el-table-column prop="id" label="ID" width="100"/>
             <el-table-column prop="name" label="章节名"/>
             <el-table-column prop="desc" label="描述"/>
@@ -403,6 +405,7 @@ onMounted(() => {
           </el-table>
           <!-- 分页 -->
           <el-pagination
+            v-if="data.chapterList.length !== 0"
             background 
             layout="prev, pager, next"
             :total="data.chapterTotal" 
@@ -413,6 +416,8 @@ onMounted(() => {
           />
         </div>
       </el-tab-pane>
+
+      <!-- 课程管理 -->
       <el-tab-pane label="课程管理" name="second">
         <div class="search-box">
           <div class="search-title">课程管理</div>
@@ -425,7 +430,8 @@ onMounted(() => {
         </div>
         <!-- 所有课程信息展示 -->
         <div class="show-list">
-          <el-table :data="data.courseList" border style="width: 100%">
+          <el-empty v-if="data.courseList.length === 0" description="暂无课程信息"/>
+          <el-table v-if="data.courseList.length !== 0" :data="data.courseList" border style="width: 100%">
             <el-table-column prop="id" label="ID" width="100"/>
             <el-table-column prop="name" label="课程名"/>
             <el-table-column prop="desc" label="描述"/>
@@ -439,6 +445,7 @@ onMounted(() => {
           </el-table>
           <!-- 分页 -->
           <el-pagination
+            v-if="data.courseList.length !== 0"
             background 
             layout="prev, pager, next"
             :total="data.courseTotal" 
@@ -563,6 +570,7 @@ onMounted(() => {
       </el-form>
     </div>
   </el-dialog>
+
   <!-- 修改章节框 -->
   <el-dialog v-model="data.modifyChapterModalVisible" title="章节修改" width="600" center>
     <div class="course-dialog">
@@ -708,6 +716,7 @@ onMounted(() => {
       </el-form>
     </div>
   </el-dialog>
+
   <!-- 修改课程框 -->
   <el-dialog v-model="data.modifyCourseModalVisible" title="课程修改" width="600" center>
     <div class="course-dialog">
@@ -752,9 +761,11 @@ onMounted(() => {
       </el-form>
     </div>
   </el-dialog>
+
   <!-- 添加章节框 -->
   <el-dialog v-model="data.addChapterModalVisible" title="添加章节" width="1200" center>
-    <div class="add-chapter">
+    <div class="dialog-search-box">
+      <div class="search-title">添加章节</div>
       <el-select v-model="data.currentCourseChapterId" placeholder="请选择章节" style="width:70%" filterable>
         <el-option 
           v-for="item in data.chapterOptions" 
@@ -832,7 +843,10 @@ onMounted(() => {
 .course-dialog {
   @apply flex items-center justify-center flex-col;
 }
-.add-chapter {
-  @apply mb-2;
+.dialog-search-box {
+  height: 10vh;
+  width: 100%;
+  background-image: linear-gradient(120deg, #a1c4fd 0%, #c2e9fb 100%);
+  @apply flex flex-row items-center justify-center rounded-md mb-2;
 }
 </style>

@@ -31,7 +31,7 @@ const data = reactive({
     name: '',
     parentId: 0
   },
-  collegeForm: {},
+  collegeForm: {} as any,
   // 创建表单
   newLocationForm: {
     name: '',
@@ -63,9 +63,9 @@ const data = reactive({
   // 当前选中项ID
   currentClassId: 0,
   // 选项
-  collegeOptions: [],
-  courseOptions: [],
-  teacherOptions: [],
+  collegeOptions: [] as any,
+  courseOptions: [] as any,
+  teacherOptions: [] as any,
   locationOptions: [] as any, 
   // 分页
   locationTotal: 0,
@@ -424,7 +424,8 @@ onMounted(async () => {
         </div>
         <!-- 所有地区信息展示 -->
         <div class="location-list">
-          <el-table :data="data.locationList" border style="width: 100%">
+          <el-empty v-if="data.locationList.length === 0" description="暂无地区信息"/>
+          <el-table v-if="data.locationList.length !== 0" :data="data.locationList" border style="width: 100%">
             <el-table-column prop="id" label="ID" />
             <el-table-column prop="name" label="地区名" />
             <el-table-column prop="parent_name" label="上级地区名" />
@@ -436,7 +437,8 @@ onMounted(async () => {
             </el-table-column>
           </el-table>
           <!-- 分页 -->
-          <el-pagination 
+          <el-pagination
+            v-if="data.locationList.length !== 0"
             background 
             layout="prev, pager, next"
             :total="data.locationTotal" 
@@ -460,7 +462,8 @@ onMounted(async () => {
         </div>
         <!-- 所有教学单位信息展示 -->
         <div class="college-list">
-          <el-table :data="data.collegeList" border style="width: 100%">
+          <el-empty v-if="data.collegeList.length === 0" description="暂无教学单位信息"/>
+          <el-table v-if="data.collegeList.length !== 0" :data="data.collegeList" border style="width: 100%">
             <el-table-column prop="id" label="ID" />
             <el-table-column prop="name" label="教学单位名" />
             <el-table-column prop="area_name" label="所属地区名" />
@@ -473,6 +476,7 @@ onMounted(async () => {
           </el-table>
           <!-- 分页 -->
           <el-pagination
+            v-if="data.collegeList.length !== 0"
             background 
             layout="prev, pager, next"
             :total="data.collegeTotal" 
@@ -497,7 +501,8 @@ onMounted(async () => {
         </div>
         <!-- 所有班级信息展示 -->
         <div class="college-list">
-          <el-table :data="data.classList" border style="width: 100%">
+          <el-empty v-if="data.classList.length === 0" description="暂无班级信息"/>
+          <el-table v-if="data.classList.length !== 0" :data="data.classList" border style="width: 100%">
             <el-table-column prop="id" label="ID" width="60"/>
             <el-table-column prop="name" label="班级名" width="120"/>
             <el-table-column prop="teacher_name" label="教师名" width="120"/>
@@ -522,6 +527,7 @@ onMounted(async () => {
           </el-table>
           <!-- 分页 -->
           <el-pagination
+            v-if="data.classList.length !== 0"
             background 
             layout="prev, pager, next"
             :total="data.classTotal" 
@@ -554,6 +560,7 @@ onMounted(async () => {
       </el-form>
     </div>
   </el-dialog>
+
   <!-- 修改地区框 -->
   <el-dialog v-model="data.modifyLocationModalVisible" title="地区修改" width="400" center>
     <div class="education-dialog">
@@ -593,6 +600,7 @@ onMounted(async () => {
       </el-form>
     </div>
   </el-dialog>
+
   <!-- 修改教学单位框 -->
   <el-dialog v-model="data.modifyCollegeModalVisible" title="教学单位修改" width="400" center>
     <div class="education-dialog">
@@ -719,9 +727,10 @@ onMounted(async () => {
       </el-form>
     </div>
   </el-dialog>
+
   <!-- 修改班级框 -->
   <el-dialog v-model="data.modifyClassModalVisible" title="班级修改" width="600" center>
-      <div class="education-dialog">
+    <div class="education-dialog">
       <el-form :model="data.currentClass" class="w-[30rem]">
         <!-- 班级名 -->
         <el-form-item>
@@ -830,39 +839,41 @@ onMounted(async () => {
   <el-dialog v-model="data.classApplyModalVisible" title="班级申请记录" width="1200" center>
     <div class="education-dialog">
       <div class="dialog-search-box">
-          <div class="search-title">班级申请记录</div>
-          <div class="select-exam">
-            <!-- 搜索 -->
-            <el-input v-model="data.inputClassApply" class="mr-3 w-[20vw] h-[2rem]" placeholder="请输入班级名称" />
-            <el-button type="primary" class="mr-3 h-[2rem]" @click="searchClassApply()">搜索</el-button>
-          </div>
+        <div class="search-title">班级申请记录</div>
+        <div class="select-exam">
+          <!-- 搜索 -->
+          <el-input v-model="data.inputClassApply" class="mr-3 w-[20vw] h-[2rem]" placeholder="请输入班级名称" />
+          <el-button type="primary" class="mr-3 h-[2rem]" @click="searchClassApply()">搜索</el-button>
         </div>
-        <!-- 所有班级信息展示 -->
-        <div class="dialog-list">
-          <el-table :data="data.classApplyList" border style="width: 100%">
-            <el-table-column prop="user_id_number" label="用户ID"/>
-            <el-table-column prop="user_name" label="用户名" />
-            <el-table-column prop="class_name" label="班级名"/>
-            <el-table-column prop="create_time" label="创建时间"/>
-            <el-table-column prop="status_desc" label="审核状态" />
-            <el-table-column fixed="right" label="操作" min-width="120">
-              <template v-slot="scope">
-                <el-button v-if="scope.row.status === 1" link type="primary" size="small" @click="passClassApply(scope.row.id)">通过</el-button>
-                <el-button v-if="scope.row.status === 1" link type="primary" size="small" @click="rejectClassApply(scope.row.id)">不通过</el-button>
-              </template>
-            </el-table-column>
-          </el-table>
-          <!-- 分页 -->
-          <el-pagination
-            background 
-            layout="prev, pager, next"
-            :total="data.classApplyTotal" 
-            :page-size="data.classApplyCount"
-            @size-change="classApplySizeChange"
-            @current-change="classApplyCurrentChange"
-            class="mt-4 mx-auto"
-          />
-        </div>
+      </div>
+      <!-- 所有班级信息展示 -->
+      <div class="dialog-list">
+        <el-empty v-if="data.classApplyList.length === 0" description="暂无班级申请信息"/>
+        <el-table v-if="data.classApplyList.length !== 0" :data="data.classApplyList" border style="width: 100%">
+          <el-table-column prop="user_id_number" label="用户ID"/>
+          <el-table-column prop="user_name" label="用户名" />
+          <el-table-column prop="class_name" label="班级名"/>
+          <el-table-column prop="create_time" label="创建时间"/>
+          <el-table-column prop="status_desc" label="审核状态" />
+          <el-table-column fixed="right" label="操作" min-width="120">
+            <template v-slot="scope">
+              <el-button v-if="scope.row.status === 1" link type="primary" size="small" @click="passClassApply(scope.row.id)">通过</el-button>
+              <el-button v-if="scope.row.status === 1" link type="primary" size="small" @click="rejectClassApply(scope.row.id)">不通过</el-button>
+            </template>
+          </el-table-column>
+        </el-table>
+        <!-- 分页 -->
+        <el-pagination
+          v-if="data.classApplyList.length !== 0"
+          background 
+          layout="prev, pager, next"
+          :total="data.classApplyTotal" 
+          :page-size="data.classApplyCount"
+          @size-change="classApplySizeChange"
+          @current-change="classApplyCurrentChange"
+          class="mt-4 mx-auto"
+        />
+      </div>
     </div>
   </el-dialog>
 </template>

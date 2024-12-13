@@ -324,8 +324,11 @@ onMounted(() => {
             <el-button class="w-[5rem]" type="primary" @click="submitPasswordModify()">确认修改</el-button>
           </el-form-item>
         </el-form>
-        <!-- 角色申请记录 -->
-        <el-table :data="data.applicationList" border style="width: 100%">
+      </el-row>
+      <!-- 角色申请记录 -->
+      <div class="edit-dialog">
+        <el-empty v-if="data.applicationList.length === 0" description="暂无角色申请记录" />
+        <el-table v-if="data.applicationList.length !== 0" :data="data.applicationList" border style="width: 100%">
           <el-table-column prop="user_id_number" label="号码" />
           <el-table-column prop="user_name" label="昵称"/>
           <el-table-column prop="new_type_desc" label="申请角色"/>
@@ -340,6 +343,7 @@ onMounted(() => {
         </el-table>
         <!-- 分页 -->
         <el-pagination
+          v-if="data.applicationList.length !== 0"
           background 
           layout="prev, pager, next"
           :total="data.total" 
@@ -348,9 +352,10 @@ onMounted(() => {
           @current-change="handleCurrentChange"
           class="mt-4 mx-auto"
         />
-      </el-row>
+      </div>
     </div>
   </div>
+
   <!-- 修改个人信息框 -->
   <el-dialog v-model="systemStore.userInfoEditVisible" title="修改个人信息" width="400" center>
     <div class="edit-dialog">

@@ -88,12 +88,12 @@ const changePage = (pageName: string) => {
           <div class="icon-text">用户</div>
         </RouterLink>
         <!-- 教务管理 教务 -->
-        <RouterLink v-if="data.userType === '3'" class="sider-nav-icon" to="/educationWindow" @click="changePage('educationWindow')" :class="{ active: isCurrentPage('educationWindow')}">
+        <RouterLink v-if="data.userType === '3'" class="sider-nav-icon" to="/educationManage" @click="changePage('educationManage')" :class="{ active: isCurrentPage('educationManage')}">
           <icon-interaction size="33" strokeWidth="3" class="mt-2"/>
           <div class="icon-text">教务</div>
         </RouterLink>
         <!-- 课程管理 教务 -->
-        <RouterLink v-if="data.userType === '3'" class="sider-nav-icon" to="/manageCourseWindow" @click="changePage('manageCourseWindow')" :class="{ active: isCurrentPage('manageCourseWindow')}">
+        <RouterLink v-if="data.userType === '3'" class="sider-nav-icon" to="/courseManage" @click="changePage('courseManage')" :class="{ active: isCurrentPage('courseManage')}">
           <icon-book size="33" strokeWidth="3" class="mt-2"/>
           <div class="icon-text">课程</div>
         </RouterLink>

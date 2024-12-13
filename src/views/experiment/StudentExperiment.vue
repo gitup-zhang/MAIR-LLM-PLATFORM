@@ -279,6 +279,7 @@ onMounted( async () => {
       </el-col>
     </el-row>
   </div>
+  
   <!-- 实验详情框 -->
   <el-dialog v-model="data.experimentDetailModalVisible" title="实验详情" width="1200" center>
     <!-- 章节列表 -->

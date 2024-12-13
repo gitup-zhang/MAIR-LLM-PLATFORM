@@ -5,8 +5,6 @@ import Window from '@/views/Window.vue'
 import StudentMe from '@/views/me/StudentMe.vue'
 import TeacherMe from '@/views/me/TeacherMe.vue'
 import AdminMe from '@/views/me/AdminMe.vue'
-// 用户相关
-import UserManage from '@/views/user/UserManage.vue'
 // 考试
 import ManageExam from '@/views/exam/ManageExam.vue'
 // 实验
@@ -17,6 +15,12 @@ import AdminClass from '@/views/class/AdminClass.vue'
 import StudentClass from '@/views/class/StudentClass.vue'
 // 报告
 import StudentReport from '@/views/report/StudentReport.vue'
+// 教务管理
+import UserManage from '@/views/manage/UserManage.vue'
+import EducationManage from '@/views/manage/EducationManage.vue'
+import CourseManage from '@/views/manage/CourseManage.vue'
+
+
 
 
 // 课程
@@ -36,7 +40,6 @@ import ExamPaperDetail from '@/views/exam/ExamPaperDetail.vue'
 // 教务管理
 
 import EducationWindow from '@/views/education/EducationWindow.vue'
-import ManageCourseWindow from '@/views/course/ManageCourseWindow.vue'
 
 
 
@@ -87,6 +90,21 @@ const router = createRouter({
           path: '/studentReport',          
           name: 'studentReport',
           component: StudentReport
+        },
+        {
+          path: '/userManage',          
+          name: 'userManage',
+          component: UserManage
+        },
+        {
+          path: '/educationManage',          
+          name: 'educationManage',
+          component: EducationManage
+        },
+        {
+          path: '/courseManage',          
+          name: 'courseManage',
+          component: CourseManage
         },
 
 
@@ -144,19 +162,9 @@ const router = createRouter({
           component: ExamPaperDetail
         },
         {
-          path: '/userManage',          
-          name: 'userManage',
-          component: UserManage
-        },
-        {
           path: '/educationWindow',          
           name: 'educationWindow',
           component: EducationWindow
-        },
-        {
-          path: '/manageCourseWindow',          
-          name: 'manageCourseWindow',
-          component: ManageCourseWindow
         },
         {
           path: '/manageExperiment',          

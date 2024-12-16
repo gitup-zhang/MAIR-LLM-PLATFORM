@@ -9,22 +9,30 @@ const router = useRouter();
 const userStore = useUserStore();
 const data = reactive({
   searchText: '',
-  page: 1,
-  count: 10,
-  total: 0,
   userType: userStore.roleId,
   courseId: Number(route.query.id),
-  examList: []
+  examList: [],
+  examPage: 1,
+  examCount: 10,
+  examTotal: 0,
 });
 
 // 搜索考试安排列表
 const searchExam = async () => {
-  console.log(data.courseId)
-  const res = await getExamList(data.searchText, data.courseId, data.page, data.count)
-  console.log(res);
+  const res = await getExamList(data.searchText, data.courseId, data.examPage, data.examCount)
   data.examList = res.data.list;
-  data.total = res.data.total;
+  data.examTotal = res.data.total;
 }
+// 考试安排分页
+const examSizeChange = (val: any) => {
+  searchExam();
+}
+const examCurrentChange = (val: any) => {
+  data.examPage = val;
+  searchExam();
+}
+
+
 // 考试结果
 const checkExamResult = (examDetail: any) => {
   router.push({
@@ -39,7 +47,6 @@ const checkExamDetail = async (id: number) => {
   const res = await getUserExamId(id);
   router.push({
     path: '/examPaperDetail/',
-    // path: '/examPaperDetail/' + 1 + '/',
     query: {
       type: 'student',
       userExamId: res.data.user_exam_id
@@ -51,7 +58,6 @@ const checkPracticeDetail = async (id: number) => {
     const res = await getUserExamId(id);
     router.push({
     path: '/examPaperDetail/',
-    // path: '/examPaperDetail/' + 1 + '/',
     query: {
       type: 'student',
       userExamId: res.data.user_exam_id
@@ -63,7 +69,6 @@ const enterExam = async (id: number) => {
     const res = await getUserExamId(id);
     router.push({
     path: '/examPaperDetail/',
-    // path: '/examPaperDetail/' + 1 + '/',
     query: {
       type: 'student',
       userExamId: res.data.user_exam_id
@@ -86,22 +91,6 @@ onMounted(() => {
   // 挂载考试数据
   searchExam();
 })
-
-
-// 测试数据
-const examListTest = reactive([
-  {
-    id: 1,
-    desc: '测试1',
-    exam_paper_title: '试卷1',
-    type_desc: '类型1',
-    start_time: '20240809',
-    end_time: '20241209',
-    status: 3,
-    type: 2
-  }
-])
-
 </script>
 
 <template>
@@ -118,7 +107,8 @@ const examListTest = reactive([
       </div>
       <!-- 所有考试安排信息展示 -->
       <div class="exam-list">
-        <el-table :data="data.examList" border style="width: 100%">
+        <el-empty v-if="data.examList.length === 0" description="暂无考试安排信息"/>
+        <el-table v-if="data.examList.length !== 0" :data="data.examList" border style="width: 100%">
           <el-table-column prop="id" label="ID" width="50" />
           <el-table-column prop="desc" label="描述"/>
           <el-table-column prop="exam_paper_title" label="试卷"/>
@@ -144,7 +134,16 @@ const examListTest = reactive([
           </el-table-column>
         </el-table>
         <!-- 分页 -->
-        <el-pagination background layout="prev, pager, next" :total="1" class="mt-4 mx-auto"/>
+        <el-pagination
+          v-if="data.examList.length !== 0"
+          background 
+          layout="prev, pager, next"
+          :total="data.examTotal" 
+          :page-size="data.examCount"
+          @size-change="examSizeChange"
+          @current-change="examCurrentChange"
+          class="mt-4 mx-auto"
+        />
       </div>
     </div>
   </div>

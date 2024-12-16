@@ -389,7 +389,7 @@ const classApplyCurrentChange = (val: any) => {
 // 查看考试安排
 const checkExamDetail = async (id: number) => {
   router.push({
-    path: "/classExam",
+    path: "/examArrange",
     query: {
       id: id
     }

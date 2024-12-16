@@ -248,7 +248,7 @@ onMounted( async () => {
       </el-col>
       <el-col :span="16">
         <el-row class="experiment-list-container">
-          <el-empty v-if="data.courseList.length === 0" description="暂无课程实验信息" />
+          <el-empty v-if="data.courseList.length === 0" description="暂无课程实验信息"/>
           <el-col v-if="data.courseList.length !== 0" :span="8" v-for="course in data.courseList" :key="course.id">
             <div class="class-card">
               <img src="@/assets/img/course.png" style="width: 100%" />

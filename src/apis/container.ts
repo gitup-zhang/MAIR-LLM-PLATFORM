@@ -17,6 +17,24 @@ export const getContainerList = (searchText: string, page: number, count: number
   })
 }
 
+// 获取子课程相关容器列表
+export const getSubcourseContainerList = (subcourseId: number, classId: number, page: number, count: number) => {
+  return httpInstance({
+    url:'/container/list/',
+    method: "GET",
+    params: {
+      subcourse_id: subcourseId,
+      class_id: classId,
+      page: page,
+      count: count
+    },
+    headers: {
+      "content-type": "application/json",
+    },
+    withCredentials: true
+  })
+}
+
 // 关闭容器
 export const stopContainer = (id: number) => {
   return httpInstance({

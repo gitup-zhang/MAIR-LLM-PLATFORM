@@ -5,7 +5,7 @@ import { ElMessage } from 'element-plus'
 // 引入 User、System 状态
 import { useUserStore } from '@/stores/user'
 import { useSystemStore } from '@/stores/system'
-import { getUserInfo, editUserInfo, getApplyRoleList, submitModifyPassword, applyRole } from '@/apis/user'
+import { getUserInfo, editUserInfo, submitModifyPassword, applyRole } from '@/apis/user'
 import { getRoleApplyList, cancelRoleApply } from '@/apis/role';
 
 const userStore = useUserStore();
@@ -126,10 +126,6 @@ const userInfoEditSubmit = async () => {
       type: 'success',
       plain: true,
     })
-    // 关闭模态框
-    systemStore.userInfoEditVisible = false
-    // 刷新数据
-    getAndStoreUserData()
   } else {
     ElMessage({
       message: '修改失败',
@@ -137,6 +133,10 @@ const userInfoEditSubmit = async () => {
       plain: true,
     })
   }
+  // 关闭模态框
+  systemStore.userInfoEditVisible = false
+  // 刷新数据
+  getAndStoreUserData()
 }
 
 
@@ -155,7 +155,6 @@ const submitRoleApply = async () => {
       type: 'success',
       plain: true,
     })
-    getUserApplyRoleList();
   } else {
     ElMessage({
       message: '申请失败',
@@ -163,6 +162,7 @@ const submitRoleApply = async () => {
       plain: true,
     })
   }
+  getUserApplyRoleList();
 }
 // 取消角色修改
 const removeRoleApply = async (id: number) => {

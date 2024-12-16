@@ -5,43 +5,25 @@ import Window from '@/views/Window.vue'
 import StudentMe from '@/views/me/StudentMe.vue'
 import TeacherMe from '@/views/me/TeacherMe.vue'
 import AdminMe from '@/views/me/AdminMe.vue'
-// 考试
-import ManageExam from '@/views/exam/ManageExam.vue'
-// 实验
-import ManageExperiment from '@/views/experiment/ManageExperiment.vue'
-import StudentExperiment from '@/views/experiment/StudentExperiment.vue'
 // 班级
 import AdminClass from '@/views/class/AdminClass.vue'
 import StudentClass from '@/views/class/StudentClass.vue'
+import TeacherClass from '@/views/class/TeacherClass.vue'
+// 实验
+import StudentExperiment from '@/views/experiment/StudentExperiment.vue'
 // 报告
 import StudentReport from '@/views/report/StudentReport.vue'
+import TeacherReport from '@/views/report/TeacherReport.vue'
+// 考试
+import ExamArrange from '@/views/exam/ExamArrange.vue'
+import ExamResult from '@/views/exam/ExamResult.vue'
+import ExamPaperDetail from '@/views/exam/ExamPaperDetail.vue'
 // 教务管理
 import UserManage from '@/views/manage/UserManage.vue'
 import EducationManage from '@/views/manage/EducationManage.vue'
 import CourseManage from '@/views/manage/CourseManage.vue'
-
-
-
-
-// 课程
-import Course from '@/views/course/index.vue'
-import TeacherCourse from '@/views/course/TeacherCourse.vue'
-import ManageCourse from '@/views/course/ManageCourse.vue'
-// 实验
-import Experiment from '@/views/experiment/index.vue'
-import ExperimentConduct from '@/views/experiment/ExperimentConduct.vue'
-import TeachExperiment from '@/views/experiment/TeachExperiment.vue'
-// 课程报告
-import StuCourseReport from '@/views/course/StuCourseReport.vue'
-// 考试
-import ClassExam from '@/views/exam/ClassExam.vue'
-import ExamResult from '@/views/exam/ExamResult.vue'
-import ExamPaperDetail from '@/views/exam/ExamPaperDetail.vue'
-// 教务管理
-
-import EducationWindow from '@/views/education/EducationWindow.vue'
-
-
+import ExamManage from '@/views/manage/ExamManage.vue'
+import ExperimentManage from '@/views/manage/ExperimentManage.vue'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -82,15 +64,43 @@ const router = createRouter({
           component: AdminClass
         },
         {
+          path: '/teacherClass',          
+          name: 'teacherClass',
+          component: TeacherClass
+        },
+        {
           path: '/studentExperiment',          
           name: 'studentExperiment',
           component: StudentExperiment
+        },
+        // 考试
+        {
+          path: '/examArrange',          
+          name: 'examArrange',
+          component: ExamArrange
+        },
+        {
+          path: '/examResult',          
+          name: 'examResult',
+          component:ExamResult
+        },
+        {
+          path: '/examPaperDetail/',          
+          name: 'examPaperDetail',
+          component: ExamPaperDetail
+        },
+        // 报告
+        {
+          path: '/teacherReport',          
+          name: 'teacherReport',
+          component: TeacherReport
         },
         {
           path: '/studentReport',          
           name: 'studentReport',
           component: StudentReport
         },
+        // 教务管理
         {
           path: '/userManage',          
           name: 'userManage',
@@ -106,76 +116,16 @@ const router = createRouter({
           name: 'courseManage',
           component: CourseManage
         },
-
-
-
-
-
         {
-          path: '/experiment',
-          name: 'experiment',
-          component: Experiment
+          path: '/examManage',          
+          name: 'examManage',
+          component: ExamManage
         },
         {
-          path: '/experimentConduct',
-          name: 'experimentConduct',
-          component: ExperimentConduct
-        },
-        {
-          path: '/teachExperiment',
-          name: 'teachExperiment',
-          component: TeachExperiment
-        },
-        {
-          path: '/stuCourseReport',
-          name: 'stuCourseReport',
-          component: StuCourseReport
-        },
-        {
-          path: '/course',
-          name: 'course',
-          component: Course
-        },
-        {
-          path: '/teacherCourse',
-          name: 'teacherCourse',
-          component: TeacherCourse
-        },
-        {
-          path: '/manageCourse',          
-          name: 'manageCourse',
-          component: ManageCourse
-        },
-        {
-          path: '/classExam',          
-          name: 'classExam',
-          component: ClassExam
-        },
-        {
-          path: '/examResult',          
-          name: 'examResult',
-          component:ExamResult
-        },
-        {
-          path: '/examPaperDetail/',          
-          name: 'examPaperDetail',
-          component: ExamPaperDetail
-        },
-        {
-          path: '/educationWindow',          
-          name: 'educationWindow',
-          component: EducationWindow
-        },
-        {
-          path: '/manageExperiment',          
-          name: 'manageExperiment',
-          component: ManageExperiment
-        },
-        {
-          path: '/manageExam',          
-          name: 'manageExam',
-          component: ManageExam
-        },
+          path: '/experimentManage',          
+          name: 'experimentManage',
+          component: ExperimentManage
+        }
       ]
     }
   ]

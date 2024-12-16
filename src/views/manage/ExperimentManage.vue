@@ -33,6 +33,12 @@ const data = reactive({
   createImageModalVisible: false,
   // 选项
   imageOptions: [],
+  imagePage: 1,
+  imageCount: 10,
+  imageTotal: 0,
+  containerPage: 1,
+  containerCount: 10,
+  containerTotal: 0,
   page: 1,
   count: 10,
   total: 0
@@ -40,15 +46,16 @@ const data = reactive({
 
 // 搜索镜像
 const searchImage = async () => {
-  const res = await getImageList(data.inputImage, data.page, data.count);
+  const res = await getImageList(data.inputImage, data.imagePage, data.imageCount);
   data.imageList = res.data.list;
+  data.imageTotal = res.data.total;
 }
 
 // 获取镜像相关信息
 const getImageData = async () => {
   var tmp = {} as any;
   if (sessionStorage.image_id === '-1') {
-    const res = await getImageInfo();
+    const res = await getImageInfo(data.imagePage, data.imageCount);
     data.imageList = res.data.normal_image_list;
     data.newImageForm.image_id = data.imageList[0]['id'];
   } else if (sessionStorage.image_name !== sessionStorage.flag_name) {
@@ -170,12 +177,21 @@ const checkImageDetail = async (index: number) => {
     })
   }
 }
+// 镜像分页
+const imageSizeChange = (val: any) => {
+  searchImage();
+}
+const imageCurrentChange = (val: any) => {
+  data.imagePage = val;
+  searchImage();
+}
 
 
 // 搜索容器
 const searchContainer = async () => {
-  const res = await getContainerList(data.inputContainer, data.page, data.count);
+  const res = await getContainerList(data.inputContainer, data.containerPage, data.containerCount);
   data.containerList = res.data.list;
+  data.containerTotal = res.data.total;
 }
 // 停止容器
 const ceaseContainer = async (id: number) => {
@@ -236,6 +252,14 @@ const removeContainer = async (id: number) => {
 const enterContainer = async (address: string) => {
   window.open(address)
 }
+// 容器分页
+const containerSizeChange = (val: any) => {
+  searchContainer();
+}
+const containerCurrentChange = (val: any) => {
+  data.containerPage = val;
+  searchContainer();
+}
 
 onMounted(() => {
   // 挂载数据
@@ -259,7 +283,8 @@ onMounted(() => {
         </div>
         <!-- 所有镜像信息展示 -->
         <div class="show-list">
-          <el-table :data="data.imageList" border style="width: 100%">
+          <el-empty v-if="data.imageList.length === 0" description="暂无镜像信息"/>
+          <el-table v-if="data.imageList.length !== 0" :data="data.imageList" border style="width: 100%">
             <el-table-column prop="id" label="ID" width="100"/>
             <el-table-column prop="name" label="镜像名"/>
             <el-table-column prop="desc" label="描述"/>
@@ -274,7 +299,16 @@ onMounted(() => {
             </el-table-column>
           </el-table>
           <!-- 分页 -->
-          <el-pagination background layout="prev, pager, next" :total="1" class="mt-4 mx-auto" />
+          <el-pagination 
+            v-if="data.imageList.length !== 0"
+            background 
+            layout="prev, pager, next"
+            :total="data.imageTotal" 
+            :page-size="data.imageCount"
+            @size-change="imageSizeChange"
+            @current-change="imageCurrentChange"
+            class="mt-4 mx-auto"
+          />
         </div>
       </el-tab-pane>
       <el-tab-pane label="容器管理" name="second">
@@ -288,7 +322,8 @@ onMounted(() => {
         </div>
         <!-- 所有容器信息展示 -->
         <div class="show-list">
-          <el-table :data="data.containerList" border style="width: 100%">
+          <el-empty v-if="data.containerList.length === 0" description="暂无容器信息"/>
+          <el-table v-if="data.containerList.length !== 0" :data="data.containerList" border style="width: 100%">
             <el-table-column prop="id" label="ID" width="100"/>
             <el-table-column prop="user_id_number" label="学号"/>
             <el-table-column prop="user_name" label="用户"/>
@@ -306,7 +341,16 @@ onMounted(() => {
             </el-table-column>
           </el-table>
           <!-- 分页 -->
-          <el-pagination background layout="prev, pager, next" :total="1" class="mt-4 mx-auto" />
+          <el-pagination 
+            v-if="data.containerList.length !== 0"
+            background 
+            layout="prev, pager, next"
+            :total="data.containerTotal" 
+            :page-size="data.containerCount"
+            @size-change="containerSizeChange"
+            @current-change="containerCurrentChange"
+            class="mt-4 mx-auto"
+          />
         </div>
       </el-tab-pane>
     </el-tabs>

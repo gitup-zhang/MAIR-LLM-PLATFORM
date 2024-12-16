@@ -67,7 +67,7 @@ const changePage = (pageName: string) => {
           <div class="icon-text">我的</div>
         </RouterLink>
         <!-- 课程信息 教师 -->
-        <RouterLink v-if="data.userType === '2'" class="sider-nav-icon" to="/adminClass" @click="changePage('adminClass')" :class="{ active: isCurrentPage('adminClass')}">
+        <RouterLink v-if="data.userType === '2'" class="sider-nav-icon" to="/teacherClass" @click="changePage('teacherClass')" :class="{ active: isCurrentPage('teacherClass')}">
           <icon-book  size="33" strokeWidth="3" class="mt-2"/>
           <div class="icon-text">课程</div>
         </RouterLink>
@@ -98,12 +98,12 @@ const changePage = (pageName: string) => {
           <div class="icon-text">课程</div>
         </RouterLink>
         <!-- 课程管理 教务 -->
-        <RouterLink v-if="data.userType === '3'" class="sider-nav-icon" to="/manageExam" @click="changePage('manageExam')" :class="{ active: isCurrentPage('manageExam')}">
+        <RouterLink v-if="data.userType === '3'" class="sider-nav-icon" to="/examManage" @click="changePage('examManage')" :class="{ active: isCurrentPage('examManage')}">
           <icon-bar-chart size="33" strokeWidth="3" class="mt-2"/>
           <div class="icon-text">考试</div>
         </RouterLink>
         <!-- 实验管理 教务 -->
-        <RouterLink v-if="data.userType === '3'" class="sider-nav-icon" to="/manageExperiment" @click="changePage('manageExperiment')" :class="{ active: isCurrentPage('manageExperiment')}">
+        <RouterLink v-if="data.userType === '3'" class="sider-nav-icon" to="/experimentManage" @click="changePage('experimentManage')" :class="{ active: isCurrentPage('experimentManage')}">
           <icon-experiment size="33" strokeWidth="3" class="mt-2"/>
           <div class="icon-text">实验</div>
         </RouterLink>

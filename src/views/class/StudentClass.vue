@@ -116,7 +116,7 @@ const getEnrolledClass = async () => {
 // 获取考试详情
 const getExamDetail = (courseDetail: any) => {
   router.push({
-    path: "/classExam",
+    path: "/examArrange",
     query: {
       id: courseDetail.id
     }

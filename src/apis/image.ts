@@ -18,7 +18,7 @@ export const getImageList = (searchText: string, page: number, count: number) =>
 }
 
 // 获取镜像列表
-export const getImageInfo = () => {
+export const getImageInfo = (page: number, count: number) => {
   return httpInstance({
     url:'/image/list/',
     method: "GET",

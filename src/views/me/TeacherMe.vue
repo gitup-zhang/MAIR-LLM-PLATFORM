@@ -6,6 +6,7 @@ import { ElMessage } from 'element-plus'
 import { useUserStore } from '@/stores/user'
 import { useSystemStore } from '@/stores/system'
 import { getUserInfo, editUserInfo, getApplyRoleList, submitModifyPassword, applyRole } from '@/apis/user'
+import { getRoleApplyList, cancelRoleApply } from '@/apis/role';
 
 const userStore = useUserStore();
 const systemStore = useSystemStore();
@@ -21,7 +22,7 @@ const data = reactive({
     checkPassword: ''
   },
   page: 1,
-  count: 10,
+  count: 5,
   total: 0
 })
 const { newType, applicationList, page, count, total } = toRefs(data)
@@ -125,10 +126,6 @@ const userInfoEditSubmit = async () => {
       type: 'success',
       plain: true,
     })
-    // 关闭模态框
-    systemStore.userInfoEditVisible = false
-    // 刷新数据
-    getAndStoreUserData()
   } else {
     ElMessage({
       message: '修改失败',
@@ -136,6 +133,10 @@ const userInfoEditSubmit = async () => {
       plain: true,
     })
   }
+  // 关闭模态框
+  systemStore.userInfoEditVisible = false
+  // 刷新数据
+  getAndStoreUserData()
 }
 
 // 提交角色修改
@@ -147,7 +148,6 @@ const submitRoleApply = async () => {
       type: 'success',
       plain: true,
     })
-    getUserApplyRoleList();
   } else {
     ElMessage({
       message: res.message,
@@ -155,13 +155,31 @@ const submitRoleApply = async () => {
       plain: true,
     })
   }
-  console.log(res)
+  getUserApplyRoleList();
 }
-
+// 取消角色修改
+const removeRoleApply = async (id: number) => {
+  const res = await cancelRoleApply(id);
+  if(res.status === 0){
+    ElMessage({
+      message: '角色申请已取消',
+      type: 'success',
+      plain: true,
+    })
+  } else {
+    ElMessage({
+      message: '角色申请取消失败',
+      type: 'warning',
+      plain: true,
+    })
+  }
+  getUserApplyRoleList();
+}
 // 获取角色申请记录列表
 const getUserApplyRoleList = async () => {
-  const res = await getApplyRoleList();
+  const res = await getRoleApplyList(sessionStorage.userId, data.page, data.count);
   data.applicationList = res.data.list;
+  data.total = res.data.total;
 }
 
 // 检查密码格式
@@ -228,6 +246,15 @@ const submitPasswordModify = async () => {
       })
     }
   }
+}
+
+// 分页
+const handleSizeChange = (val: any) => {
+  getUserApplyRoleList();
+}
+const handleCurrentChange = (val: any) => {
+  data.page = val;
+  getUserApplyRoleList();
 }
 
 onMounted(() => {
@@ -340,13 +367,32 @@ onMounted(() => {
       </el-row>
 
       <!-- 角色申请记录 -->
-      <el-table :data="data.applicationList" border style="width: 100%">
-        <el-table-column prop="user_id_number" label="号码" />
-        <el-table-column prop="user_name" label="昵称"/>
-        <el-table-column prop="new_type_desc" label="申请角色"/>
-        <el-table-column prop="create_time" label="时间"/>
-        <el-table-column prop="status_desc" label="审核状态"/>
-      </el-table>
+      <div class="edit-dialog">
+        <el-empty v-if="data.applicationList.length === 0" description="暂无角色申请记录" />
+        <el-table v-if="data.applicationList.length !== 0" :data="data.applicationList" border style="width: 100%">
+          <el-table-column prop="user_id_number" label="号码" />
+          <el-table-column prop="user_name" label="昵称"/>
+          <el-table-column prop="new_type_desc" label="申请角色"/>
+          <el-table-column prop="create_time" label="时间"/>
+          <el-table-column prop="status_desc" label="审核状态"/>
+          <el-table-column fixed="right" label="操作">
+            <template v-slot="scope">
+              <el-button v-if="scope.row.status === 1" link type="primary" size="small" @click="removeRoleApply(scope.row.id)">取消</el-button>
+            </template>
+          </el-table-column>
+        </el-table>
+        <!-- 分页 -->
+        <el-pagination
+          v-if="data.applicationList.length !== 0"
+          background 
+          layout="prev, pager, next"
+          :total="data.total" 
+          :page-size="data.count"
+          @size-change="handleSizeChange"
+          @current-change="handleCurrentChange"
+          class="mt-4 mx-auto"
+        />
+      </div>
     </div>
   </div>
 

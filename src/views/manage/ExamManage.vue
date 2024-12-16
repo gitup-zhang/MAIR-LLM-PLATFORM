@@ -13,7 +13,7 @@ const router = useRouter();
 const data = reactive({
   activeName: 'first',
   // 数据项
-  currentQuestionId: undefined || 0,
+  currentQuestionId: undefined || 0 ,
   currentQuestionScore: 0,
   currentExamPaperId: 0,
   // 输入
@@ -79,7 +79,7 @@ const data = reactive({
     content: '',
     desc: '',
     type: 2,
-    answer_option: [],
+    answer_option: [] as any,
     right_answer: '',
     status: 3,
     answer_words_limit: 50
@@ -135,9 +135,9 @@ const data = reactive({
       value: 5,
       label: '判断题'
     }],
-  questionOptions: [],
-  classOptions: [],
-  examPaperOptions: [],
+  questionOptions: [] as any,
+  classOptions: [] as any,
+  examPaperOptions: [] as any,
   // 分页
   examQuestionPage: 1,
   examQuestionCount: 10,
@@ -356,7 +356,6 @@ const examQuestionCurrentChange = (val: any) => {
   searchExamQuestion();
 }
 
-
 // 搜索试卷
 const searchExamPaper = async () => {
   const res = await getExamPaperList(data.inputExamPaper, data.examPaperPage, data.examPaperCount);
@@ -462,7 +461,6 @@ const examPaperCurrentChange = (val: any) => {
   data.examPaperPage = val;
   searchExamPaper();
 }
-
 
 // 搜索考试
 const searchExam = async () => {
@@ -579,9 +577,10 @@ onMounted(() => {
 </script>
 
 <template>
-  <div class="education-page">
-    <el-tabs v-model="data.activeName" type="border-card" class="education-tabs">
-      <el-tab-pane label="试题管理" name="first" class="education-pane">
+  <div class="exam-page">
+    <el-tabs v-model="data.activeName" type="border-card" class="exam-tabs">
+      <!-- 试题管理 -->
+      <el-tab-pane label="试题管理" name="first" class="exam-pane">
         <div class="search-box">
           <div class="search-title">试题管理</div>
           <div class="select-exam">
@@ -593,7 +592,8 @@ onMounted(() => {
         </div>
         <!-- 所有试题信息展示 -->
         <div class="show-list">
-          <el-table :data="data.examQuestionList" border style="width: 100%">
+          <el-empty v-if="data.examQuestionList.length === 0" description="暂无试题信息"/>
+          <el-table v-if="data.examQuestionList.length !== 0" :data="data.examQuestionList" border style="width: 100%">
             <el-table-column prop="id" label="ID" width="100"/>
             <el-table-column prop="content" label="内容"/>
             <el-table-column prop="desc" label="描述"/>
@@ -608,6 +608,7 @@ onMounted(() => {
           </el-table>
           <!-- 分页 -->
           <el-pagination
+            v-if="data.examQuestionList.length !== 0"
             background 
             layout="prev, pager, next"
             :total="data.examQuestionTotal" 
@@ -618,7 +619,8 @@ onMounted(() => {
           />
         </div>
       </el-tab-pane>
-      <el-tab-pane label="试卷管理" name="second">
+      <!-- 试卷管理 -->
+      <el-tab-pane label="试卷管理" name="second" class="exam-pane">
         <div class="search-box">
           <div class="search-title">试卷管理</div>
           <div class="select-exam">
@@ -630,7 +632,8 @@ onMounted(() => {
         </div>
         <!-- 所有试卷信息展示 -->
         <div class="show-list">
-          <el-table :data="data.examPaperList" border style="width: 100%">
+          <el-empty v-if="data.examPaperList.length === 0" description="暂无试卷信息"/>
+          <el-table v-if="data.examPaperList.length !== 0" :data="data.examPaperList" border style="width: 100%">
             <el-table-column prop="id" label="ID" width="100"/>
             <el-table-column prop="title" label="标题"/>
             <el-table-column prop="desc" label="描述"/>
@@ -647,6 +650,7 @@ onMounted(() => {
           </el-table>
           <!-- 分页 -->
           <el-pagination
+            v-if="data.examPaperList.length !== 0"
             background 
             layout="prev, pager, next"
             :total="data.examPaperTotal" 
@@ -657,7 +661,8 @@ onMounted(() => {
           />
         </div>
       </el-tab-pane>
-      <el-tab-pane label="考试管理" name="third">
+      <!-- 考试管理 -->
+      <el-tab-pane label="考试管理" name="third" class="exam-pane">
         <div class="search-box">
           <div class="search-title">考试管理</div>
           <div class="select-exam">
@@ -669,7 +674,8 @@ onMounted(() => {
         </div>
         <!-- 所有考试信息展示 -->
         <div class="show-list">
-          <el-table :data="data.examList" border style="width: 100%">
+          <el-empty v-if="data.examList.length === 0" description="暂无考试信息"/>
+          <el-table v-if="data.examList.length !== 0" :data="data.examList" border style="width: 100%">
             <el-table-column prop="id" label="ID" width="100"/>
             <el-table-column prop="desc" label="描述"/>
             <el-table-column prop="class_name" label="考试班级" width="150"/>
@@ -689,6 +695,7 @@ onMounted(() => {
           </el-table>
           <!-- 分页 -->
           <el-pagination
+            v-if="data.examList.length !== 0"
             background 
             layout="prev, pager, next"
             :total="data.examTotal" 
@@ -699,7 +706,8 @@ onMounted(() => {
           />
         </div>
       </el-tab-pane>
-      <el-tab-pane label="考试结果" name="Fourth">
+      <!-- 考试结果 -->
+      <el-tab-pane label="考试结果" name="Fourth" class="exam-pane">
         <div class="search-box">
           <div class="search-title">考试结果</div>
           <div class="select-exam">
@@ -711,14 +719,14 @@ onMounted(() => {
         </div>
         <!-- 所有考试信息展示 -->
         <div class="show-list">
-          <el-table :data="data.examResultList" border style="width: 100%">
-            <el-table-column prop="id" label="ID" width="100"/>
-            <el-table-column prop="user_id_number" label="学号"/>
-            <el-table-column prop="user_name" label="学生姓名" width="150"/>
+          <el-empty v-if="data.examResultList.length === 0" description="暂无考试结果信息"/>
+          <el-table v-if="data.examResultList.length !== 0" :data="data.examResultList" border style="width: 100%">
             <el-table-column prop="exam_id" label="考试ID" width="100"/>
+            <el-table-column prop="user_id_number" label="学号"/>
+            <el-table-column prop="user_name" label="考生姓名"/>
             <el-table-column prop="exam_desc" label="考试描述"/>
-            <el-table-column prop="status_desc" label="考试状态" width="100"/>
-            <el-table-column label="当前得分" width="100">
+            <el-table-column prop="status_desc" label="考试状态"/>
+            <el-table-column label="当前得分">
               <template v-slot="scope">
                 {{ scope.row.score }} / {{ scope.row.total_score }}
               </template>
@@ -731,6 +739,7 @@ onMounted(() => {
           </el-table>
           <!-- 分页 -->
           <el-pagination
+            v-if="data.examResultList.length !== 0"
             background 
             layout="prev, pager, next"
             :total="data.examResultTotal" 
@@ -1328,17 +1337,17 @@ onMounted(() => {
 
 <style scoped>
 /* 整体页面设置 */
-.education-page {
+.exam-page {
   width: 100%;
   height: 100%;
   box-shadow: 1px 1px 2px #d1d5db;
   @apply bg-light-50 p-1 rounded-md;
 }
-.education-tabs {
+.exam-tabs {
   height: 100%;
   width: 100%;
 }
-.education-pane {
+.exam-pane {
   height: 100%;
   width: 100%;
 }

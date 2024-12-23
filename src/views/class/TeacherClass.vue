@@ -1088,7 +1088,7 @@ onMounted(() => {
   </el-dialog>
 
   <!-- 查看容器框 -->
-  <el-dialog v-model="data.checkContainerModalVisible" title="学习进度" width="1200" center>
+  <el-dialog v-model="data.checkContainerModalVisible" title="查看容器" width="1200" center>
     <!-- 章节列表 -->
     <div class="experiment-dialog">
       <el-empty v-if="data.containerList.length === 0" description="暂无容器信息"/>

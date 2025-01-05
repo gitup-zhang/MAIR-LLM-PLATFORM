@@ -470,13 +470,13 @@ onMounted(() => {
 .me-page {
   width: 100%;
   height: 100%;
-  @apply bg-light-500 pr-1;
+  box-shadow: 1px 1px 2px #d1d5db;
+  @apply bg-light-50 pr-1 rounded-md;
 }
 .me-container {
   width: 100%;
   height: 100%;
-  box-shadow: 1px 1px 2px #d1d5db;
-  @apply bg-light-50 p-3 rounded-md;
+  @apply p-3 rounded-md;
 }
 .edit-info {
   width: 100%;

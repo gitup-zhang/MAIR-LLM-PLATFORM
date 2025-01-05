@@ -1,8 +1,14 @@
 <script setup lang="ts">
 // 引入 System 状态
 import { useSystemStore } from '@/stores/system'
-
 const systemStore = useSystemStore()
+
+import { createAssistant } from "@/apis/test"
+
+const test = async () => {
+  const res = await createAssistant();
+  console.log(res)
+}
 
 </script>
 
@@ -26,6 +32,7 @@ const systemStore = useSystemStore()
           <el-button>北京邮电大学MAIR团队</el-button>
         </el-badge>
       </div>
+      <el-button @click="test()">创建新助手</el-button>
     </div>
   </el-dialog>
 </template>
@@ -33,10 +40,11 @@ const systemStore = useSystemStore()
 <style scoped>
 .sider-nav-icon {
   width: 100%;
-  @apply mb-3 flex flex-col items-center text-gray-500 rounded-md;
+  transition: all .2s;
+  @apply mb-3 flex flex-col items-center text-white rounded-md;
 }
 .sider-nav-icon:hover{
-  @apply text-blue-500 bg-sky-50;
+  transform: scale(1.2);
 }
 .about-page {
   @apply flex flex-col;

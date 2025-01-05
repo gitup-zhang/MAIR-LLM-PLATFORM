@@ -11,7 +11,8 @@ const data = reactive({
   currentPage: '',
   aboutUsVisible : false,
   settingVisible : false,
-  userType: sessionStorage.userType
+  userType: sessionStorage.userType,
+  alivePages: ['Me'] as any
 })
 const { aboutUsVisible, settingVisible } = toRefs(data)
 
@@ -28,6 +29,9 @@ const isCurrentPage = (pageName: string) => {
   return pageName === systemStore.currentPage;
 }
 const changePage = (pageName: string) => {
+  if(!data.alivePages.includes(pageName)) {
+    data.alivePages.push(pageName);
+  }
   systemStore.currentPage = pageName;
 }
 </script>
@@ -41,7 +45,7 @@ const changePage = (pageName: string) => {
         <img src="../assets/img/logo.png" alt="大模型实训平台" class="h-10 w-10 mt-2 mb-2">
         <span class="h-[0.15rem] w-14 bg-gray-200 mb-2 mt-2"></span>
         <!-- 个人信息 学生 -->
-        <RouterLink v-if="data.userType === '1'" class="sider-nav-icon" to="/studentMe" @click="changePage('studentMe')" :class="{ active: isCurrentPage('studentMe') }">
+        <RouterLink  v-if="data.userType === '1'" class="sider-nav-icon" to="/studentMe" @click="changePage('Me')" :class="{ active: isCurrentPage('Me') }">
           <icon-user  size="33" strokeWidth="3" class="mt-2"/>
           <div class="icon-text">我的</div>
         </RouterLink>
@@ -62,7 +66,7 @@ const changePage = (pageName: string) => {
         </div>
 
         <!-- 个人信息 教师 -->
-        <RouterLink v-if="data.userType === '2'" class="sider-nav-icon" to="/teacherMe" @click="changePage('teacherMe')"  :class="{ active: isCurrentPage('teacherMe')}">
+        <RouterLink v-if="data.userType === '2'" class="sider-nav-icon" to="/teacherMe" @click="changePage('Me')"  :class="{ active: isCurrentPage('Me')}">
           <icon-user  size="33" strokeWidth="3" class="mt-2"/>
           <div class="icon-text">我的</div>
         </RouterLink>
@@ -73,7 +77,7 @@ const changePage = (pageName: string) => {
         </RouterLink>
 
         <!-- 个人信息 教务 -->
-        <RouterLink v-if="data.userType === '3'" class="sider-nav-icon" to="/adminMe" @click="changePage('adminMe')" :class="{ active: isCurrentPage('adminMe') }">
+        <RouterLink v-if="data.userType === '3'" class="sider-nav-icon" to="/adminMe" @click="changePage('Me')" :class="{ active: isCurrentPage('Me') }">
           <icon-user  size="33" strokeWidth="3" class="mt-2"/>
           <div class="icon-text">我的</div>
         </RouterLink>
@@ -137,48 +141,55 @@ const changePage = (pageName: string) => {
 .experiment-page {
   width: 100vw;
   height: 100vh;
+  background-color:hsla(221,94%,51%,1);
+  background-image:
+  radial-gradient(at 12% 50%, hsla(10,21%,87%,0.87) 0px, transparent 50%),
+  radial-gradient(at 65% 9%, hsla(12,80%,86%,1) 0px, transparent 50%),
+  radial-gradient(at 86% 74%, hsla(12,28%,83%,1) 0px, transparent 50%);
 }
 /* 右侧侧边栏区 */
 .sider-nav {
   height: 100vh;
   box-sizing: border-box;
-  @apply bg-light-500 flex-col pt-1 pl-2 pr-1 pb-2;
+  @apply flex-col pt-1 pl-2 pr-1 pb-2;
 }
 .sider-nav-main {
-    width: 100%;
-    height: 100%;
-    position: relative;
-    box-shadow: 1px 1px 2px #d1d5db;
-    @apply bg-light-50 flex flex-col items-center rounded-md p-1;
+  width: 100%;
+  height: 100%;
+  position: relative;
+  /* box-shadow: 1px 1px 2px #d1d5db; */
+  @apply flex flex-col items-center rounded-md p-1;
 }
 .sider-nav-icon {
-    width: 100%;
-    @apply mb-3 flex flex-col items-center text-gray-500 rounded-md;
+  width: 100%;
+  transition: all .2s;
+  @apply mb-3 flex flex-col items-center text-white rounded-md;
 }
 .sider-nav-icon:hover{
-    @apply text-blue-500 bg-sky-50;
+  transform: scale(1.2);
 }
 .active {
-  @apply text-blue-500 bg-sky-50;
+  transform: scale(1.2);
 }
 .icon-text {
-    @apply mt-1 text-xs font-medium ;
+  @apply mt-1 text-xs font-medium ;
 }
 .sider-nav-icon-bottom {
   position: absolute;
   bottom: 10px;
   width: 100%;
-  @apply mb-3 flex flex-col items-center text-gray-500 rounded-md;
+  transition: all .2s;
+  @apply mb-3 flex flex-col items-center text-white rounded-md;
 }
 .sider-nav-icon-bottom:hover{
-  @apply text-blue-500;
+  transform: scale(1.2);
 }
 
 /* 左侧主页面区 */
 .window-main {
   height: 100vh;
   box-sizing: border-box;
-  @apply bg-light-500 flex-col pt-1 pl-1 pr-2 pb-2;
+  @apply flex-col pt-1 pl-1 pr-2 pb-2;
 }
 .experiment-left-main {
   /* width: 100%; */

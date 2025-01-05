@@ -17,7 +17,7 @@ export const useSystemStore = defineStore({
     userAvatarEditVisible: false,
     // 聊天模态框是否可见
     chatWindowVisible: false,
-    currentPage: ''
+    currentPage: 'Me'
   }),
   actions: {
     // 打开设置模态框
@@ -48,5 +48,6 @@ export const useSystemStore = defineStore({
     openChatWindowModal() {
       this.chatWindowVisible = true
     }
-  }
+  },
+  persist: true
 })

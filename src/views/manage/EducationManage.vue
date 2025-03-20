@@ -70,20 +70,24 @@ const data = reactive({
   // 分页
   locationTotal: 0,
   locationPage: 1,
-  locationCount: 10,
+  locationCount: 6,
   collegeTotal: 0,
   collegePage: 1,
-  collegeCount: 10,
+  collegeCount: 6,
   classTotal: 0,
   classPage: 1,
-  classCount: 10,
+  classCount: 6,
   classApplyTotal: 0,
   classApplyPage: 1,
-  classApplyCount: 10,
+  classApplyCount: 6,
 })
 
 // 搜索地区
 const searchLocation = async () => {
+  // 修复检索失败BUG
+  if(data.inputLocation.length > 0){
+    data.locationPage = 1;
+  }
   const res = await getLocationList(data.inputLocation, data.locationPage, data.locationCount);
   data.locationList = res.data.list;
   data.locationTotal = res.data.total;
@@ -102,7 +106,7 @@ const submitLocationCreate = async () => {
   } else {
     ElMessage({
       message: '创建失败',
-      type: 'warning',
+      type: 'error',
       plain: true,
     })
   }
@@ -123,7 +127,7 @@ const removeLocation = async (id: number) => {
   } else {
     ElMessage({
       message: '删除失败',
-      type: 'warning',
+      type: 'error',
       plain: true,
     })
   }
@@ -152,7 +156,7 @@ const submitLocationModify = async () => {
   } else {
     ElMessage({
       message: '修改失败',
-      type: 'warning',
+      type: 'error',
       plain: true,
     })
   }
@@ -170,6 +174,9 @@ const locationCurrentChange = (val: any) => {
 
 // 搜索教学单位
 const searchCollege = async () => {
+  if(data.inputCollege.length > 0){
+    data.collegePage = 1;
+  }
   const res = await getCollegeList(data.inputCollege, data.collegePage, data.collegeCount);
   data.collegeList = res.data.list;
   data.collegeTotal = res.data.total;
@@ -188,7 +195,7 @@ const submitCollegeCreate = async () => {
   } else {
     ElMessage({
       message: '创建失败',
-      type: 'warning',
+      type: 'error',
       plain: true,
     })
   }
@@ -206,7 +213,7 @@ const removeCollege = async (id: number) => {
   } else {
     ElMessage({
       message: '删除失败',
-      type: 'warning',
+      type: 'error',
       plain: true,
     })
   }
@@ -234,7 +241,7 @@ const submitCollegeModify = async () => {
   } else {
     ElMessage({
       message: '修改失败',
-      type: 'warning',
+      type: 'error',
       plain: true,
     })
   }
@@ -249,10 +256,13 @@ const collegeCurrentChange = (val: any) => {
   searchCollege();
 }
 
-
 // 搜索班级
 const searchClass = async () => {
+  if(data.inputClass.length > 0){
+    data.classPage = 1;
+  }
   const res = await getCourseList(data.inputClass, data.classPage, data.classCount);
+  console.log(res);
   data.classList = res.data.list;
   data.classTotal = res.data.total;
 }
@@ -272,7 +282,7 @@ const submitClassCreate = async () => {
   } else {
     ElMessage({
       message: '新班级创建失败',
-      type: 'warning',
+      type: 'error',
       plain: true,
     })
   }
@@ -302,7 +312,7 @@ const submitClassModify = async () => {
   } else {
     ElMessage({
       message: '班级信息修改失败',
-      type: 'warning',
+      type: 'error',
       plain: true,
     })
   }
@@ -352,11 +362,12 @@ const passClassApply = async (id: number) => {
   } else {
     ElMessage({
       message: '申请批准出现错误',
-      type: 'warning',
+      type: 'error',
       plain: true,
     })
   }
   searchClassApply();
+  searchClass();
 }
 // 拒绝班级申请
 const rejectClassApply = async (id: number) => {
@@ -371,7 +382,7 @@ const rejectClassApply = async (id: number) => {
   } else {
     ElMessage({
       message: '申请拒绝出现错误',
-      type: 'warning',
+      type: 'error',
       plain: true,
     })
   }
@@ -424,13 +435,12 @@ onMounted(async () => {
         </div>
         <!-- 所有地区信息展示 -->
         <div class="location-list">
-          <el-empty v-if="data.locationList.length === 0" description="暂无地区信息"/>
-          <el-table v-if="data.locationList.length !== 0" :data="data.locationList" border style="width: 100%">
-            <el-table-column prop="id" label="ID" />
-            <el-table-column prop="name" label="地区名" />
-            <el-table-column prop="parent_name" label="上级地区名" />
+          <el-empty v-if="data.locationList.length === 0"  description="暂无地区信息"/>
+          <el-table v-if="data.locationList.length !== 0" :data="data.locationList" border style="width: 100%" max-height="380">
+            <el-table-column prop="name" label="地区名称" />
+            <el-table-column prop="parent_name" label="上级地区名称" />
             <el-table-column fixed="right" label="操作" min-width="60">
-              <template v-slot="scope">
+              <template #default="scope">
                 <el-button link type="primary" size="small" @click="modityLocationDetail(scope.row.id)">修改</el-button>
                 <el-button link type="primary" size="small" @click="removeLocation(scope.row.id)">删除</el-button>
               </template>
@@ -463,9 +473,8 @@ onMounted(async () => {
         <!-- 所有教学单位信息展示 -->
         <div class="college-list">
           <el-empty v-if="data.collegeList.length === 0" description="暂无教学单位信息"/>
-          <el-table v-if="data.collegeList.length !== 0" :data="data.collegeList" border style="width: 100%">
-            <el-table-column prop="id" label="ID" />
-            <el-table-column prop="name" label="教学单位名" />
+          <el-table v-if="data.collegeList.length !== 0" :data="data.collegeList" border style="width: 100%" max-height="380">
+            <el-table-column prop="name" label="教学单位名称" />
             <el-table-column prop="area_name" label="所属地区名" />
             <el-table-column fixed="right" label="操作" min-width="60">
               <template v-slot="scope">
@@ -502,23 +511,22 @@ onMounted(async () => {
         <!-- 所有班级信息展示 -->
         <div class="college-list">
           <el-empty v-if="data.classList.length === 0" description="暂无班级信息"/>
-          <el-table v-if="data.classList.length !== 0" :data="data.classList" border style="width: 100%">
-            <el-table-column prop="id" label="ID" width="60"/>
-            <el-table-column prop="name" label="班级名" width="120"/>
-            <el-table-column prop="teacher_name" label="教师名" width="120"/>
-            <el-table-column prop="course_name" label="课程名" width="150"/>
-            <el-table-column label="学生量" width="120">
+          <el-table v-if="data.classList.length !== 0" :data="data.classList" border style="width: 100%" max-height="400">
+            <el-table-column prop="name" label="班级名称" min-width="200"/>
+            <el-table-column prop="teacher_name" label="教师名" min-width="150"/>
+            <el-table-column prop="course_name" label="课程名" min-width="150"/>
+            <el-table-column label="学生量" min-width="150">
               <template v-slot="scope">
                 {{scope.row.student_num}} / {{ scope.row.capacity }}
               </template>
             </el-table-column>
-            <el-table-column label="启止时间">
+            <el-table-column label="启止时间" min-width="400">
               <template v-slot="scope">
                 {{ scope.row.start_time + ' -- ' + scope.row.end_time }}
               </template>
             </el-table-column>
-            <el-table-column prop="college_name" label="地区名" />
-            <el-table-column fixed="right" label="操作" min-width="120">
+            <el-table-column prop="college_name" label="教学单位名称" min-width="150"/>
+            <el-table-column fixed="right" label="操作" min-width="200">
               <template v-slot="scope">
                 <el-button link type="primary" size="small" @click="modifyClassDetail(scope.row.id)">班级修改</el-button>
                 <el-button link type="primary" size="small" @click="checkExamDetail(scope.row.id)">考试安排</el-button>
@@ -731,9 +739,9 @@ onMounted(async () => {
   <!-- 修改班级框 -->
   <el-dialog v-model="data.modifyClassModalVisible" title="班级修改" width="600" center>
     <div class="education-dialog">
-      <el-form :model="data.currentClass" class="w-[30rem]">
+      <el-form :model="data.currentClass" label-width="auto" class="w-[30rem]">
         <!-- 班级名 -->
-        <el-form-item>
+        <el-form-item label="班级名称">
           <el-input v-model="data.currentClass.name" placeholder="请输入班级名称">
             <!-- 图标 -->
             <template #prefix>
@@ -744,7 +752,7 @@ onMounted(async () => {
           </el-input>
         </el-form-item>
         <!-- 教师ID -->
-        <el-form-item>
+        <el-form-item label="授课教师">
           <el-select v-model="data.currentClass.teacher_id" placeholder="请选择教师">
             <!-- 图标 -->
             <template #prefix>
@@ -761,8 +769,8 @@ onMounted(async () => {
           </el-select>
         </el-form-item>
         <!-- 课程 -->
-        <el-form-item>
-          <el-select v-model="data.currentClass.course_id" placeholder="请选择课程">
+        <el-form-item label="课程名称">
+          <el-select v-model="data.currentClass.course_id" placeholder="请选择课程" disabled>
             <!-- 图标 -->
             <template #prefix>
               <el-icon color="#409efc" class="no-inherit">
@@ -778,18 +786,15 @@ onMounted(async () => {
           </el-select>
         </el-form-item>
         <!-- 容量 -->
-        <el-form-item>
+        <el-form-item label="课程容量">
           <el-input-number class="w-[30rem]" v-model="data.currentClass.capacity" :min="1" :max="100">
-            <template #prefix>
-              <span>课程容量</span>
-            </template>
             <template #suffix>
               <span>人</span>
             </template>
           </el-input-number>
         </el-form-item>
         <!-- 起止时间 -->
-        <el-form-item>
+        <el-form-item label="起止时间">
           <el-date-picker
             v-model="data.currentClass.time_range"
             type="daterange"
@@ -800,7 +805,7 @@ onMounted(async () => {
           />
         </el-form-item>
         <!-- 描述 -->
-        <el-form-item>
+        <el-form-item label="课程描述">
           <el-input v-model="data.currentClass.desc" placeholder="请输入课程描述">
             <!-- 图标 -->
             <template #prefix>
@@ -811,7 +816,7 @@ onMounted(async () => {
           </el-input>
         </el-form-item>
         <!-- 教学单位 -->
-        <el-form-item>
+        <el-form-item label="教学单位">
           <el-select v-model="data.currentClass.college_id" placeholder="请选择教学单位">
             <!-- 图标 -->
             <template #prefix>
@@ -842,19 +847,19 @@ onMounted(async () => {
         <div class="search-title">班级申请记录</div>
         <div class="select-exam">
           <!-- 搜索 -->
-          <el-input v-model="data.inputClassApply" class="mr-3 w-[20vw] h-[2rem]" placeholder="请输入班级名称" />
+          <el-input v-model="data.inputClassApply" class="mr-3 w-[20vw] h-[2rem]" placeholder="请输入学生ID号" />
           <el-button type="primary" class="mr-3 h-[2rem]" @click="searchClassApply()">搜索</el-button>
         </div>
       </div>
       <!-- 所有班级信息展示 -->
       <div class="dialog-list">
         <el-empty v-if="data.classApplyList.length === 0" description="暂无班级申请信息"/>
-        <el-table v-if="data.classApplyList.length !== 0" :data="data.classApplyList" border style="width: 100%">
-          <el-table-column prop="user_id_number" label="用户ID"/>
-          <el-table-column prop="user_name" label="用户名" />
-          <el-table-column prop="class_name" label="班级名"/>
-          <el-table-column prop="create_time" label="创建时间"/>
-          <el-table-column prop="status_desc" label="审核状态" />
+        <el-table v-if="data.classApplyList.length !== 0" :data="data.classApplyList" border style="width: 100%" max-height="400">
+          <el-table-column prop="user_id_number" label="用户ID" min-width="200"/>
+          <el-table-column prop="user_name" label="用户名" min-width="200"/>
+          <el-table-column prop="class_name" label="班级名" min-width="200"/>
+          <el-table-column prop="create_time" label="创建时间" min-width="200"/>
+          <el-table-column prop="status_desc" label="审核状态" min-width="200"/>
           <el-table-column fixed="right" label="操作" min-width="120">
             <template v-slot="scope">
               <el-button v-if="scope.row.status === 1" link type="primary" size="small" @click="passClassApply(scope.row.id)">通过</el-button>

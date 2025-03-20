@@ -13,7 +13,7 @@ const router = useRouter();
 const data = reactive({
   activeName: 'first',
   // 数据项
-  currentQuestionId: undefined || 0 ,
+  currentQuestionId: undefined,
   currentQuestionScore: 0,
   currentExamPaperId: 0,
   // 输入
@@ -140,21 +140,24 @@ const data = reactive({
   examPaperOptions: [] as any,
   // 分页
   examQuestionPage: 1,
-  examQuestionCount: 10,
+  examQuestionCount: 6,
   examQuestionTotal: 0,
   examPaperPage: 1,
-  examPaperCount: 10,
+  examPaperCount: 6,
   examPaperTotal: 0,
   examPage: 1,
-  examCount: 10,
+  examCount: 6,
   examTotal: 0,
   examResultPage: 1,
-  examResultCount: 10,
+  examResultCount: 6,
   examResultTotal: 0
 })
 
 // 搜索试题
 const searchExamQuestion = async () => {
+  if(data.inputExamQuestion.length > 0){
+    data.examQuestionPage = 1;
+  }
   const res = await getExamQuestionList(data.inputExamQuestion, data.examQuestionPage, data.examQuestionCount);
   data.examQuestionList = res.data.list;
   data.examQuestionTotal = res.data.total;
@@ -210,7 +213,7 @@ const submitQuestionCreate = async (status: number) => {
   } else {
     ElMessage({
       message: '新试题创建失败',
-      type: 'warning',
+      type: 'error',
       plain: true,
     })
   }
@@ -248,7 +251,7 @@ const submitQuestionModify = async (status: number) => {
     } else {
       ElMessage({
         message: '试题修改失败',
-        type: 'warning',
+        type: 'error',
         plain: true,
       })
     }
@@ -262,7 +265,7 @@ const submitQuestionModify = async (status: number) => {
     } else {
       ElMessage({
         message: '试题修改保存失败',
-        type: 'warning',
+        type: 'error',
         plain: true,
       })
     }
@@ -322,7 +325,7 @@ const addExamQuestion = async () => {
     } else {
       ElMessage({
         message: '试题添加失败',
-        type: 'warning',
+        type: 'error',
         plain: true,
       })
     }
@@ -341,7 +344,7 @@ const removeExamPaperQuestion = async (id: number) => {
     } else {
       ElMessage({
         message: '试题删除失败',
-        type: 'warning',
+        type: 'error',
         plain: true,
       })
     }
@@ -374,7 +377,7 @@ const removeExamPaper = async (id: number) => {
   } else {
     ElMessage({
       message: '试卷删除失败',
-      type: 'warning',
+      type: 'error',
       plain: true,
     })
   }
@@ -392,7 +395,7 @@ const submitExamPaperCreate = async () => {
   } else {
     ElMessage({
       message: '新试卷创建失败',
-      type: 'warning',
+      type: 'error',
       plain: true,
     })
   }
@@ -426,7 +429,7 @@ const submitExamPaperModify = async (stauts: number) => {
   } else {
     ElMessage({
       message: '试卷修改失败',
-      type: 'warning',
+      type: 'error',
       plain: true,
     })
   }
@@ -446,7 +449,7 @@ const saveExamPaperModify = async (stauts: number) => {
   } else {
     ElMessage({
       message: '试卷保存失败',
-      type: 'warning',
+      type: 'error',
       plain: true,
     })
   }
@@ -490,7 +493,7 @@ const submitExamCreate = async () => {
   } else {
     ElMessage({
       message: '考试创建失败',
-      type: 'warning',
+      type: 'error',
       plain: true,
     })
   }
@@ -509,7 +512,7 @@ const removeExam = async (id: number) => {
   } else {
     ElMessage({
       message: '考试删除失败',
-      type: 'warning',
+      type: 'error',
       plain: true,
     })
   }
@@ -554,7 +557,7 @@ const checkExamPaper = (id: number) => {
     path: "/examPaperDetail",
     query: {
       type: 'teacher',
-      userExamId: id
+      id: id
     }
   })
 }
@@ -585,7 +588,7 @@ onMounted(() => {
           <div class="search-title">试题管理</div>
           <div class="select-exam">
             <!-- 搜索 -->
-            <el-input v-model="data.inputExamQuestion" class="mr-3 w-[30vw] h-[2rem]" placeholder="请输入试题名称" />
+            <el-input v-model="data.inputExamQuestion" class="mr-3 w-[30vw] h-[2rem]" placeholder="请输入试题内容" />
             <el-button type="primary" class="mr-3 h-[2rem]" @click="searchExamQuestion()">搜索</el-button>
             <el-button type="primary" class="mr-3 h-[2rem]" @click="data.createQuestionModalVisible = true">创建新试题</el-button>
           </div>
@@ -594,9 +597,8 @@ onMounted(() => {
         <div class="show-list">
           <el-empty v-if="data.examQuestionList.length === 0" description="暂无试题信息"/>
           <el-table v-if="data.examQuestionList.length !== 0" :data="data.examQuestionList" border style="width: 100%">
-            <el-table-column prop="id" label="ID" width="100"/>
-            <el-table-column prop="content" label="内容"/>
-            <el-table-column prop="desc" label="描述"/>
+            <el-table-column prop="content" label="内容" show-overflow-tooltip/>
+            <el-table-column prop="desc" label="描述" show-overflow-tooltip/>
             <el-table-column prop="type_desc" label="类型" width="100"/>
             <el-table-column prop="status_desc" label="状态" width="100"/>
             <el-table-column fixed="right" label="操作" width="200">
@@ -634,7 +636,6 @@ onMounted(() => {
         <div class="show-list">
           <el-empty v-if="data.examPaperList.length === 0" description="暂无试卷信息"/>
           <el-table v-if="data.examPaperList.length !== 0" :data="data.examPaperList" border style="width: 100%">
-            <el-table-column prop="id" label="ID" width="100"/>
             <el-table-column prop="title" label="标题"/>
             <el-table-column prop="desc" label="描述"/>
             <el-table-column prop="status_desc" label="状态"/>
@@ -667,7 +668,7 @@ onMounted(() => {
           <div class="search-title">考试管理</div>
           <div class="select-exam">
             <!-- 搜索 -->
-            <el-input v-model="data.inputExam" class="mr-3 w-[30vw] h-[2rem]" placeholder="请输入考试名称" />
+            <el-input v-model="data.inputExam" class="mr-3 w-[30vw] h-[2rem]" placeholder="请输入考试描述" />
             <el-button type="primary" class="mr-3 h-[2rem]" @click="searchExam()">搜索</el-button>
             <el-button type="primary" class="mr-3 h-[2rem]" @click="openCreateExamModal()">创建新的考试</el-button>
           </div>
@@ -675,18 +676,17 @@ onMounted(() => {
         <!-- 所有考试信息展示 -->
         <div class="show-list">
           <el-empty v-if="data.examList.length === 0" description="暂无考试信息"/>
-          <el-table v-if="data.examList.length !== 0" :data="data.examList" border style="width: 100%">
-            <el-table-column prop="id" label="ID" width="100"/>
-            <el-table-column prop="desc" label="描述"/>
-            <el-table-column prop="class_name" label="考试班级" width="150"/>
-            <el-table-column prop="exam_paper_title" label="试卷标题"/>
-            <el-table-column prop="type_desc" label="类型" width="100"/>
-            <el-table-column label="考试时间">
+          <el-table v-if="data.examList.length !== 0" :data="data.examList" border max-height="400" style="width: 100%">
+            <el-table-column prop="desc" label="描述" min-width="200"/>
+            <el-table-column prop="class_name" label="考试班级" min-width="200"/>
+            <el-table-column prop="exam_paper_title" label="试卷标题" min-width="200"/>
+            <el-table-column prop="type_desc" label="类型" width="100" min-width="200"/>
+            <el-table-column label="考试时间" min-width="400">
               <template v-slot="scope">
                 {{ scope.row.start_time + ' -- ' + scope.row.end_time }}
               </template>
             </el-table-column>
-            <el-table-column fixed="right" label="操作">
+            <el-table-column fixed="right" label="操作" min-width="200">
               <template v-slot="scope">
                 <el-button link type="primary" size="small" @click="checkExamDetail(scope.row.id)">查看详情</el-button>
                 <el-button v-if="scope.row.status===1" link type="primary" size="small" @click="removeExam(scope.row.id)">取消</el-button>
@@ -720,18 +720,17 @@ onMounted(() => {
         <!-- 所有考试信息展示 -->
         <div class="show-list">
           <el-empty v-if="data.examResultList.length === 0" description="暂无考试结果信息"/>
-          <el-table v-if="data.examResultList.length !== 0" :data="data.examResultList" border style="width: 100%">
-            <el-table-column prop="exam_id" label="考试ID" width="100"/>
-            <el-table-column prop="user_id_number" label="学号"/>
-            <el-table-column prop="user_name" label="考生姓名"/>
-            <el-table-column prop="exam_desc" label="考试描述"/>
-            <el-table-column prop="status_desc" label="考试状态"/>
-            <el-table-column label="当前得分">
+          <el-table v-if="data.examResultList.length !== 0" :data="data.examResultList" border style="width: 100%" max-height="400">
+            <el-table-column prop="user_id_number" label="学号" min-width="200"/>
+            <el-table-column prop="user_name" label="考生姓名" min-width="200"/>
+            <el-table-column prop="exam_desc" label="考试描述" min-width="200"/>
+            <el-table-column prop="status_desc" label="考试状态" min-width="200"/>
+            <el-table-column label="当前得分" min-width="200">
               <template v-slot="scope">
                 {{ scope.row.score }} / {{ scope.row.total_score }}
               </template>
             </el-table-column>
-            <el-table-column fixed="right" label="操作">
+            <el-table-column fixed="right" label="操作" min-width="200">
               <template v-slot="scope">
                 <el-button v-if="scope.row.status === 3" link type="primary" size="small" @click="checkExamPaper(scope.row.id)">查看试卷</el-button>
               </template>
@@ -752,7 +751,6 @@ onMounted(() => {
       </el-tab-pane>
     </el-tabs>
   </div>
-
 
   <!-- 查看试题详情框 -->
   <el-dialog v-model="data.questionDetailModalVisible" title="试题详情" width="600" center>
@@ -802,12 +800,13 @@ onMounted(() => {
       </el-descriptions>
     </div>
   </el-dialog>
+  
   <!-- 创建试题框 -->
   <el-dialog v-model="data.createQuestionModalVisible" title="创建新试题" width="600" center>
     <div class="exam-dialog">
-      <el-form :model="data.newQuestionForm" class="w-[30rem]">
+      <el-form :model="data.newQuestionForm" label-width="auto" class="w-[30rem]">
         <!-- 内容 -->
-        <el-form-item>
+        <el-form-item label="内容">
           <el-input v-model="data.newQuestionForm.content" placeholder="请输入题目内容">
             <!-- 图标 -->
             <template #prefix>
@@ -818,7 +817,7 @@ onMounted(() => {
           </el-input>
         </el-form-item>
         <!-- 描述 -->
-        <el-form-item>
+        <el-form-item label="描述">
           <el-input v-model="data.newQuestionForm.desc" placeholder="请输入题目描述">
             <!-- 图标 -->
             <template #prefix>
@@ -829,7 +828,7 @@ onMounted(() => {
           </el-input>
         </el-form-item>
         <!-- 类型 -->
-        <el-form-item>
+        <el-form-item label="类型">
           <el-select v-model="data.newQuestionForm.type" placeholder="请选择题目类型" class="w-[30rem]" @change="changeType()">
             <!-- 图标 -->
             <template #prefix>
@@ -889,7 +888,7 @@ onMounted(() => {
           </el-form-item>
           <el-form-item>
             <el-checkbox-group v-model="data.newQuestionForm.right_answer">
-              <el-checkbox v-for="(option, index) in data.newQuestionForm.answer_option" :key="index" :label="(index+1).toString()" :value="option">
+              <el-checkbox v-for="(option, index) in data.newQuestionForm.answer_option" :key="index" :label="(index+1).toString()">
                 {{ option }}
               </el-checkbox>
             </el-checkbox-group>
@@ -935,12 +934,13 @@ onMounted(() => {
       </el-form>
     </div>
   </el-dialog>
+
   <!-- 修改试题框 -->
   <el-dialog v-model="data.modifyQuestionModalVisible" title="修改试题" width="600" center>
     <div class="exam-dialog">
-      <el-form :model="data.modifyQuestionForm" class="w-[30rem]">
+      <el-form :model="data.modifyQuestionForm" label-width="auto" class="w-[30rem]">
         <!-- 内容 -->
-        <el-form-item>
+        <el-form-item label="内容">
           <el-input v-model="data.modifyQuestionForm.content" placeholder="请输入题目内容">
             <!-- 图标 -->
             <template #prefix>
@@ -951,7 +951,7 @@ onMounted(() => {
           </el-input>
         </el-form-item>
         <!-- 描述 -->
-        <el-form-item>
+        <el-form-item label="描述">
           <el-input v-model="data.modifyQuestionForm.desc" placeholder="请输入题目描述">
             <!-- 图标 -->
             <template #prefix>
@@ -962,7 +962,7 @@ onMounted(() => {
           </el-input>
         </el-form-item>
         <!-- 类型 -->
-        <el-form-item>
+        <el-form-item label="类型">
           <el-select v-model="data.modifyQuestionForm.type" placeholder="请选择题目类型" class="w-[30rem]" @change="changeType()">
             <!-- 图标 -->
             <template #prefix>
@@ -1069,13 +1069,12 @@ onMounted(() => {
     </div>
   </el-dialog>
 
-
   <!-- 创建新试卷 -->
   <el-dialog v-model="data.createExamPaperModalVisible" title="创建新试卷" width="600" center>
     <div class="exam-dialog">
-      <el-form :model="data.newExamPaperForm" class="w-[30rem]">
+      <el-form :model="data.newExamPaperForm" label-width="auto" class="w-[30rem]">
         <!-- 标题 -->
-        <el-form-item>
+        <el-form-item label="标题">
           <el-input v-model="data.newExamPaperForm.title" placeholder="请输入试卷标题">
             <!-- 图标 -->
             <template #prefix>
@@ -1086,7 +1085,7 @@ onMounted(() => {
           </el-input>
         </el-form-item>
         <!-- 描述 -->
-        <el-form-item>
+        <el-form-item label="描述">
           <el-input v-model="data.newExamPaperForm.desc" placeholder="请输入试卷描述">
             <!-- 图标 -->
             <template #prefix>
@@ -1097,7 +1096,7 @@ onMounted(() => {
           </el-input>
         </el-form-item>
         <!-- 总分 -->
-        <el-form-item>
+        <el-form-item label="总分">
           <el-input v-model="data.newExamPaperForm.total_score" placeholder="请输入试卷总分">
             <!-- 图标 -->
             <template #prefix>
@@ -1114,12 +1113,13 @@ onMounted(() => {
       </el-form>
     </div>
   </el-dialog>
+
   <!-- 修改试卷 -->
   <el-dialog v-model="data.modifyExamPaperModalVisible" title="修改试卷" width="600" center>
     <div class="exam-dialog">
-      <el-form :model="data.examPaperForm" class="w-[30rem]">
+      <el-form :model="data.examPaperForm" label-width="auto" class="w-[30rem]">
         <!-- 标题 -->
-        <el-form-item>
+        <el-form-item label="标题">
           <el-input v-model="data.examPaperForm.title" placeholder="请输入试卷标题">
             <!-- 图标 -->
             <template #prefix>
@@ -1130,7 +1130,7 @@ onMounted(() => {
           </el-input>
         </el-form-item>
         <!-- 描述 -->
-        <el-form-item>
+        <el-form-item label="描述">
           <el-input v-model="data.examPaperForm.desc" placeholder="请输入试卷描述">
             <!-- 图标 -->
             <template #prefix>
@@ -1141,7 +1141,7 @@ onMounted(() => {
           </el-input>
         </el-form-item>
         <!-- 总分 -->
-        <el-form-item>
+        <el-form-item label="总分">
           <el-input v-model="data.examPaperForm.total_score" placeholder="请输入预设试卷总分">
             <!-- 图标 -->
             <template #prefix>
@@ -1152,7 +1152,7 @@ onMounted(() => {
           </el-input>
         </el-form-item>
         <!-- 当前总分 -->
-        <el-form-item>
+        <el-form-item label="当前总分">
           <el-input v-model="data.examPaperForm.current_score" placeholder="当前总分" disabled>
             <!-- 图标 -->
             <template #prefix>
@@ -1179,6 +1179,7 @@ onMounted(() => {
       </el-form>
     </div>
   </el-dialog>
+
   <!-- 向试卷添加新试题 -->
   <el-dialog v-model="data.addExamQuestionModalVisible" title="添加试题" width="1000" center>
     <div class="exampaper-dialog">
@@ -1201,16 +1202,15 @@ onMounted(() => {
       <!-- 与该试卷相关的试题信息展示 -->
       <div class="show-list">
         <el-table :data="data.currentExamPaperQuestion" border style="width: 100%">
-          <el-table-column prop="id" label="ID" width="100"/>
-            <el-table-column prop="content" label="内容"/>
-            <el-table-column prop="desc" label="描述"/>
-            <el-table-column prop="type_desc" label="类型" width="100"/>
-            <el-table-column prop="score" label="占分" width="100"/>
-            <el-table-column fixed="right" label="操作" width="200">
-              <template v-slot="scope">
-                <el-button link type="primary" size="small" @click="removeExamPaperQuestion(scope.row.id)">删除</el-button>
-              </template>
-            </el-table-column>
+          <el-table-column prop="content" show-overflow-tooltip label="内容"/>
+          <el-table-column prop="desc" show-overflow-tooltip label="描述"/>
+          <el-table-column prop="type_desc" label="类型" width="100"/>
+          <el-table-column prop="score" label="占分" width="100"/>
+          <el-table-column fixed="right" label="操作" width="200">
+            <template v-slot="scope">
+              <el-button link type="primary" size="small" @click="removeExamPaperQuestion(scope.row.id)">删除</el-button>
+            </template>
+          </el-table-column>
           </el-table>
           <!-- 分页 -->
           <el-pagination background layout="prev, pager, next" :total="1" class="mt-4 mx-auto" />

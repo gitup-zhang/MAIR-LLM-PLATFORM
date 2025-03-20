@@ -39,7 +39,7 @@ export const deleteNotification = (id: number) => {
 export const createNotification = (form: object) => {
   return httpInstance({
     url: "/announce/",
-    method: "DELETE",
+    method: "POST",
     data: JSON.stringify(form),
     headers: {
       "content-type": "application/json",

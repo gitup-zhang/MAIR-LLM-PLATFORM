@@ -19,7 +19,7 @@ const data = reactive({
   },
   // 简答题答案
   questionList: [],
-  examPaperId: route.query.userExamId as any,
+  examPaperId: route.query.id as any,
   type: route.query.type,
   // 各部分题目可见性
   jugementQuestionVisible: false,
@@ -33,6 +33,8 @@ const data = reactive({
 
 // 获取试卷详情
 const getExamPaperDetail = async () => {
+
+  console.log(data.type)
   const res = await getExamPaperInfo(Number(data.examPaperId))
   data.title = res.data.title;
   data.questionList = res.data.question_list;
@@ -87,6 +89,7 @@ const fetchComments = async () => {
 // 保存评分
 const saveScore = async (operation: string) => {
   const res = await saveExamScore(data.examPaperId, data.questionList, operation);
+  console.log(res);
   if(res.status === 0){
     ElMessage({
       message: '评分已成功保存',
@@ -174,97 +177,13 @@ const testdatamanage = () => {
   data.canScore = true;
 }
 const titileTest = ref('考试1')
-const examTest = reactive(
-  {
-    judgment: 
-      [
-        {
-          content: '今天我是不是吃了一个小面包',
-          question_score: 1,
-          answer: true,
-          answer_score: 4
-        },
-        {
-          content: '今天我是不是吃了一个小面包',
-          question_score: 1,
-          answer: true,
-          answer_score: 4
-        },
-      ],
-    single_choice: [
-      {
-        content: '今天是星期几',
-        answer_option: [ 
-          '星期一',
-          '星期二',
-          '星期三',
-          '星期四'
-        ],
-        question_score: 1,
-        answer: true,
-        answer_score: 4
-      },
-    ],
-    multiple_choice: [
-    {
-        content: '昨天是星期几',
-        answer_option: [ 
-          '星期一',
-          '星期二',
-          '星期三',
-          '星期四'
-        ],
-        question_score: 1,
-        answer: 1,
-        answer_score: 4
-      },
-    ],
-    gap_filling: [
-      {
-        content: '今天我吃了个什么牌子的小面包',
-        question_score: 1,
-        answer: true,
-        answer_score: 4,
-        answer_words_limit: 20,
-        comment: ''
-      },
-      {
-        content: '今天我吃了个什么牌子的小面包',
-        question_score: 1,
-        answer: true,
-        answer_score: 4,
-        answer_words_limit: 20,
-        comment: ''
-      },
-      {
-        content: '今天我吃了个什么牌子的小面包',
-        question_score: 1,
-        answer: true,
-        answer_score: 4,
-        answer_words_limit: 20,
-        comment: ''
-      },
-    ],
-    essay_question: [
-      {
-        content: '今天我吃了个什么牌子的小面包',
-        question_score: 1,
-        answer: true,
-        answer_score: 4,
-        answer_words_limit: 20,
-        comment: ''
-      },
-    ]
-  }
-)
-
 </script>
 
 <template>
-  <div class="exam-paper-page">
+  <el-scrollbar class="exam-paper-page">
     <!-- 考试头部 -->
     <div class="exam-paper-heading">
-      <span class="exam-paper-title">{{ titileTest }}</span>
+      <span class="exam-paper-title">{{ data.title }}</span>
       <!-- 考试注意事项 -->
       <div v-if="data.canAnswer" class="exam-paper-caution">注意：（1）到达截止时间后，试卷将不可提交，请及时保存。（2）提交试卷后，试卷将不可修改，请谨慎提交。</div>
       <div v-if="data.canScore" class="exam-paper-caution">注意：（1）提交评分后，试卷将不可修改，请谨慎提交</div>
@@ -434,7 +353,7 @@ const examTest = reactive(
         <el-button size="mini" type="primary" @click="submitAnswer()">提交试卷</el-button>
       </template>
     </div>
-  </div>
+  </el-scrollbar>
 </template>
 
 <style scoped>

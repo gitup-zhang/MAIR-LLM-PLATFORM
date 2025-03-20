@@ -21,13 +21,13 @@ const data = reactive({
   courseApplyList: [],
   // 分页
   classPage: 1,
-  classCount: 10,
+  classCount: 6,
   classTotal: 0,
   applyPage: 1,
-  applyCount: 10,
+  applyCount: 6,
   applyTotal: 0,
   enrolledClassPage: 1,
-  enrolledClassCount: 10,
+  enrolledClassCount: 6,
   enrolledClassTotal: 0,
   courseDetailVisible: false,
   courseApplyDetailVisible: false
@@ -35,6 +35,9 @@ const data = reactive({
 
 // 获取班级列表
 const searchCourse = async () => {
+  if(data.searchText.length > 0){
+    data.classPage = 1;
+  }
   const res = await getCourseList(data.searchText, data.classPage, data.classCount);
   data.courseList = res.data.list;
   data.classTotal = res.data.total;
@@ -91,7 +94,7 @@ const removeCourseApply = async (applyId:number) => {
   } else {
     ElMessage({
       message: '班级申请删除失败',
-      type: 'warning',
+      type: 'error',
       plain: true,
     })
   }
@@ -155,15 +158,14 @@ onMounted(() => {
           <!-- 所有班级列表展示 -->
           <div class="course-list">
             <el-empty v-if="data.courseList.length === 0" description="暂无班级信息" />
-            <el-table v-if="data.courseList.length !== 0" :data="data.courseList" border style="width: 100%">
-              <el-table-column prop="id" label="ID" width="50" />
-              <el-table-column prop="name" label="班级名"/>
-              <el-table-column prop="course_name" label="课程名"/>
-              <el-table-column prop="teacher_name" label="教师名"/>
-              <el-table-column prop="capacity" label="学生数量"/>
-              <el-table-column prop="end_time" label="截止时间"/>
-              <el-table-column prop="college_name" label="教学单位名"/>
-              <el-table-column prop="not_apply_reason" label="申请状态"/>
+            <el-table v-if="data.courseList.length !== 0" :data="data.courseList" border style="width: 100%" max-height="400">
+              <el-table-column prop="name" label="班级名" min-width="200" show-overflow-tooltip/>
+              <el-table-column prop="course_name" label="课程名" min-width="200" show-overflow-tooltip/>
+              <el-table-column prop="teacher_name" label="教师名" min-width="200" show-overflow-tooltip/>
+              <el-table-column prop="capacity" label="学生数量" min-width="200" show-overflow-tooltip/>
+              <el-table-column prop="end_time" label="截止时间" min-width="200" show-overflow-tooltip/>
+              <el-table-column prop="college_name" label="教学单位名" min-width="200" show-overflow-tooltip/>
+              <el-table-column prop="not_apply_reason" label="申请状态" min-width="200" show-overflow-tooltip/>
               <!-- 右侧固定列 展示详情信息 -->
               <el-table-column fixed="right" label="操作" min-width="60">
                 <template v-slot="scope">
@@ -192,15 +194,14 @@ onMounted(() => {
           <!-- 班级列表 -->
           <div class="course-list">
             <el-empty v-if="data.enrolledClassList.length === 0" description="暂无已报名班级信息" />
-            <el-table v-if="data.enrolledClassList.length !== 0" :data="data.enrolledClassList" border style="width: 100%">
-              <el-table-column prop="id" label="ID" width="50" />
-              <el-table-column prop="name" label="班级名"/>
-              <el-table-column prop="course_name" label="课程名"/>
-              <el-table-column prop="teacher_name" label="教师名"/>
-              <el-table-column prop="capacity" label="学生数量"/>
-              <el-table-column prop="end_time" label="截止时间"/>
+            <el-table v-if="data.enrolledClassList.length !== 0" :data="data.enrolledClassList" border style="width: 100%" max-height="400">
+              <el-table-column prop="name" label="班级名"  min-width="200" show-overflow-tooltip/>
+              <el-table-column prop="course_name" label="课程名"  min-width="200" show-overflow-tooltip/>
+              <el-table-column prop="teacher_name" label="教师名"  min-width="200" show-overflow-tooltip/>
+              <el-table-column prop="capacity" label="学生数量"  min-width="200" show-overflow-tooltip/>
+              <el-table-column prop="end_time" label="截止时间"  min-width="200" show-overflow-tooltip/>
               <!-- 右侧固定列 展示详情信息 -->
-              <el-table-column fixed="right" label="操作" min-width="60">
+              <el-table-column fixed="right" label="操作"  min-width="200">
                 <template v-slot="scope">
                   <el-button link type="primary" size="small" @click="getCourseDetail(scope.row)">详情</el-button>
                   <el-button link type="primary" size="small" @click="getExamDetail(scope.row)">考试安排</el-button>
@@ -245,7 +246,6 @@ onMounted(() => {
   <el-dialog v-model="data.courseApplyDetailVisible" title="课程申请记录" width="800" center>
     <div class="student-class-dialog">
       <el-table :data="data.courseApplyList" border style="width: 100%">
-        <el-table-column prop="class_id" label="ID" width="50" />
         <el-table-column prop="class_name" label="班级名"/>
         <el-table-column prop="create_time" label="时间"/>
         <el-table-column prop="status_desc" label="审核状态"/>

@@ -98,6 +98,12 @@ const loginSubmit = async () => {
         type: 'success',
         plain: true,
       })
+    } else {
+      ElMessage({
+        message: '登录失败',
+        type: 'error',
+        plain: true,
+      })     
     }
     if (userData.data) {
       // 保存用户的登录信息
@@ -115,17 +121,18 @@ const loginSubmit = async () => {
         systemStore.currentPage = 'studentMe';
       } else if (sessionStorage.userType === '2') {
         systemStore.currentPage = 'teacherMe';
-      } else {
+      } else if (sessionStorage.userType === '3') {
         systemStore.currentPage = 'adminMe';
       }
     }
-  }
-  if(sessionStorage.userType === '3'){
-    router.push('/adminMe');
-  } else if (sessionStorage.userType === '2') {
-    router.push('/teacherMe');
-  } else {
-    router.push('/studentMe');
+    // 跳转到相应页面
+    if(sessionStorage.userType === '3'){
+      router.push('/adminMe');
+    } else if (sessionStorage.userType === '2') {
+      router.push('/teacherMe');
+    } else if (sessionStorage.userType === '1') {
+      router.push('/studentMe');
+    }
   }
 }
 

@@ -34,13 +34,13 @@ const data = reactive({
   // 选项
   imageOptions: [],
   imagePage: 1,
-  imageCount: 10,
+  imageCount: 6,
   imageTotal: 0,
   containerPage: 1,
-  containerCount: 10,
+  containerCount: 6,
   containerTotal: 0,
   page: 1,
-  count: 10,
+  count: 6,
   total: 0
 })
 
@@ -49,6 +49,7 @@ const searchImage = async () => {
   const res = await getImageList(data.inputImage, data.imagePage, data.imageCount);
   data.imageList = res.data.list;
   data.imageTotal = res.data.total;
+  console.log(res);
 }
 
 // 获取镜像相关信息
@@ -107,7 +108,7 @@ const removeImage = async (index: number) => {
   } else {
     ElMessage({
       message: '镜像删除失败',
-      type: 'warning',
+      type: 'error',
       plain: true,
     })
   }
@@ -128,7 +129,7 @@ const submitImageCreate = async () => {
   } else {
     ElMessage({
       message: '镜像创建失败',
-      type: 'warning',
+      type: 'error',
       plain: true,
     })
   }
@@ -153,7 +154,7 @@ const saveImageCreate = async () => {
     } else {
       ElMessage({
         message: '镜像创建失败',
-        type: 'warning',
+        type: 'error',
         plain: true,
       })
     }
@@ -162,6 +163,7 @@ const saveImageCreate = async () => {
 // 查看镜像
 const checkImageDetail = async (index: number) => {
   const res = await getImageDetail(data.imageList[index]['id']);
+  console.log('查看镜像:', res)
   if(res.status === 0){
     ElMessage({
       message: '正在跳转到容器内',
@@ -214,6 +216,7 @@ const ceaseContainer = async (id: number) => {
 // 启动容器
 const launchContainer = async (id: number) => {
   const res = await startContainer(id);
+  console.log(res);
   if(res.status === 0){
     ElMessage({
       message: '容器启动成功',
@@ -232,6 +235,7 @@ const launchContainer = async (id: number) => {
 // 删除容器
 const removeContainer = async (id: number) => {
   const res = await deleteContainer(id);
+  console.log(res);
   if(res.status === 0){
     ElMessage({
       message: '容器删除成功',
@@ -278,23 +282,22 @@ onMounted(() => {
             <!-- 搜索 -->
             <el-input v-model="data.inputImage" class="mr-3 w-[30vw] h-[2rem]" placeholder="请输入镜像名称" />
             <el-button type="primary" class="mr-3 h-[2rem]" @click="searchImage()">搜索</el-button>
-            <el-button type="primary" class="mr-3 h-[2rem]" @click="addImage(-1)">创建新镜像</el-button>
+            <!-- <el-button type="primary" class="mr-3 h-[2rem]" @click="addImage(-1)">创建新镜像</el-button> -->
           </div>
         </div>
         <!-- 所有镜像信息展示 -->
         <div class="show-list">
           <el-empty v-if="data.imageList.length === 0" description="暂无镜像信息"/>
           <el-table v-if="data.imageList.length !== 0" :data="data.imageList" border style="width: 100%">
-            <el-table-column prop="id" label="ID" width="100"/>
             <el-table-column prop="name" label="镜像名"/>
             <el-table-column prop="desc" label="描述"/>
             <el-table-column prop="type_name" label="镜像类型"/>
             <el-table-column fixed="right" label="操作">
               <template v-slot="scope">
                 <el-button link type="primary" size="small" @click="checkImageDetail(scope.$index)">查看镜像</el-button>
-                <el-button link type="primary" size="small" @click="addImage(scope.$index)">创建镜像</el-button>
-                <el-button v-if="scope.row.type === 1" link type="primary" size="small" @click="updateImage(scope.$index)">修改镜像</el-button>
-                <el-button v-if="scope.row.type === 2" link type="primary" size="small" @click="removeImage(scope.$index)">删除镜像</el-button>
+                <!-- <el-button link type="primary" size="small" @click="addImage(scope.$index)">创建镜像</el-button> -->
+                <el-button v-if="scope.row.type === 1" link type="primary" size="small" @click="updateImage(scope.$index)">创建镜像与容器</el-button>
+                <el-button v-if="scope.row.type === 1" link type="primary" size="small" @click="removeImage(scope.$index)">删除镜像</el-button>
               </template>
             </el-table-column>
           </el-table>
@@ -323,20 +326,19 @@ onMounted(() => {
         <!-- 所有容器信息展示 -->
         <div class="show-list">
           <el-empty v-if="data.containerList.length === 0" description="暂无容器信息"/>
-          <el-table v-if="data.containerList.length !== 0" :data="data.containerList" border style="width: 100%">
-            <el-table-column prop="id" label="ID" width="100"/>
-            <el-table-column prop="user_id_number" label="学号"/>
-            <el-table-column prop="user_name" label="用户"/>
-            <el-table-column prop="class_name" label="班级"/>
-            <el-table-column prop="subcourse_name" label="章节"/>
-            <el-table-column prop="image_name" label="镜像"/>
-            <el-table-column prop="status" label="状态"/>
-            <el-table-column fixed="right" label="操作">
+          <el-table v-if="data.containerList.length !== 0" :data="data.containerList" border style="width: 100%" max-height="400">
+            <el-table-column prop="image_name" label="名称" min-width="200"/>
+            <el-table-column prop="user_id_number" label="ID" min-width="200"/>
+            <el-table-column prop="user_name" label="用户" min-width="200"/>
+            <el-table-column prop="class_name" label="班级" min-width="200"/>
+            <el-table-column prop="subcourse_name" label="章节" min-width="200"/>
+            <el-table-column prop="status" label="状态" min-width="200"/>
+            <el-table-column fixed="right" label="操作" min-width="300">
               <template v-slot="scope">
-                <el-button v-if="scope.row.status != 'delete' && scope.row.status != 'exited'" link type="primary" size="small" @click="enterContainer(scope.row.addr)">进入容器</el-button>
-                <el-button v-if="scope.row.status != 'delete' && scope.row.status != 'exited'" link type="primary" size="small" @click="ceaseContainer(scope.row.id)">停止容器</el-button>
-                <el-button v-if="scope.row.status != 'delete' && scope.row.status == 'exited'" link type="primary" size="small" @click="launchContainer(scope.row.id)">启动容器</el-button>
-                <el-button v-if="scope.row.status != 'delete'" link type="primary" size="small" @click="removeContainer(scope.row.id)">删除容器</el-button>
+                <el-button v-if="scope.row.status != 'delete' && scope.row.status != 3" link type="primary" size="small" @click="enterContainer(scope.row.addr)">进入容器</el-button>
+                <el-button v-if="scope.row.status != 'delete' && scope.row.status != 3" link type="primary" size="small" @click="ceaseContainer(scope.row.container_id)">停止容器</el-button>
+                <el-button v-if="scope.row.status != 'delete' && scope.row.status == 3" link type="primary" size="small" @click="launchContainer(scope.row.container_id)">启动容器</el-button>
+                <el-button v-if="scope.row.status != 'delete'" link type="primary" size="small" @click="removeContainer(scope.row.container_id)">删除容器</el-button>
               </template>
             </el-table-column>
           </el-table>

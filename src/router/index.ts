@@ -11,6 +11,7 @@ import StudentClass from '@/views/class/StudentClass.vue'
 import TeacherClass from '@/views/class/TeacherClass.vue'
 // 实验
 import StudentExperiment from '@/views/experiment/StudentExperiment.vue'
+import ExperimentIndex from '@/views/experiment/ExperimentIndex.vue'
 // 报告
 import StudentReport from '@/views/report/StudentReport.vue'
 import TeacherReport from '@/views/report/TeacherReport.vue'
@@ -73,6 +74,11 @@ const router = createRouter({
           name: 'studentExperiment',
           component: StudentExperiment
         },
+        {
+          path: '/experimentIndex',          
+          name: 'experimentIndex',
+          component: ExperimentIndex,
+        },
         // 考试
         {
           path: '/examArrange',          
@@ -119,7 +125,7 @@ const router = createRouter({
         {
           path: '/examManage',          
           name: 'examManage',
-          component: ExamManage
+          component: ExamManage,
         },
         {
           path: '/experimentManage',          

@@ -8,6 +8,7 @@ import { getFileUploadUrl } from '@/apis/file';
 import { getStuStudyProgessDetail, getTeacherStudyProgessDetail } from '@/apis/record';
 import { getClassList, getCourseDetailInfo } from '@/apis/experiment';
 import { getNotificationList, deleteNotification, createNotification } from '@/apis/notification';
+import { getAllContainerList } from '@/apis/container';
 
 const userStore = useUserStore();
 const router = useRouter();
@@ -16,6 +17,7 @@ const data = reactive({
   userName: sessionStorage.name,
   userClassNumber: 0,
   fileUploadUrl: '',
+  currentCourseId: 0,
   fileLimit: 1,
   // 是否可以操作
   canOperate: false,
@@ -28,6 +30,7 @@ const data = reactive({
   courseList: [] as any,
   studyProgressList: [],
   subcourseList: [],
+  containerList: [] as any,
   // 新表单
   newNotificationForm: {
     content: '',
@@ -41,7 +44,10 @@ const data = reactive({
   studyProgressModalVisible: false,
   page: 1,
   count: 3,
-  total: 0
+  total: 0,
+  experimentPage: 1,
+  experimentCount: 6,
+  experimentTotal: 0
 })
 
 // 获取课程列表
@@ -64,13 +70,23 @@ const handleCurrentChange = (val: any) => {
 // 获取课程详情
 const getCourseDetail = async (courseId:number, page:number, count:number) => {
   const res = await getCourseDetailInfo(courseId, page, count);
+  data.experimentTotal = res.data.total;
   data.subcourseList = res.data.list;
+}
+// 分页
+const handleExperimentSizeChange = (val: any) => {
+  getCourseDetail(data.currentCourseId, data.experimentPage, data.experimentCount);
+}
+const handleExperimentCurrentChange = (val: any) => {
+  data.experimentPage = val;
+  getCourseDetail(data.currentCourseId, data.experimentPage, data.experimentCount);
 }
 // 进入课程
 const openExperimentDetailModal = (courseId: number) => {
   data.currentExperimentId = courseId;
   data.experimentDetailModalVisible = true;
-  getCourseDetail(courseId, 1, 10);
+  data.currentCourseId = courseId;
+  getCourseDetail(courseId, data.experimentPage, data.experimentCount);
 }
 // 进入学生课程报告页面
 const openStuReport = (courseId: number, subcourseId: number) => {
@@ -108,7 +124,7 @@ const removeNotification = async (id: number) => {
   } else {
     ElMessage({
       message: '消息删除失败',
-      type: 'warning',
+      type: 'error',
       plain: true,
     })
   }
@@ -194,8 +210,24 @@ const openStudyProgressModal = async (id: number) => {
 }
 // 进入实验
 const openExperiment = () => {
+  router.push({
+    path: "/experimentIndex",
+  })
   data.experimentDetailModalVisible = false
-  window.open('http://8.155.19.142:30049/lab?')
+  // const baseUrl = window.location.origin;
+  // const baseUrl = window.location.origin + window.location.pathname;
+  // // 拼接目标页面的路径
+  // const targetUrl = `${baseUrl}/experimentIndex`;
+  // // 在新窗口打开目标页面
+  // window.open(targetUrl, '_blank');
+  
+  // window.open('http://8.155.19.142:30048/lab?')
+}
+
+// 下载文件
+const downloadFile = (fileUrl: string) => {
+  console.log(fileUrl)
+  window.open(fileUrl);
 }
 
 onMounted( async () => {
@@ -224,32 +256,12 @@ onMounted( async () => {
           <div class="text-xl italic font-semibold text-light-50 mt-1">您正在学习 {{ data.userClassNumber }} 门课程！</div>
         </div>
       </el-col>
-      <el-col :span="8" class="user-info">
-        <el-row class="user-info-box">
-          <el-col :span="8" class="flex flex-col items-center">
-            <div class="text-xl font-semibold text-light-50">已完成课程</div>
-            <div class="text-base font-semibold text-light-50 mt-1">{{ 0 }} 门</div>
-          </el-col>
-          <el-col :span="8" class="flex flex-col items-center">
-            <div class="text-xl font-semibold text-light-50">在学课程</div>
-            <div class="text-base font-semibold text-light-50 mt-1">{{ data.userClassNumber }} 门</div>
-          </el-col>
-          <el-col :span="8" class="flex flex-col items-center">
-            <div class="text-xl font-semibold text-light-50">考试数量</div>
-            <div class="text-base font-semibold text-light-50 mt-1">{{ 1 }} 门</div>
-          </el-col>
-        </el-row>
-      </el-col>
     </el-row>
     <!-- 左侧实验列表 -->
-    <el-row class="experiment-list">
-      <el-col :span="6">
-        <img class="experiment-img" src="../../assets/img/course/course-carousel.png" alt="大模型实训平台">
-      </el-col>
-      <el-col :span="16">
-        <el-row class="experiment-list-container">
-          <el-empty v-if="data.courseList.length === 0" description="暂无课程实验信息"/>
-          <el-col v-if="data.courseList.length !== 0" :span="8" v-for="course in data.courseList" :key="course.id">
+    <div class="experiment-list">
+      <el-row class="experiment-list-container">
+        <el-empty v-if="data.courseList.length === 0" description="暂无课程实验信息"/>
+        <el-col v-if="data.courseList.length !== 0" :span="8" v-for="course in data.courseList" :key="course.id">
             <div class="class-card">
               <img src="@/assets/img/course.png" style="width: 100%" />
               <div class="course-card-main">
@@ -264,20 +276,19 @@ onMounted( async () => {
               </div>
             </div>
           </el-col>
-          <!-- 分页 -->
-          <el-pagination
-            v-if="data.courseList.length !== 0"
-            background 
-            layout="prev, pager, next"
-            :total="data.total" 
-            :page-size="data.count"
-            @size-change="handleSizeChange"
-            @current-change="handleCurrentChange"
-            class="mt-4 mx-auto"
-          />
         </el-row>
-      </el-col>
-    </el-row>
+        <!-- 分页 -->
+        <el-pagination
+          v-if="data.courseList.length !== 0"
+          background 
+          layout="prev, pager, next"
+          :total="data.total" 
+          :page-size="data.count"
+          @size-change="handleSizeChange"
+          @current-change="handleCurrentChange"
+          class="mt-4 mx-auto"
+        />
+    </div>
   </div>
   
   <!-- 实验详情框 -->
@@ -285,24 +296,36 @@ onMounted( async () => {
     <!-- 章节列表 -->
     <div class="experiment-dialog">
       <el-empty v-if="data.subcourseList.length === 0" description="暂无章节信息" />
-      <el-table v-else :data="data.subcourseList" stripe border style="width: 100%">
-        <el-table-column prop="id" label="章节" width="60" />
-        <el-table-column prop="name" label="名称" width="80" />
-        <el-table-column prop="desc" label="描述" />
-        <el-table-column label="进度">
+      <el-table v-else :data="data.subcourseList" stripe border style="width: 100%" max-height="400">
+        <el-table-column prop="name" label="名称" min-width="200" show-overflow-tooltip/>
+        <el-table-column prop="desc" label="描述" min-width="200" show-overflow-tooltip/>
+        <el-table-column label="实验说明" min-width="200" show-overflow-tooltip>
           <template v-slot="scope">
-            <span>{{ scope.row.rate }}%</span>
+            <el-button link type="primary" size="small" @click="downloadFile(scope.row.files_info[0].url)">
+              {{ scope.row.files_info[0].name }}
+            </el-button>
           </template>
         </el-table-column>
         <!-- 右侧固定列 展示详情信息 -->
-        <el-table-column fixed="right" label="操作" min-width="60">
+        <el-table-column fixed="right" label="操作" min-width="200" show-overflow-tooltip>
           <template v-slot="scope">
             <el-button link type="primary" size="small" @click="openExperiment()">进入实验</el-button>
             <el-button v-if="userStore.roleId <= 1" link type="primary" size="small"  @click="openStudyProgressModal(scope.row.id)">学习进度</el-button>
-            <el-button link type="primary" size="small" @click="openStuReport(data.currentExperimentId, scope.row.id)">学习报告</el-button>
+            <el-button link type="primary" size="small" @click="openStuReport(data.currentExperimentId, scope.row.subcourse_id)">学习报告</el-button>
           </template>
         </el-table-column>
       </el-table>
+      <!-- 分页 -->
+      <el-pagination
+        v-if="data.subcourseList.length !== 0"
+        background 
+        layout="prev, pager, next"
+        :total="data.experimentTotal" 
+        :page-size="data.experimentCount"
+        @size-change="handleExperimentSizeChange"
+        @current-change="handleExperimentCurrentChange"
+        class="mt-4 mx-auto"
+      />
     </div>
   </el-dialog>
     
@@ -319,18 +342,17 @@ onMounted( async () => {
       <!-- 通知列表 -->
       <div class="notification-list">
         <el-empty v-if="data.notificationList.length === 0" description="暂无通知" />
-        <el-table v-else :data="data.notificationList" border style="width: 100%">
-          <el-table-column prop="id" label="ID" width="60" />
-          <el-table-column prop="content" label="通知内容" />
-          <el-table-column prop="file" label="文件">
+        <el-table v-else :data="data.notificationList" border style="width: 100%" max-height="400">
+          <el-table-column prop="content" label="通知内容" show-overflow-tooltip min-width="200"/>
+          <el-table-column prop="file" label="文件" show-overflow-tooltip min-width="200">
             <template v-slot="scope">
-              <template v-for="(file, index) in scope.row.files_info">
-                {{ file.name }} <br>
-              </template>
+              <el-button link type="primary" size="small" @click="downloadFile(scope.row.files_info[0].url)">
+              {{ scope.row.files_info[0].name }}
+            </el-button>
             </template>
           </el-table-column>
-          <el-table-column prop="create_time" label="发布时间" />
-          <el-table-column v-if="data.canOperate" fixed="right" label="操作">
+          <el-table-column prop="create_time" label="发布时间" show-overflow-tooltip min-width="200"/>
+          <el-table-column v-if="data.canOperate" fixed="right" label="操作" show-overflow-tooltip min-width="200">
             <template v-slot="scope">
               <el-button link type="primary" size="small" @click="removeNotification(scope.row.id)">删除</el-button>
             </template>
@@ -390,7 +412,7 @@ onMounted( async () => {
   <el-dialog v-model="data.studyProgressModalVisible" title="学习进度" width="1200" center>
     <!-- 学习进度列表 -->
     <div class="notification-list">
-      <el-empty v-if="data.notificationList.length === 0" description="暂无学习进度情况" />
+      <el-empty v-if="data.studyProgressList.length === 0" description="暂无学习进度情况" />
       <el-table v-else :data="data.studyProgressList" border style="width: 100%">
         <el-table-column prop="subcourse_name" label="章节名" />
         <el-table-column v-if="userStore.roleId > 1" prop="user_id_number" label="学生学号" />
@@ -435,7 +457,7 @@ onMounted( async () => {
 .experiment-list {
   width: 100%;
   height: 80%;
-  @apply pr-1 pt-1 pb-1;
+  @apply pr-1 pt-1 pb-1 flex flex-col justify-center;
 }
 .experiment-img {
   border: #a1c4fd 1px solid;
@@ -444,13 +466,12 @@ onMounted( async () => {
 }
 .experiment-list-container {
   width: 100%;
-  height: 100%;
   @apply pt-1 pl-1 flex flex-row justify-center;
 }
 /* 卡片样式 */
 .class-card {
   width: 90%;
-  height: 300px;
+  height: 400px;
   margin-top: 2rem;
   border-radius: 10px;
   overflow: hidden;
@@ -458,7 +479,7 @@ onMounted( async () => {
   transition: all .2s;
 }
 .class-card:hover {
-  transform: scale(1.05);
+  transform: scale(1.01);
 }
 .course-card-main {
   @apply p-3 text-sky-500;

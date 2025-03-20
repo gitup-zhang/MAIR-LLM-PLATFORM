@@ -6,6 +6,7 @@ import { useUserStore } from '@/stores/user'
 import { useSystemStore } from '@/stores/system';
 import { getUserInfo, editUserInfo, submitModifyPassword, applyRole } from '@/apis/user';
 import { getRoleApplyList, evaluateRoleApply } from '@/apis/role';
+import { getLocationOption } from '@/apis/location';
 
 const userStore = useUserStore();
 const systemStore = useSystemStore();
@@ -14,6 +15,8 @@ const data = reactive({
   newType: userStore.roleId,
   // 申请记录
   applicationList: [],
+  //位置选项
+  locationOptions: [] as any, 
   // 用户修改密码
   modifyPassword: {
     oldPassword: '',
@@ -90,6 +93,7 @@ const getAndStoreUserData = async () => {
   userStore.email = userData.data.email;
   userStore.phone = userData.data.phone;
   userStore.role = getUserType(userData.data.type);
+  userStore.roleId = userData.data.type;
   userStore.personId = userData.data.idcard;
   userStore.createTime = userData.data.create_time;
   userStore.modifyTime = userData.data.modify_time;
@@ -111,7 +115,7 @@ const userInfoEditSubmit = async () => {
   } else {
     ElMessage({
       message: '修改失败',
-      type: 'warning',
+      type: 'error',
       plain: true,
     })
   }
@@ -234,11 +238,14 @@ const submitPasswordModify = async () => {
   }
 }
 
-onMounted(() => {
+onMounted(async () => {
   // 挂载用户数据
   getAndStoreUserData();
   // 获取角色申请记录列表
   getUserApplyRoleList();
+  // 挂载地址信息
+  const res = await getLocationOption();
+  data.locationOptions = res.data;
 })
 </script>
 
@@ -246,7 +253,8 @@ onMounted(() => {
   <div class="me-page">
     <div class="me-container">
       <!-- 顶部轮播图 -->
-      <el-carousel indicator-position="outside">
+      <img src="../../assets/img/banner.png" class="banner" alt="大模型实训平台">
+      <!-- <el-carousel indicator-position="outside" height="200px">
         <el-carousel-item>
           <img src="../../assets/img/carousel/carousel-1.png" alt="大模型实训平台">
         </el-carousel-item>
@@ -259,7 +267,7 @@ onMounted(() => {
         <el-carousel-item>
           <img src="../../assets/img/carousel/carousel-4.png" alt="大模型实训平台">
         </el-carousel-item>
-      </el-carousel>
+      </el-carousel> -->
       <!-- 个人信息展示 -->
       <el-descriptions border>
         <el-descriptions-item
@@ -277,12 +285,9 @@ onMounted(() => {
         <el-descriptions-item label="用户名">{{ userStore.nickname }}</el-descriptions-item>
         <el-descriptions-item label="手机号">{{ userStore.phone }}</el-descriptions-item>
         <el-descriptions-item label="邮箱">{{ userStore.email }}</el-descriptions-item>
-        <el-descriptions-item label="学号">{{ userStore.stuId }}</el-descriptions-item>
-        <el-descriptions-item label="标签">
-          <el-tag size="small">北京邮电大学</el-tag>
-        </el-descriptions-item>
-        <el-descriptions-item label="地址">西土城路10号, 海淀区, 北京市</el-descriptions-item>
+        <el-descriptions-item label="ID">{{ userStore.stuId }}</el-descriptions-item>
       </el-descriptions>
+      <!-- 密码修改 -->
       <el-row class="edit-info">
         <!-- 密码修改 -->
         <el-form :model="data.modifyPassword" class="w-[40rem] flex flex-row">
@@ -326,8 +331,8 @@ onMounted(() => {
         </el-form>
       </el-row>
       <!-- 角色申请记录 -->
-      <div class="edit-dialog">
-        <el-empty v-if="data.applicationList.length === 0" description="暂无角色申请记录" />
+      <!-- <div class="role-apply">
+        <div v-if="data.applicationList.length === 0" class="empty-text">暂无角色申请记录</div>
         <el-table v-if="data.applicationList.length !== 0" :data="data.applicationList" border style="width: 100%">
           <el-table-column prop="user_id_number" label="号码" />
           <el-table-column prop="user_name" label="昵称"/>
@@ -340,9 +345,9 @@ onMounted(() => {
               <el-button v-if="scope.row.status === 1" link type="primary" size="small" @click="rejectRoleApply(scope.row)">不通过</el-button>
             </template>
           </el-table-column>
-        </el-table>
+        </el-table> -->
         <!-- 分页 -->
-        <el-pagination
+        <!-- <el-pagination
           v-if="data.applicationList.length !== 0"
           background 
           layout="prev, pager, next"
@@ -352,16 +357,16 @@ onMounted(() => {
           @current-change="handleCurrentChange"
           class="mt-4 mx-auto"
         />
-      </div>
+      </div> -->
     </div>
   </div>
 
   <!-- 修改个人信息框 -->
-  <el-dialog v-model="systemStore.userInfoEditVisible" title="修改个人信息" width="400" center>
+  <el-dialog v-model="systemStore.userInfoEditVisible" title="修改我的信息" width="400" center>
     <div class="edit-dialog">
-      <el-form :model="userInfoForm" class="w-[20rem]">
+      <el-form :model="userInfoForm" label-width="auto" class="w-[20rem]">
         <!-- 昵称 -->
-        <el-form-item>
+        <el-form-item label="昵称">
           <el-input v-model="userInfoForm.name" placeholder="请输入昵称">
           <!-- 图标 -->
             <template #prefix>
@@ -371,10 +376,9 @@ onMounted(() => {
             </template>
           </el-input>
         </el-form-item>
-
-        <!-- 学号 -->
-        <el-form-item>
-          <el-input v-model="userInfoForm.id_number" placeholder="请输入学号" disabled>
+        <!-- ID -->
+        <el-form-item label="ID">
+          <el-input v-model="userInfoForm.id_number" placeholder="请输入ID" disabled>
           <!-- 图标 -->
             <template #prefix>
               <el-icon color="#409efc" class="no-inherit">
@@ -383,9 +387,8 @@ onMounted(() => {
             </template>
           </el-input>
         </el-form-item>
-
         <!-- 邮箱 -->
-        <el-form-item>
+        <el-form-item label="邮箱">
           <el-input v-model="userInfoForm.email" placeholder="请输入邮箱">
             <!-- 图标 -->
             <template #prefix>
@@ -395,10 +398,9 @@ onMounted(() => {
             </template>
           </el-input>
         </el-form-item>
-
         <!-- 手机号 -->
-        <el-form-item>
-          <el-input v-model="userInfoForm.phone" placeholder="请输入手机号">
+        <el-form-item label="手机">
+          <el-input v-model="userInfoForm.phone" placeholder="请输入手机号" disabled>
             <!-- 图标 -->
             <template #prefix>
               <el-icon color="#409efc" class="no-inherit">
@@ -407,10 +409,9 @@ onMounted(() => {
             </template>
           </el-input>
         </el-form-item>
-
         <!-- 角色 -->
-        <el-form-item>
-          <el-input v-model="userInfoForm.type" placeholder="角色" disabled>
+        <el-form-item label="角色">
+          <el-input v-model="userStore.role" placeholder="角色" disabled>
             <!-- 图标 -->
             <template #prefix>
               <el-icon color="#409efc" class="no-inherit">
@@ -419,9 +420,8 @@ onMounted(() => {
             </template>
           </el-input>
         </el-form-item>
-
         <!-- 真实姓名 -->
-        <el-form-item>
+        <el-form-item label="姓名">
           <el-input v-model="userInfoForm.user_name" placeholder="请输入真实姓名">
             <!-- 图标 -->
             <template #prefix>
@@ -431,21 +431,19 @@ onMounted(() => {
             </template>
           </el-input>
         </el-form-item>
-
         <!-- 所属地区 -->
-        <el-form-item>
-          <el-input v-model="userInfoForm.area_id" placeholder="请输入您的所属地区">
+        <el-form-item label="地区">
+          <el-cascader v-model="userInfoForm.area_id" :options="data.locationOptions" style="width:100%" clearable placeholder="请选择所属地区">
             <!-- 图标 -->
             <template #prefix>
               <el-icon color="#409efc" class="no-inherit">
                 <Location />
               </el-icon>
             </template>
-          </el-input>
+          </el-cascader>
         </el-form-item>
-
         <!-- 所属地区 -->
-        <el-form-item>
+        <el-form-item label="身份">
           <el-input v-model="userInfoForm.idcard" placeholder="请输入您的身份证号">
             <!-- 图标 -->
             <template #prefix>
@@ -455,8 +453,7 @@ onMounted(() => {
             </template>
           </el-input>
         </el-form-item>
-
-        <!-- 注册按钮 -->
+        <!-- 修改按钮 -->
         <el-form-item>
           <el-button class="w-[20rem]" type="primary" @click="userInfoEditSubmit()">提交修改</el-button>
         </el-form-item>
@@ -478,9 +475,23 @@ onMounted(() => {
   height: 100%;
   @apply p-3 rounded-md;
 }
+.banner {
+  width: 100%;
+  height: 20%;
+  @apply rounded-md mb-2;
+}
 .edit-info {
   width: 100%;
   @apply mt-3;
+}
+.role-apply {
+  width: 100%;
+  overflow-y: auto; /* 垂直方向可滚动 */
+}
+.empty-text {
+  height: 100%;
+  width: 100%;
+  @apply flex  flex-row justify-center text-light-900;
 }
 /* 模态框 */
 .edit-dialog {

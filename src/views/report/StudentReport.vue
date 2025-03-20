@@ -3,7 +3,7 @@ import { onMounted, reactive } from 'vue';
 import { useRoute } from 'vue-router';
 import { ElMessage } from 'element-plus';
 import { UploadFilled } from '@element-plus/icons-vue';
-import { getUserReportList, createCourseReport } from '@/apis/report';
+import { getStudentReportList, createCourseReport } from '@/apis/report';
 
 const route = useRoute();
 const data = reactive({
@@ -24,14 +24,14 @@ const data = reactive({
   courseId: route.query.courseId,
   subcourseId: route.query.subcourseId,
   page: 1,
-  count: 10,
+  count: 6,
   total: 0,
   reportDetailModalVisible: false
 })
 
 // 获取报告
 const searchUserReport = async () => {
-  const res = await getUserReportList(Number(data.subcourseId), Number(data.courseId), data.searchText, data.page, data.count);
+  const res = await getStudentReportList(Number(data.subcourseId), Number(data.courseId), data.searchText, data.page, data.count);
   data.courseReportList = res.data.list;
 }
 
@@ -70,8 +70,7 @@ const handleSuccess = (res: any, file: any) => {
   data.newCourseReportForm.files_info.push({
     name: res.data.name,
     url: res.data.url,
-    file_id: res.data.file_id,
-    group_name: res.data.group_name
+    file_id: res.data.file_id
   })
 }
 // 上传文件之前的钩子
@@ -105,6 +104,11 @@ const submitCourseReportCreate = async () => {
   searchUserReport();
 }
 
+// 下载文件
+const downloadFile = (fileUrl: string) => {
+  window.open(fileUrl);
+}
+
 onMounted(async () => {
   // 挂载报告列表
   searchUserReport();
@@ -127,16 +131,15 @@ onMounted(async () => {
         <!-- 报告展示 -->
         <el-empty v-if="data.courseReportList.length === 0" description="暂无班级报告信息" />
         <el-table v-else :data="data.courseReportList" border style="width: 100%">
-          <el-table-column prop="id" label="ID" width="60" />
-          <el-table-column prop="title" label="标题"/>
-          <el-table-column label="文件">
+          <el-table-column prop="title" label="标题" min-width="150" show-overflow-tooltip/>
+          <el-table-column label="文件" min-width="200" show-overflow-tooltip>
             <template v-slot="scope" >
-              <template v-for="(file, index) in scope.row.files_info">
-                  {{ file.name }}<br>
-              </template>
+              <el-button link type="primary" size="small" @click="downloadFile(scope.row.files_info[0].url)">
+                {{ scope.row.files_info[0].name }}
+              </el-button>
             </template>
           </el-table-column>
-          <el-table-column prop="create_time" label="发表时间" />
+          <el-table-column prop="create_time" label="发表时间" min-width="200" show-overflow-tooltip/>
           <el-table-column fixed="right" label="操作" min-width="60">
             <template v-slot="scope">
               <el-button link type="primary" size="small" @click="getReportDetail(scope.row)">详情</el-button>
@@ -150,14 +153,13 @@ onMounted(async () => {
       <el-input v-model="data.newCourseReportForm.title" placeholder="请输入标题" class="mb-2"></el-input>
       <el-input
         v-model="data.newCourseReportForm.content"
-        :rows="20"
+         :autosize="{ minRows: 6, maxRows: 12 }"
         type="textarea"
         placeholder="请输入内容"
         class="mb-2"
       />
       <!-- 上传按钮 -->
       <el-upload
-        class="upload-demo"
         drag
         :action="data.fileUploadUrl"
         :on-remove="handleRemove" 
@@ -187,7 +189,7 @@ onMounted(async () => {
   <el-dialog v-model="data.reportDetailModalVisible" title="报告详情" width="600" center>
     <el-descriptions direction="vertical" :column="4" border>
       <el-descriptions-item label="班级名" :span="2">{{ data.currentReportDetail.class_name }}</el-descriptions-item>
-      <el-descriptions-item label="报告标题" :span="2">{{ data.currentReportDetail.content }}</el-descriptions-item>
+      <el-descriptions-item label="报告内容" :span="2">{{ data.currentReportDetail.content }}</el-descriptions-item>
       <el-descriptions-item label="发表时间" :span="4">{{ data.currentReportDetail.create_time }}</el-descriptions-item>
     </el-descriptions>
   </el-dialog>
@@ -199,18 +201,17 @@ onMounted(async () => {
 .course-report-page {
   width: 100%;
   height: 100%;
+  box-shadow: 1px 1px 2px #d1d5db;
+  @apply bg-light-50 p-1 rounded-md;
 }
 /* 页面左侧 */
 .page-left {
   width: 100%;
   height: 100%;
-  @apply bg-light-500 pr-1;
 }
 .report-list {
   width: 100%;
   height: 100%;
-  box-shadow: 1px 1px 2px #d1d5db;
-  @apply bg-light-50 p-3 rounded-md;
 }
 .search-box {
   height: 10vh;
@@ -227,8 +228,7 @@ onMounted(async () => {
 .create-report {
   width: 100%;
   height: 100%;
-  box-shadow: 1px 1px 2px #d1d5db;
-  @apply bg-light-50 p-3 rounded-md;
+  @apply p-3 rounded-md;
 }
 /* 按钮 */
 .report-btn {

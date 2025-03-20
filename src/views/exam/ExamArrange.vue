@@ -9,7 +9,7 @@ const router = useRouter();
 const userStore = useUserStore();
 const data = reactive({
   searchText: '',
-  userType: userStore.roleId,
+  userType: parseInt(sessionStorage.userType),
   courseId: Number(route.query.id),
   examList: [],
   examPage: 1,
@@ -49,7 +49,7 @@ const checkExamDetail = async (id: number) => {
     path: '/examPaperDetail/',
     query: {
       type: 'student',
-      userExamId: res.data.user_exam_id
+      id: res.data.user_exam_id
     }
   })
 }
@@ -60,7 +60,7 @@ const checkPracticeDetail = async (id: number) => {
     path: '/examPaperDetail/',
     query: {
       type: 'student',
-      userExamId: res.data.user_exam_id
+      id: res.data.user_exam_id
     }
   })
 }
@@ -71,7 +71,7 @@ const enterExam = async (id: number) => {
     path: '/examPaperDetail/',
     query: {
       type: 'student',
-      userExamId: res.data.user_exam_id
+      id: res.data.user_exam_id
     }
   })
 }
@@ -108,18 +108,17 @@ onMounted(() => {
       <!-- 所有考试安排信息展示 -->
       <div class="exam-list">
         <el-empty v-if="data.examList.length === 0" description="暂无考试安排信息"/>
-        <el-table v-if="data.examList.length !== 0" :data="data.examList" border style="width: 100%">
-          <el-table-column prop="id" label="ID" width="50" />
-          <el-table-column prop="desc" label="描述"/>
-          <el-table-column prop="exam_paper_title" label="试卷"/>
-          <el-table-column prop="type_desc" label="类型"/>
-          <el-table-column label="有效时间">
+        <el-table v-if="data.examList.length !== 0" :data="data.examList" border style="width: 100%" max-height="400">
+          <el-table-column prop="desc" label="名称" min-width="200"/>
+          <el-table-column prop="exam_paper_title" label="试卷" min-width="200"/>
+          <el-table-column prop="type_desc" label="类型" min-width="200"/>
+          <el-table-column label="有效时间" min-width="400">
             <template v-slot="scope">
               <span>{{ scope.row.start_time + ' —— ' + scope.row.end_time }}</span>
             </template>
           </el-table-column>
           <!-- 右侧固定列 展示详情信息 -->
-          <el-table-column fixed="right" label="操作" min-width="60">
+          <el-table-column fixed="right" label="操作" min-width="200">
             <template v-slot="scope">
               <template v-if="data.userType === 1 && scope.row.status === 3">
                 <el-button v-if="scope.row.type === 2" link type="primary" size="small" @click="checkExamDetail(scope.row.id)">查看试卷</el-button>

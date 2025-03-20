@@ -61,25 +61,25 @@ const data = reactive({
   containerAddr: '',
   // 分页相关
   classPage: 1,
-  classCount: 10,
+  classCount: 6,
   classTotal: 0,
   applyPage: 1,
-  applyCount: 10,
+  applyCount: 6,
   applyTotal: 0,
   enrolledClassPage: 1,
-  enrolledClassCount: 10,
+  enrolledClassCount: 6,
   enrolledClassTotal: 0,
   managedClassPage: 1,
-  managedClassCount: 10,
+  managedClassCount: 6,
   managedClassTotal: 0,
   imagePage: 1,
-  imageCount: 10,
+  imageCount: 6,
   imageTotal: 0,
   studyProgressPage: 1,
-  studyProgressCount: 10,
+  studyProgressCount: 6,
   studyProgressTotal: 0,
   containerPage: 1,
-  containerCount: 10,
+  containerCount: 6,
   containerTotal: 0,
   teachExperimentPage: 1,
   teachExperimentCount: 8,
@@ -100,6 +100,9 @@ const data = reactive({
 
 // 搜索班级
 const searchCourse = async () => {
+  if(data.searchText.length > 0){
+    data.classPage = 1;
+  }
   const res = await getCourseList(data.searchText, data.classPage, data.classCount);
   data.courseList = res.data.list;
   data.classTotal = res.data.total;
@@ -137,7 +140,7 @@ const passClassApplication = async (id: number) => {
   }else {
     ElMessage({
       message: '班级申请通过失败',
-      type: 'success',
+      type: 'error',
       plain: true,
     })
   }
@@ -155,7 +158,7 @@ const refuseClassApplication = async (id: number) => {
   }else {
     ElMessage({
       message: '班级申请拒绝失败',
-      type: 'success',
+      type: 'error',
       plain: true,
     })
   }
@@ -173,7 +176,7 @@ const removeCourseApply = async (applyId:number) => {
   }else {
     ElMessage({
       message: '班级申请取消失败',
-      type: 'success',
+      type: 'error',
       plain: true,
     })
   }
@@ -206,6 +209,9 @@ const checkExamArrangement = (id: number) => {
 
 // 搜索管理的班级
 const searchManagedClass = async () => {
+  if(data.searchManageClassText.length > 0){
+    data.managedClassPage = 1;
+  }
   const res = await getManagedClassList(data.searchManageClassText, data.managedClassPage, data.managedClassCount);
   data.managedClassList = res.data.list;
   data.managedClassTotal = res.data.total;
@@ -281,7 +287,7 @@ const removeImage = async (index: number) => {
   } else {
     ElMessage({
       message: '镜像删除失败',
-      type: 'warning',
+      type: 'error',
       plain: true,
     })
   }
@@ -302,7 +308,7 @@ const submitImageCreate = async () => {
   } else {
     ElMessage({
       message: '镜像创建失败',
-      type: 'warning',
+      type: 'error',
       plain: true,
     })
   }
@@ -327,7 +333,7 @@ const saveImageCreate = async () => {
     } else {
       ElMessage({
         message: '镜像创建失败',
-        type: 'warning',
+        type: 'error',
         plain: true,
       })
     }
@@ -377,7 +383,7 @@ const removeNotification = async (id: number) => {
   } else {
     ElMessage({
       message: '消息删除失败',
-      type: 'warning',
+      type: 'error',
       plain: true,
     })
   }
@@ -439,7 +445,7 @@ const submitNotificationCreate = async () => {
   } else {
     ElMessage({
       message: '消息创建失败',
-      type: 'warning',
+      type: 'error',
       plain: true,
     })
   }
@@ -592,22 +598,21 @@ onMounted(() => {
           <!-- 课程搜索框 -->
           <div class="select-course">
             <!-- 搜索 -->
-            <el-input v-model="data.searchText" style="width: 240px" class="mr-3" placeholder="请输入课程名称" />
+            <el-input v-model="data.searchText" style="width: 240px" class="mr-3" placeholder="请输入班级名称" />
             <el-button type="primary" class="mr-3" @click="searchCourse()">搜索</el-button>
             <el-button type="primary" class="ml-3" @click="getCourseApplyDetail()">班级申请记录</el-button>
           </div>
           <!-- 所有班级列表展示 -->
           <div class="course-list">
             <el-empty v-if="data.courseList.length === 0" description="暂无班级信息"/>
-            <el-table v-if="data.courseList.length !== 0" :data="data.courseList" border style="width: 100%">
-              <el-table-column prop="id" label="ID" width="50" />
-              <el-table-column prop="name" label="班级名"/>
-              <el-table-column prop="course_name" label="课程名"/>
-              <el-table-column prop="teacher_name" label="教师名"/>
-              <el-table-column prop="capacity" label="学生数量"/>
-              <el-table-column prop="end_time" label="截止时间"/>
-              <el-table-column prop="college_name" label="教学单位名"/>
-              <el-table-column prop="not_apply_reason" label="申请状态"/>
+            <el-table v-if="data.courseList.length !== 0" :data="data.courseList" border style="width: 100%" max-height="400">
+              <el-table-column prop="name" label="班级名" min-width="200"/>
+              <el-table-column prop="course_name" label="课程名" min-width="200"/>
+              <el-table-column prop="teacher_name" label="教师名" min-width="200"/>
+              <el-table-column prop="capacity" label="学生数量" min-width="200"/>
+              <el-table-column prop="end_time" label="截止时间" min-width="200"/>
+              <el-table-column prop="college_name" label="教学单位名" min-width="200"/>
+              <el-table-column prop="not_apply_reason" label="申请状态" min-width="200"/>
               <!-- 右侧固定列 展示详情信息 -->
               <el-table-column fixed="right" label="操作" min-width="60">
                 <template v-slot="scope">
@@ -780,7 +785,6 @@ onMounted(() => {
         <div class="course-list">
           <el-empty v-if="data.imageList.length === 0" description="暂无镜像信息"/>
           <el-table v-if="data.imageList.length !== 0" :data="data.imageList" border style="width: 100%">
-            <el-table-column prop="id" label="ID" width="100"/>
             <el-table-column prop="name" label="镜像名"/>
             <el-table-column prop="desc" label="描述"/>
             <el-table-column fixed="right" label="操作">
@@ -827,7 +831,7 @@ onMounted(() => {
   </el-dialog>
 
   <!-- 班级申请记录模态框 -->
-  <el-dialog v-model="data.courseApplyDetailVisible" title="课程申请记录" width="1200" center>
+  <el-dialog v-model="data.courseApplyDetailVisible" title="班级申请记录" width="1200" center>
     <el-empty v-if="data.courseApplyList.length === 0" description="暂无申请班级记录信息"/>
     <el-table v-if="data.courseApplyList.length !== 0" :data="data.courseApplyList" border style="width: 100%">
       <el-table-column prop="class_id" label="ID"/>
@@ -1156,7 +1160,7 @@ onMounted(() => {
 .experiment-list-container {
   width: 100%;
   height: 100%;
-  @apply pt-1 pl-1 flex flex-row;
+  @apply pt-1 pl-1 flex flex-row justify-center;
 }
 .experiment-card {
   width: 90%;

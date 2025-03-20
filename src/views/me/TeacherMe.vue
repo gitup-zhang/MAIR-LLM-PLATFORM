@@ -22,7 +22,7 @@ const data = reactive({
     checkPassword: ''
   },
   page: 1,
-  count: 5,
+  count: 2,
   total: 0
 })
 const { newType, applicationList, page, count, total } = toRefs(data)
@@ -111,6 +111,7 @@ const getAndStoreUserData = async () => {
   userStore.email = userData.data.email;
   userStore.phone = userData.data.phone;
   userStore.role = getUserType(userData.data.type);
+  userStore.roleId = userData.data.type;
   userStore.personId = userData.data.idcard;
   userStore.createTime = userData.data.create_time;
   userStore.modifyTime = userData.data.modify_time;
@@ -129,7 +130,7 @@ const userInfoEditSubmit = async () => {
   } else {
     ElMessage({
       message: '修改失败',
-      type: 'warning',
+      type: 'error',
       plain: true,
     })
   }
@@ -150,8 +151,8 @@ const submitRoleApply = async () => {
     })
   } else {
     ElMessage({
-      message: res.message,
-      type: 'warning',
+      message: '申请失败',
+      type: 'error',
       plain: true,
     })
   }
@@ -169,7 +170,7 @@ const removeRoleApply = async (id: number) => {
   } else {
     ElMessage({
       message: '角色申请取消失败',
-      type: 'warning',
+      type: 'error',
       plain: true,
     })
   }
@@ -241,7 +242,7 @@ const submitPasswordModify = async () => {
     } else {
       ElMessage({
         message: '密码修改失败',
-        type: 'warning',
+        type: 'error',
         plain: true,
       })
     }
@@ -268,8 +269,9 @@ onMounted(() => {
 <template>
   <div class="me-page">
     <div class="me-container">
-      <!-- 顶部轮播图 -->
-      <el-carousel indicator-position="outside">
+      <!-- 顶部图片 -->
+      <img src="../../assets/img/carousel/carousel-1.png" class="banner" alt="大模型实训平台">
+      <!-- <el-carousel indicator-position="outside">
         <el-carousel-item>
           <img src="../../assets/img/carousel/carousel-1.png" alt="大模型实训平台">
         </el-carousel-item>
@@ -282,7 +284,7 @@ onMounted(() => {
         <el-carousel-item>
           <img src="../../assets/img/carousel/carousel-4.png" alt="大模型实训平台">
         </el-carousel-item>
-      </el-carousel>
+      </el-carousel> -->
       <!-- 个人信息展示 -->
       <el-descriptions border>
         <el-descriptions-item
@@ -302,10 +304,6 @@ onMounted(() => {
         <el-descriptions-item label="手机号">{{ userStore.phone }}</el-descriptions-item>
         <el-descriptions-item label="邮箱">{{ userStore.email }}</el-descriptions-item>
         <el-descriptions-item label="学号">{{ userStore.stuId }}</el-descriptions-item>
-        <el-descriptions-item label="标签">
-          <el-tag size="small">北京邮电大学</el-tag>
-        </el-descriptions-item>
-        <el-descriptions-item label="地址">西土城路10号, 海淀区, 北京市</el-descriptions-item>
       </el-descriptions>
       <el-row class="edit-info">
         <!-- 选择新角色 -->
@@ -524,5 +522,10 @@ onMounted(() => {
 /* 模态框 */
 .edit-dialog {
   @apply flex items-center justify-center flex-col;
+}
+.banner {
+  width: 100%;
+  height: 30%;
+  @apply rounded-md;
 }
 </style>

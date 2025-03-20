@@ -1060,7 +1060,7 @@ onMounted(() => {
         </template>
         <!-- 创建按钮 -->
         <el-form-item>
-          <el-button class="w-[30rem]" type="primary" @click="submitQuestionModify(1)">修改试题</el-button>
+          <el-button class="w-[30rem]" type="primary" @click="submitQuestionModify(1)">发布试题</el-button>
         </el-form-item>
         <el-form-item>
           <el-button class="w-[30rem]" type="primary" @click="submitQuestionModify(3)">存为草稿</el-button>

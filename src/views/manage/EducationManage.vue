@@ -112,6 +112,9 @@ const submitLocationCreate = async () => {
   }
   searchLocation();
   searchCollege();
+  // 更新地区列表
+  const locationOptionRes = await getLocationOption();
+  data.locationOptions = locationOptionRes.data;
 }
 // 删除地区
 const removeLocation = async (id: number) => {
@@ -262,7 +265,6 @@ const searchClass = async () => {
     data.classPage = 1;
   }
   const res = await getCourseList(data.inputClass, data.classPage, data.classCount);
-  console.log(res);
   data.classList = res.data.list;
   data.classTotal = res.data.total;
 }
@@ -294,12 +296,25 @@ const modifyClassDetail = async (id: number) => {
   const res = await getClassDetail(id);
   data.currentClass = res.data;
   data.currentClassId = id;
+  // 获取大学列表
+  let collegeOptionsRes = await getCollegeOptions();
+  data.collegeOptions = collegeOptionsRes.data;
 }
 // 提交班级信息修改
 const submitClassModify = async () => {
   data.currentClass.start_time = data.currentClass.time_range[0];
   data.currentClass.end_time = data.currentClass.time_range[1];
-  const res = await modifyClass(data.currentClassId, data.currentClass);
+  const modifyForm = {
+    name: data.currentClass.name,
+    teacher_id: data.currentClass.teacher_id,
+    course_id: data.currentClass.course_id,
+    capacity: data.currentClass.capacity,
+    time_range: data.currentClass.time_range,
+    desc: data.currentClass.desc,
+    cover_image: data.currentClass.cover_image,
+    college_id: data.currentClass.college_id,
+  }
+  const res = await modifyClass(data.currentClassId, modifyForm);
   if(res.status === 0){
     ElMessage({
       message: '班级信息修改成功',

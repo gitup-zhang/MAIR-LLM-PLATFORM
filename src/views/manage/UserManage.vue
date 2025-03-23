@@ -92,6 +92,15 @@ const userCurrentChange = (val: any) => {
   data.userPage = val;
   searchUser();
 }
+
+// 打开创建用户模态框
+const openCreateUserModal = async () => {
+  // 刷新地区选项列表
+  const locationOptionsRes = await getLocationOption();
+  data.locationOptions = locationOptionsRes.data;
+  data.createUserModalVisible = true;
+}
+
 // 创建用户
 const createNewUser = async () => {
   // 检查非空
@@ -155,6 +164,8 @@ const checkPassword = (newPassword: string, confirmPassword: string) => {
 // 打开并初始化用户信息修改框
 const openModifyUserModal = async (currentUserInfo: any) => {
   data.modifyUserModalVisible = true;
+  const locationOptionsRes = await getLocationOption();
+  data.locationOptions = locationOptionsRes.data;
   const res = await getUserDetail(currentUserInfo.id);
   data.currentUserId = currentUserInfo.id;
   data.currentUserForm.name = res.data.name;
@@ -286,7 +297,7 @@ onMounted(async () => {
             <el-input v-model="data.inputUserId" class="mr-3 w-[20vw] h-[2rem]" placeholder="请输入ID号" />
             <el-input v-model="data.inputUserName" class="mr-3 w-[20vw] h-[2rem]" placeholder="请输入用户昵称" />
             <el-button type="primary" class="mr-3 h-[2rem]" @click="searchUser()">搜索</el-button>
-            <el-button type="primary" class="mr-3 h-[2rem]" @click="data.createUserModalVisible = true">创建</el-button>
+            <el-button type="primary" class="mr-3 h-[2rem]" @click="openCreateUserModal()">创建</el-button>
           </div>
         </div>
         <!-- 用户信息展示 -->

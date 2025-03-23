@@ -295,6 +295,8 @@ const modifyClassDetail = async (id: number) => {
   data.modifyClassModalVisible = true;
   const res = await getClassDetail(id);
   data.currentClass = res.data;
+  const teacherOptionsRes = await getTeacherOptions();
+  data.teacherOptions = teacherOptionsRes.data;
   data.currentClassId = id;
   // 获取大学列表
   let collegeOptionsRes = await getCollegeOptions();
@@ -309,10 +311,12 @@ const submitClassModify = async () => {
     teacher_id: data.currentClass.teacher_id,
     course_id: data.currentClass.course_id,
     capacity: data.currentClass.capacity,
-    time_range: data.currentClass.time_range,
+    time_range: [data.currentClass.start_time, data.currentClass.end_time],
     desc: data.currentClass.desc,
-    cover_image: data.currentClass.cover_image,
-    college_id: data.currentClass.college_id,
+    cover_image: '',
+    college_id: [data.currentClass.college_id],
+    start_time: data.currentClass.time_range[0],
+    end_time: data.currentClass.time_range[1],
   }
   const res = await modifyClass(data.currentClassId, modifyForm);
   if(res.status === 0){
@@ -810,7 +814,7 @@ onMounted(async () => {
         </el-form-item>
         <!-- 起止时间 -->
         <el-form-item label="起止时间">
-          <el-date-picker
+            <el-date-picker
             v-model="data.currentClass.time_range"
             type="datetimerange"
             range-separator="至"

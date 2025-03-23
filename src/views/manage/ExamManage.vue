@@ -298,7 +298,7 @@ const searchAddExamQuestion = async () => {
   const res = await getQuestionRelation(data.examPaperForm.id, data.inputSearchExamQuestion, data.page, data.count);
   const options = await getQuestionOptions();
   data.currentExamPaperQuestion = res.data.list;
-  data.questionOptions = options.data;
+  data.questionOptions = options.data.filter(item => item.status !== 3);
 }
 // 添加试题
 const addExamQuestion = async () => {

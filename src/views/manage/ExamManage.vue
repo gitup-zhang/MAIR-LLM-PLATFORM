@@ -1303,7 +1303,7 @@ onMounted(() => {
     <div class="exam-dialog">
       <el-form :model="data.newExamForm" class="w-[30rem]">
         <!-- 考试描述 -->
-        <el-form-item>
+        <el-form-item label="描述">
           <el-input 
             v-model="data.newExamForm.desc" 
             placeholder="请输入考试描述(不能超过500个字)"
@@ -1321,7 +1321,7 @@ onMounted(() => {
           </el-input>
         </el-form-item>
         <!-- 考试班级 -->
-        <el-form-item>
+        <el-form-item label="班级">
           <el-select v-model="data.newExamForm.class_id" placeholder="请选择考试班级" class="w-[30rem]">
             <!-- 图标 -->
             <template #prefix>
@@ -1338,7 +1338,7 @@ onMounted(() => {
           </el-select>
         </el-form-item>
         <!-- 试卷 -->
-        <el-form-item>
+        <el-form-item label="试卷">
           <el-select v-model="data.newExamForm.exam_paper_id" placeholder="请选择试卷" class="w-[30rem]">
             <!-- 图标 -->
             <template #prefix>
@@ -1355,7 +1355,7 @@ onMounted(() => {
           </el-select>
         </el-form-item>
         <!-- 起止时间 -->
-        <el-form-item>
+        <el-form-item label="时间">
           <el-date-picker
             v-model="data.newExamForm.time_range"
             type="datetimerange"

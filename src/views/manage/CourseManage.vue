@@ -215,7 +215,6 @@ const openModifyChapterModal = async (id: number) => {
   data.chapterForm = res.data;
   const imageOptionsRes = await getImageOptions();
   data.imageOptions = imageOptionsRes.data.list;
-  console.log(imageOptionsRes)
 }
 // 提交章节修改
 const submitChapterModify = async () => {
@@ -520,7 +519,12 @@ onMounted(async() => {
       <el-form :model="data.newChapterForm" label-width="auto" class="w-[30rem]">
         <!-- 章节名 -->
         <el-form-item label="名称">
-          <el-input v-model="data.newChapterForm.name" placeholder="请输入章节名称">
+          <el-input 
+            v-model="data.newChapterForm.name" 
+            placeholder="请输入章节名称(不能超过30个字)"
+            show-word-limit="true"
+            maxlength="30" 
+          >
             <!-- 图标 -->
             <template #prefix>
               <el-icon color="#409efc" class="no-inherit">
@@ -531,7 +535,14 @@ onMounted(async() => {
         </el-form-item>
         <!-- 章节描述 -->
         <el-form-item label="描述">
-          <el-input v-model="data.newChapterForm.desc" placeholder="请输入章节描述">
+          <el-input 
+            v-model="data.newChapterForm.desc" 
+            placeholder="请输入章节描述(不能超过500个字)"
+            :autosize="{ minRows: 2, maxRows: 4}"
+            type="textarea"
+            maxlength="500"
+            show-word-limit="true"
+          >
             <!-- 图标 -->
             <template #prefix>
               <el-icon color="#409efc" class="no-inherit">
@@ -632,7 +643,12 @@ onMounted(async() => {
       <el-form :model="data.chapterForm" label-width="auto" class="w-[30rem]">
         <!-- 章节名 -->
         <el-form-item label="名称">
-          <el-input v-model="data.chapterForm.name" placeholder="请输入章节名称">
+          <el-input 
+            v-model="data.chapterForm.name" 
+            placeholder="请输入章节名称(不能超过30个字)"
+            show-word-limit="true"
+            maxlength="30" 
+          >
             <!-- 图标 -->
             <template #prefix>
               <el-icon color="#409efc" class="no-inherit">
@@ -643,7 +659,14 @@ onMounted(async() => {
         </el-form-item>
         <!-- 章节描述 -->
         <el-form-item label="描述">
-          <el-input v-model="data.chapterForm.desc" placeholder="请输入章节描述">
+          <el-input 
+            v-model="data.chapterForm.desc" 
+            placeholder="请输入章节描述(不能超过500个字)"
+            :autosize="{ minRows: 2, maxRows: 4}"
+            type="textarea"
+            maxlength="500"
+            show-word-limit="true"
+          >
             <!-- 图标 -->
             <template #prefix>
               <el-icon color="#409efc" class="no-inherit">
@@ -687,7 +710,7 @@ onMounted(async() => {
             class="w-[30rem]"
             :action="data.fileUploadUrl"
             :on-remove="handleRemoveModifyFile"
-            :before-remove="beforeRemove" 
+            :before-remove="beforeRemove"
             :limit="data.fileLimit"
             :on-exceed="handleExceed" 
             :file-list="data.chapterForm.files_info" 
@@ -744,7 +767,12 @@ onMounted(async() => {
       <el-form :model="data.newChapterForm" class="w-[30rem]">
         <!-- 课程名 -->
         <el-form-item>
-          <el-input v-model="data.newCourseForm.name" placeholder="请输入课程名称">
+          <el-input 
+            v-model="data.newCourseForm.name" 
+            placeholder="请输入课程名称(不能超过30个字)"
+            show-word-limit="true"
+            maxlength="30" 
+          >
             <!-- 图标 -->
             <template #prefix>
               <el-icon color="#409efc" class="no-inherit">
@@ -755,7 +783,14 @@ onMounted(async() => {
         </el-form-item>
         <!-- 描述 -->
         <el-form-item>
-          <el-input v-model="data.newCourseForm.desc" placeholder="请输入课程描述">
+          <el-input 
+            v-model="data.newCourseForm.desc" 
+            placeholder="请输入课程描述(不能超过500个字)"
+            :autosize="{ minRows: 2, maxRows: 4}"
+            type="textarea"
+            maxlength="500"
+            show-word-limit="true"
+          >
             <!-- 图标 -->
             <template #prefix>
               <el-icon color="#409efc" class="no-inherit">
@@ -778,7 +813,12 @@ onMounted(async() => {
       <el-form :model="data.courseForm" label-width="auto" class="w-[30rem]">
         <!-- 课程名 -->
         <el-form-item label="课程名称">
-          <el-input v-model="data.courseForm.name" placeholder="请输入课程名称">
+          <el-input 
+            v-model="data.courseForm.name" 
+            placeholder="请输入课程名称(不能超过30个字)"
+            show-word-limit="true"
+            maxlength="30" 
+          >
             <!-- 图标 -->
             <template #prefix>
               <el-icon color="#409efc" class="no-inherit">
@@ -789,7 +829,14 @@ onMounted(async() => {
         </el-form-item>
         <!-- 描述 -->
         <el-form-item label="描述">
-          <el-input v-model="data.courseForm.desc" placeholder="请输入课程描述">
+          <el-input 
+            v-model="data.courseForm.desc" 
+            placeholder="请输入课程描述(不能超过500个字)"
+            :autosize="{ minRows: 2, maxRows: 4}"
+            type="textarea"
+            maxlength="500"
+            show-word-limit="true"
+          >
             <!-- 图标 -->
             <template #prefix>
               <el-icon color="#409efc" class="no-inherit">

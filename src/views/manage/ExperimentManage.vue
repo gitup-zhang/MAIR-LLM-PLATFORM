@@ -163,7 +163,6 @@ const saveImageCreate = async () => {
 // 查看镜像
 const checkImageDetail = async (index: number) => {
   const res = await getImageDetail(data.imageList[index]['id']);
-  console.log('查看镜像:', res)
   if(res.status === 0){
     ElMessage({
       message: '正在跳转到容器内',
@@ -356,7 +355,6 @@ onMounted(() => {
         </div>
       </el-tab-pane>
     </el-tabs>
-
   </div>
 
     <!-- 创建镜像框 -->
@@ -386,7 +384,12 @@ onMounted(() => {
         </el-form-item>
         <!-- 镜像名称 -->
         <el-form-item>
-          <el-input v-model="data.newImageForm.name" placeholder="请输入镜像名称">
+          <el-input 
+            v-model="data.newImageForm.name" 
+            placeholder="请输入镜像名称(不能超过20个字)"
+            show-word-limit="true"
+            maxlength="20"
+          >
             <!-- 图标 -->
             <template #prefix>
               <el-icon color="#409efc" class="no-inherit">
@@ -397,7 +400,14 @@ onMounted(() => {
         </el-form-item>
         <!-- 镜像描述 -->
         <el-form-item>
-          <el-input v-model="data.newImageForm.desc" placeholder="请输入镜像描述">
+          <el-input 
+            v-model="data.newImageForm.desc" 
+            placeholder="请输入镜像描述(不能超过500个字)"
+            :autosize="{ minRows: 2, maxRows: 4}"
+            type="textarea"
+            maxlength="500"
+            show-word-limit="true"
+          >
             <!-- 图标 -->
             <template #prefix>
               <el-icon color="#409efc" class="no-inherit">
@@ -439,7 +449,12 @@ onMounted(() => {
         </el-form-item>
         <!-- 镜像名称 -->
         <el-form-item>
-          <el-input v-model="data.newImageForm.name" placeholder="请输入镜像名称">
+          <el-input 
+            v-model="data.newImageForm.name"
+            placeholder="请输入镜像名称(不能超过20个字)"
+            show-word-limit="true"
+            maxlength="20"
+          >
             <!-- 图标 -->
             <template #prefix>
               <el-icon color="#409efc" class="no-inherit">
@@ -450,7 +465,14 @@ onMounted(() => {
         </el-form-item>
         <!-- 镜像描述 -->
         <el-form-item>
-          <el-input v-model="data.newImageForm.desc" placeholder="请输入镜像描述">
+          <el-input 
+            v-model="data.newImageForm.desc" 
+            placeholder="请输入镜像描述(不能超过500个字)"
+            :autosize="{ minRows: 2, maxRows: 4}"
+            type="textarea"
+            maxlength="500"
+            show-word-limit="true"
+          >
             <!-- 图标 -->
             <template #prefix>
               <el-icon color="#409efc" class="no-inherit">

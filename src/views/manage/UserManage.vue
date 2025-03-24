@@ -414,7 +414,12 @@ onMounted(async () => {
       <el-form :model="data.newUserForm" label-width="auto" class="w-[20rem]">
         <!-- 昵称 -->
         <el-form-item label="昵称">
-          <el-input v-model="data.newUserForm.name" placeholder="请输入昵称">
+          <el-input 
+            v-model="data.newUserForm.name" 
+            placeholder="请输入昵称(不能超过20个字)"
+            show-word-limit="true"
+            maxlength="20"
+          >
           <!-- 图标 -->
             <template #prefix>
               <el-icon color="#409efc" class="no-inherit">
@@ -425,7 +430,12 @@ onMounted(async () => {
         </el-form-item>
         <!-- 姓名 -->
         <el-form-item label="姓名">
-          <el-input v-model="data.newUserForm.user_name" placeholder="请输入姓名">
+          <el-input 
+            v-model="data.newUserForm.user_name" 
+            placeholder="请输入姓名(不能超过20个字)"
+            show-word-limit="true"
+            maxlength="20"
+          >
           <!-- 图标 -->
             <template #prefix>
               <el-icon color="#409efc" class="no-inherit">
@@ -436,7 +446,12 @@ onMounted(async () => {
         </el-form-item>
         <!-- 邮箱 -->
         <el-form-item label="邮箱">
-          <el-input v-model="data.newUserForm.email" placeholder="请输入邮箱">
+          <el-input 
+            v-model="data.newUserForm.email" 
+            placeholder="请输入邮箱(不能超过30个字)"
+            show-word-limit="true"
+            maxlength="30"
+          >
           <!-- 图标 -->
             <template #prefix>
               <el-icon color="#409efc" class="no-inherit">
@@ -491,7 +506,12 @@ onMounted(async () => {
         </el-form-item>
         <!-- 身份证号码 -->
         <el-form-item label="身份">
-          <el-input v-model="data.newUserForm.idcard" placeholder="请输入身份证号码">
+          <el-input 
+            v-model="data.newUserForm.idcard" 
+            placeholder="请输入身份证号码(不能超过18个字)"
+            show-word-limit="true"
+            maxlength="18"
+          >
           <!-- 图标 -->
             <template #prefix>
               <el-icon color="#409efc" class="no-inherit">
@@ -536,7 +556,12 @@ onMounted(async () => {
       <el-form :model="data.currentUserForm" label-width="auto" class="w-[20rem]">
         <!-- 昵称 -->
         <el-form-item label="昵称">
-          <el-input v-model="data.currentUserForm.name" placeholder="请输入昵称">
+          <el-input 
+            v-model="data.currentUserForm.name" 
+            placeholder="请输入昵称(不能超过20个字)"
+            show-word-limit="true"
+            maxlength="20"
+          >
           <!-- 图标 -->
             <template #prefix>
               <el-icon color="#409efc" class="no-inherit">
@@ -547,7 +572,12 @@ onMounted(async () => {
         </el-form-item>
         <!-- 姓名 -->
         <el-form-item label="姓名">
-          <el-input v-model="data.currentUserForm.user_name" placeholder="请输入姓名">
+          <el-input 
+            v-model="data.currentUserForm.user_name" 
+            placeholder="请输入姓名(不能超过20个字)"
+            show-word-limit="true"
+            maxlength="20"
+          >
           <!-- 图标 -->
             <template #prefix>
               <el-icon color="#409efc" class="no-inherit">
@@ -569,7 +599,12 @@ onMounted(async () => {
         </el-form-item>
         <!-- 邮箱 -->
         <el-form-item label="邮箱">
-          <el-input v-model="data.currentUserForm.email" placeholder="请输入邮箱">
+          <el-input 
+            v-model="data.currentUserForm.email" 
+            placeholder="请输入邮箱(不能超过30个字)"
+            show-word-limit="true"
+            maxlength="30"
+          >
           <!-- 图标 -->
             <template #prefix>
               <el-icon color="#409efc" class="no-inherit">
@@ -624,7 +659,12 @@ onMounted(async () => {
         </el-form-item>
         <!-- 身份证号码 -->
         <el-form-item label="身份">
-          <el-input v-model="data.currentUserForm.idcard" placeholder="请输入身份证号码">
+          <el-input 
+            v-model="data.currentUserForm.idcard" 
+            placeholder="请输入身份证号码(不能超过18个字)"
+            show-word-limit="true"
+            maxlength="18"
+          >
           <!-- 图标 -->
             <template #prefix>
               <el-icon color="#409efc" class="no-inherit">

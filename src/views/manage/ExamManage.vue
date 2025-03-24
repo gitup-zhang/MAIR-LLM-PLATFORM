@@ -807,7 +807,12 @@ onMounted(() => {
       <el-form :model="data.newQuestionForm" label-width="auto" class="w-[30rem]">
         <!-- 内容 -->
         <el-form-item label="内容">
-          <el-input v-model="data.newQuestionForm.content" placeholder="请输入题目内容">
+          <el-input 
+            v-model="data.newQuestionForm.content" 
+            placeholder="请输入题目内容(不能超过20个字)"
+            show-word-limit="true"
+            maxlength="20"
+          >
             <!-- 图标 -->
             <template #prefix>
               <el-icon color="#409efc" class="no-inherit">
@@ -818,7 +823,14 @@ onMounted(() => {
         </el-form-item>
         <!-- 描述 -->
         <el-form-item label="描述">
-          <el-input v-model="data.newQuestionForm.desc" placeholder="请输入题目描述">
+          <el-input 
+            v-model="data.newQuestionForm.desc" 
+            placeholder="请输入题目描述(不能超过500个字)"
+            :autosize="{ minRows: 2, maxRows: 4}"
+            type="textarea"
+            maxlength="500"
+            show-word-limit="true"
+          >
             <!-- 图标 -->
             <template #prefix>
               <el-icon color="#409efc" class="no-inherit">
@@ -941,7 +953,12 @@ onMounted(() => {
       <el-form :model="data.modifyQuestionForm" label-width="auto" class="w-[30rem]">
         <!-- 内容 -->
         <el-form-item label="内容">
-          <el-input v-model="data.modifyQuestionForm.content" placeholder="请输入题目内容">
+          <el-input 
+            v-model="data.modifyQuestionForm.content" 
+            placeholder="请输入题目内容(不能超过20个字)"
+            show-word-limit="true"
+            maxlength="20"
+          >
             <!-- 图标 -->
             <template #prefix>
               <el-icon color="#409efc" class="no-inherit">
@@ -952,7 +969,14 @@ onMounted(() => {
         </el-form-item>
         <!-- 描述 -->
         <el-form-item label="描述">
-          <el-input v-model="data.modifyQuestionForm.desc" placeholder="请输入题目描述">
+          <el-input 
+            v-model="data.modifyQuestionForm.desc" 
+            placeholder="请输入题目描述(不能超过500个字)"
+            :autosize="{ minRows: 2, maxRows: 4}"
+            type="textarea"
+            maxlength="500"
+            show-word-limit="true"
+          >
             <!-- 图标 -->
             <template #prefix>
               <el-icon color="#409efc" class="no-inherit">
@@ -1075,7 +1099,12 @@ onMounted(() => {
       <el-form :model="data.newExamPaperForm" label-width="auto" class="w-[30rem]">
         <!-- 标题 -->
         <el-form-item label="标题">
-          <el-input v-model="data.newExamPaperForm.title" placeholder="请输入试卷标题">
+          <el-input 
+            v-model="data.newExamPaperForm.title" 
+            placeholder="请输入试卷标题(不能超过30个字)"
+            show-word-limit="true"
+            maxlength="30"
+          >
             <!-- 图标 -->
             <template #prefix>
               <el-icon color="#409efc" class="no-inherit">
@@ -1086,7 +1115,14 @@ onMounted(() => {
         </el-form-item>
         <!-- 描述 -->
         <el-form-item label="描述">
-          <el-input v-model="data.newExamPaperForm.desc" placeholder="请输入试卷描述">
+          <el-input 
+            v-model="data.newExamPaperForm.desc" 
+            placeholder="请输入试卷描述(不能超过500个字)"
+            :autosize="{ minRows: 2, maxRows: 4}"
+            type="textarea"
+            maxlength="500"
+            show-word-limit="true"
+          >
             <!-- 图标 -->
             <template #prefix>
               <el-icon color="#409efc" class="no-inherit">
@@ -1120,7 +1156,12 @@ onMounted(() => {
       <el-form :model="data.examPaperForm" label-width="auto" class="w-[30rem]">
         <!-- 标题 -->
         <el-form-item label="标题">
-          <el-input v-model="data.examPaperForm.title" placeholder="请输入试卷标题">
+          <el-input 
+            v-model="data.examPaperForm.title" 
+            placeholder="请输入试卷标题(不能超过30个字)"
+            show-word-limit="true"
+            maxlength="30"
+          >
             <!-- 图标 -->
             <template #prefix>
               <el-icon color="#409efc" class="no-inherit">
@@ -1131,7 +1172,14 @@ onMounted(() => {
         </el-form-item>
         <!-- 描述 -->
         <el-form-item label="描述">
-          <el-input v-model="data.examPaperForm.desc" placeholder="请输入试卷描述">
+          <el-input 
+            v-model="data.examPaperForm.desc" 
+            placeholder="请输入试卷描述(不能超过500个字)"
+            :autosize="{ minRows: 2, maxRows: 4}"
+            type="textarea"
+            maxlength="500"
+            show-word-limit="true"
+          >
             <!-- 图标 -->
             <template #prefix>
               <el-icon color="#409efc" class="no-inherit">
@@ -1256,7 +1304,14 @@ onMounted(() => {
       <el-form :model="data.newExamForm" class="w-[30rem]">
         <!-- 考试描述 -->
         <el-form-item>
-          <el-input v-model="data.newExamForm.desc" placeholder="请输入考试描述">
+          <el-input 
+            v-model="data.newExamForm.desc" 
+            placeholder="请输入考试描述(不能超过500个字)"
+            :autosize="{ minRows: 2, maxRows: 4}"
+            type="textarea"
+            maxlength="500"
+            show-word-limit="true"
+          >
             <!-- 图标 -->
             <template #prefix>
               <el-icon color="#409efc" class="no-inherit">

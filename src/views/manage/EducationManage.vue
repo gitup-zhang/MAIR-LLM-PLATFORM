@@ -574,7 +574,12 @@ onMounted(async () => {
       <el-form :model="data.newLocationForm" class="w-[20rem]">
         <!-- 地区 -->
         <el-form-item>
-          <el-input v-model="data.newLocationForm.name" placeholder="请输入地区名称" />
+          <el-input 
+            v-model="data.newLocationForm.name" 
+            placeholder="请输入地区名称(不能超过20个字)"
+            show-word-limit="true"
+            maxlength="20" 
+          />
         </el-form-item>
         <!-- 上级地区 -->
         <el-form-item>
@@ -594,7 +599,12 @@ onMounted(async () => {
       <el-form :model="data.locationForm" class="w-[20rem]">
         <!-- 地区 -->
         <el-form-item>
-          <el-input v-model="data.locationForm.name" placeholder="请输入地区名称" />
+          <el-input 
+            v-model="data.locationForm.name" 
+            placeholder="请输入地区名称(不能超过20个字)"
+            show-word-limit="true"
+            maxlength="20"  
+          />
         </el-form-item>
         <!-- 上级地区 -->
         <el-form-item>
@@ -614,7 +624,12 @@ onMounted(async () => {
       <el-form :model="data.newCollegeForm" class="w-[20rem]">
         <!-- 地区 -->
         <el-form-item>
-          <el-input v-model="data.newCollegeForm.name" placeholder="请输入教学单位名称" />
+          <el-input 
+            v-model="data.newCollegeForm.name" 
+            placeholder="请输入教学单位名称(不能超过30个字)"
+            show-word-limit="true"
+            maxlength="30" 
+          />
         </el-form-item>
         <!-- 上级地区 -->
         <el-form-item>
@@ -634,7 +649,12 @@ onMounted(async () => {
       <el-form :model="data.collegeForm" class="w-[20rem]">
         <!-- 地区 -->
         <el-form-item>
-          <el-input v-model="data.collegeForm.name" placeholder="请输入教学单位名称" />
+          <el-input 
+            v-model="data.collegeForm.name" 
+            placeholder="请输入教学单位名称(不能超过30个字)"
+            show-word-limit="true"
+            maxlength="30"
+          />
         </el-form-item>
         <!-- 上级地区 -->
         <el-form-item>
@@ -654,7 +674,12 @@ onMounted(async () => {
       <el-form :model="data.newClassForm" class="w-[30rem]">
         <!-- 班级名 -->
         <el-form-item>
-          <el-input v-model="data.newClassForm.name" placeholder="请输入班级名称">
+          <el-input 
+            v-model="data.newClassForm.name" 
+            placeholder="请输入班级名称(不能超过20个字)"
+            show-word-limit="true"
+            maxlength="20"
+          >
             <!-- 图标 -->
             <template #prefix>
               <el-icon color="#409efc" class="no-inherit">
@@ -721,7 +746,14 @@ onMounted(async () => {
         </el-form-item>
         <!-- 描述 -->
         <el-form-item>
-          <el-input v-model="data.newClassForm.desc" placeholder="请输入课程描述">
+          <el-input 
+            v-model="data.newClassForm.desc" 
+            placeholder="请输入班级描述"
+            :autosize="{ minRows: 2, maxRows: 4}"
+            type="textarea"
+            maxlength="500"
+            show-word-limit="true"
+          >
             <!-- 图标 -->
             <template #prefix>
               <el-icon color="#409efc" class="no-inherit">
@@ -761,7 +793,12 @@ onMounted(async () => {
       <el-form :model="data.currentClass" label-width="auto" class="w-[30rem]">
         <!-- 班级名 -->
         <el-form-item label="班级名称">
-          <el-input v-model="data.currentClass.name" placeholder="请输入班级名称">
+          <el-input 
+            v-model="data.currentClass.name" 
+            placeholder="请输入班级名称(不能超过20个字)"
+            show-word-limit="true"
+            maxlength="20"
+          >
             <!-- 图标 -->
             <template #prefix>
               <el-icon color="#409efc" class="no-inherit">
@@ -824,8 +861,15 @@ onMounted(async () => {
           />
         </el-form-item>
         <!-- 描述 -->
-        <el-form-item label="课程描述">
-          <el-input v-model="data.currentClass.desc" placeholder="请输入课程描述">
+        <el-form-item label="班级描述">
+          <el-input 
+            v-model="data.currentClass.desc" 
+            placeholder="请输入班级描述"
+            :autosize="{ minRows: 2, maxRows: 4}"
+            type="textarea"
+            maxlength="500"
+            show-word-limit="true"
+          >
             <!-- 图标 -->
             <template #prefix>
               <el-icon color="#409efc" class="no-inherit">

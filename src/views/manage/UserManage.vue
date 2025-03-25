@@ -409,9 +409,9 @@ onMounted(async () => {
   </div>
 
   <!-- 创建用户框 -->
-  <el-dialog v-model="data.createUserModalVisible" title="创建新用户" width="400" center>
+  <el-dialog v-model="data.createUserModalVisible" title="创建新用户" width="500" center>
     <div class="user-dialog">
-      <el-form :model="data.newUserForm" label-width="auto" class="w-[20rem]">
+      <el-form :model="data.newUserForm" label-width="auto" class="w-[25rem]">
         <!-- 昵称 -->
         <el-form-item label="昵称">
           <el-input 
@@ -476,7 +476,7 @@ onMounted(async () => {
           <el-select
             v-model="data.newUserForm.type"
             placeholder="请选择角色"
-            class="w-[20rem]"
+            class="w-[25rem]"
           >
             <!-- 图标 -->
             <template #prefix>
@@ -544,16 +544,16 @@ onMounted(async () => {
         </el-form-item>
         <!-- 创建按钮 -->
         <el-form-item>
-          <el-button class="w-[20rem]" type="primary" @click="createNewUser()">创建用户</el-button>
+          <el-button class="w-[25rem]" type="primary" @click="createNewUser()">创建用户</el-button>
         </el-form-item>
       </el-form>
     </div>
   </el-dialog>
 
   <!-- 修改用户信息框 -->
-  <el-dialog v-model="data.modifyUserModalVisible" title="修改用户信息" width="400" center>
+  <el-dialog v-model="data.modifyUserModalVisible" title="修改用户信息" width="500" center>
     <div class="user-dialog">
-      <el-form :model="data.currentUserForm" label-width="auto" class="w-[20rem]">
+      <el-form :model="data.currentUserForm" label-width="auto" class="w-[25rem]">
         <!-- 昵称 -->
         <el-form-item label="昵称">
           <el-input 
@@ -629,7 +629,7 @@ onMounted(async () => {
           <el-select
             v-model="data.currentUserForm.type"
             placeholder="请选择角色"
-            class="w-[20rem]"
+            class="w-[25rem]"
             disabled
           >
             <!-- 图标 -->
@@ -675,7 +675,7 @@ onMounted(async () => {
         </el-form-item>
         <!-- 修改按钮 -->
         <el-form-item>
-          <el-button class="w-[20rem]" type="primary" @click="modifyUserInfo()">修改用户信息</el-button>
+          <el-button class="w-[25rem]" type="primary" @click="modifyUserInfo()">修改用户信息</el-button>
         </el-form-item>
       </el-form>
     </div>

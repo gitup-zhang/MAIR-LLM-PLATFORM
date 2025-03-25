@@ -39,7 +39,7 @@ export const getEnrolledClassList = (page: number, count: number) => {
     return httpInstance({
       url:'/course_application/',
       method: "GET",
-      params: {
+      data: {
         user_id: userId,
         page: page,
         count: count

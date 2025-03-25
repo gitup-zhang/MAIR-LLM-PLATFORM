@@ -812,12 +812,13 @@ onMounted(() => {
   </div>
 
   <!-- 班级详情模态框 -->
-  <el-dialog v-model="data.courseDetailVisible" title="班级详细信息" width="600">
+  <el-dialog v-model="data.courseDetailVisible" title="班级详细信息" width="600" center>
     <div class="experiment-dialog">
       <el-descriptions
         direction="vertical"
         :column="4"
         border
+        class="class-description"
       >
         <el-descriptions-item label="班级名" :span="2">{{ data.currentCourseDetail.name }}</el-descriptions-item>
         <el-descriptions-item label="教师名" :span="2">{{ data.currentCourseDetail.teacher_name }}</el-descriptions-item>
@@ -834,8 +835,8 @@ onMounted(() => {
   <el-dialog v-model="data.courseApplyDetailVisible" title="班级申请记录" width="1200" center>
     <el-empty v-if="data.courseApplyList.length === 0" description="暂无申请班级记录信息"/>
     <el-table v-if="data.courseApplyList.length !== 0" :data="data.courseApplyList" border style="width: 100%">
-      <el-table-column prop="class_id" label="ID"/>
-      <el-table-column prop="class_name" label="班级名"/>
+      <el-table-column prop="user_name" label="申请人"/>
+      <el-table-column prop="class_name" label="班级班级"/>
       <el-table-column prop="create_time" label="时间"/>
       <el-table-column prop="status_desc" label="审核状态"/>
       <!-- 右侧固定列 展示详情信息 -->
@@ -1187,6 +1188,9 @@ onMounted(() => {
 /* 模态框 */
 .experiment-dialog {
   @apply flex items-center justify-center flex-col;
+}
+.class-description {
+  width: 100%;
 }
 .dialog-search-box {
   height: 10vh;

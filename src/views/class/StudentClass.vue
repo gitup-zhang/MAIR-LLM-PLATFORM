@@ -231,6 +231,7 @@ onMounted(() => {
       direction="vertical"
       :column="4"
       border
+      class="class-description"
     >
       <el-descriptions-item label="班级名" :span="2">{{ data.currentCourseDetail.name }}</el-descriptions-item>
       <el-descriptions-item label="教师名" :span="2">{{ data.currentCourseDetail.teacher_name }}</el-descriptions-item>
@@ -298,5 +299,8 @@ onMounted(() => {
 /* 模态框 */
 .student-class-dialog {
   @apply flex items-center justify-center flex-col;
+}
+.class-description {
+  width: 100%;
 }
 </style>

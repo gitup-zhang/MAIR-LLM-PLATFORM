@@ -729,8 +729,8 @@ onMounted(() => {
       </el-tab-pane>
       <el-tab-pane label="授课实验" name="fifth" class="experiment-pane">
         <div class="experiment_area">
+        <el-empty v-if="data.teachExperimentList.length === 0" description="暂无授课实验信息"/>
         <el-row class="experiment-list-container">
-          <el-empty v-if="data.teachExperimentList.length === 0" description="暂无授课实验信息"/>
           <el-col v-if="data.teachExperimentList.length !== 0" :span="8" v-for="experiment in data.teachExperimentList" :key="experiment.id">
             <!-- 课程卡片 -->
             <div class="experiment-card">
@@ -811,6 +811,7 @@ onMounted(() => {
         direction="vertical"
         :column="4"
         border
+        class="class-description"
       >
         <el-descriptions-item label="班级名" :span="2">{{ data.currentCourseDetail.name }}</el-descriptions-item>
         <el-descriptions-item label="教师名" :span="2">{{ data.currentCourseDetail.teacher_name }}</el-descriptions-item>
@@ -1195,6 +1196,9 @@ onMounted(() => {
 /* 模态框 */
 .experiment-dialog {
   @apply flex items-center justify-center flex-col;
+}
+.class-description {
+  width: 100%;
 }
 .dialog-search-box {
   height: 10vh;

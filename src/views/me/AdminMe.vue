@@ -377,8 +377,8 @@ onMounted(async () => {
           </el-input>
         </el-form-item>
         <!-- ID -->
-        <el-form-item label="ID">
-          <el-input v-model="userInfoForm.id_number" placeholder="请输入ID" disabled>
+        <el-form-item label="学号">
+          <el-input v-model="userInfoForm.id_number" placeholder="请输入学号" disabled>
           <!-- 图标 -->
             <template #prefix>
               <el-icon color="#409efc" class="no-inherit">
@@ -442,7 +442,7 @@ onMounted(async () => {
             </template>
           </el-cascader>
         </el-form-item>
-        <!-- 所属地区 -->
+        <!-- 身份证号 -->
         <el-form-item label="身份">
           <el-input v-model="userInfoForm.idcard" placeholder="请输入您的身份证号">
             <!-- 图标 -->

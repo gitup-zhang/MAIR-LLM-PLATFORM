@@ -380,7 +380,7 @@ onMounted(async() => {
   </div>
 
   <!-- 修改个人信息框 -->
-  <el-dialog v-model="systemStore.userInfoEditVisible" title="修改个人信息" width="400" center>
+  <el-dialog v-model="systemStore.userInfoEditVisible" title="修改我的信息" width="400" center>
     <div class="edit-dialog">
       <el-form :model="userInfoForm" label-width="auto"  class="w-[20rem]">
         <!-- 昵称 -->

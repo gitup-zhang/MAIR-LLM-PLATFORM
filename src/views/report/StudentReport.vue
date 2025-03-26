@@ -150,12 +150,20 @@ onMounted(async () => {
     </el-col>
     <!-- 创建新报告 -->
     <el-col :span="8" class="create-report">
-      <el-input v-model="data.newCourseReportForm.title" placeholder="请输入标题" class="mb-2"></el-input>
+      <el-input 
+        v-model="data.newCourseReportForm.title" 
+        placeholder="请输入标题(不能超过30个字)" 
+        class="mb-2"
+        show-word-limit="true"
+        maxlength="30"
+      ></el-input>
       <el-input
         v-model="data.newCourseReportForm.content"
          :autosize="{ minRows: 6, maxRows: 12 }"
         type="textarea"
-        placeholder="请输入内容"
+        placeholder="请输入内容(不能超过500个字)"
+        maxlength="500"
+        show-word-limit="true"
         class="mb-2"
       />
       <!-- 上传按钮 -->

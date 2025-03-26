@@ -4,7 +4,7 @@ import { onMounted, reactive } from "vue"
 import { ElMessage } from 'element-plus';
 import { Document, Edit, Filter, UploadFilled } from '@element-plus/icons-vue'
 import { getCourseDetailInfo } from '@/apis/experiment'
-import { getCourseList, getCourseApplyRecord, deleteCourseApply } from '@/apis/course'
+import { getCourseList, deleteCourseApply, getClassApplyRecord } from '@/apis/course'
 import { getClassList, getManagedClassList, getTeachedClassList, passClassApply, refuseClassApply } from '@/apis/class'
 import { getImageInfo, deleteImage, createImage, buildImage } from '@/apis/image'
 import { getNotificationList, deleteNotification, createNotification } from '@/apis/notification';
@@ -124,10 +124,21 @@ const getCourseDetail = (courseDetail: any) => {
 // 查看课程申请记录
 const getCourseApplyDetail = async () => {
   data.courseApplyDetailVisible = true;
-  const res = await getCourseApplyRecord(userStore.id, data.applyPage, data.applyCount);
+  searchClassApply();
+}
+const searchClassApply = async () => {
+  const res = await getClassApplyRecord(userStore.id, data.applyPage, data.applyCount);
   data.courseApplyList = res.data.list;
   data.applyTotal = res.data.total;
 }
+const applySizeChange = async (val: any) => {
+  searchClassApply();
+}
+const applyCurrentChange = async (val: any) => {
+  data.applyPage = val;
+  searchClassApply();
+}
+
 // 通过班级申请
 const passClassApplication = async (id: number) => {
   const res = await passClassApply(id);
@@ -604,15 +615,16 @@ onMounted(() => {
           </div>
           <!-- 所有班级列表展示 -->
           <div class="course-list">
-            <el-empty v-if="data.courseList.length === 0" description="暂无班级信息"/>
-            <el-table v-if="data.courseList.length !== 0" :data="data.courseList" border style="width: 100%" max-height="400">
-              <el-table-column prop="name" label="班级名" min-width="200"/>
-              <el-table-column prop="course_name" label="课程名" min-width="200"/>
-              <el-table-column prop="teacher_name" label="教师名" min-width="200"/>
-              <el-table-column prop="capacity" label="学生数量" min-width="200"/>
-              <el-table-column prop="end_time" label="截止时间" min-width="200"/>
-              <el-table-column prop="college_name" label="教学单位名" min-width="200"/>
-              <el-table-column prop="not_apply_reason" label="申请状态" min-width="200"/>
+            <el-empty v-if="data.courseList.length === 0" description="暂无班级信息" />
+            <el-table v-if="data.courseList.length !== 0" :data="data.courseList" border style="width: 100%"
+              max-height="400">
+              <el-table-column prop="name" label="班级名" min-width="200" />
+              <el-table-column prop="course_name" label="课程名" min-width="200" />
+              <el-table-column prop="teacher_name" label="教师名" min-width="200" />
+              <el-table-column prop="capacity" label="学生数量" min-width="200" />
+              <el-table-column prop="end_time" label="截止时间" min-width="200" />
+              <el-table-column prop="college_name" label="教学单位名" min-width="200" />
+              <el-table-column prop="not_apply_reason" label="申请状态" min-width="200" />
               <!-- 右侧固定列 展示详情信息 -->
               <el-table-column fixed="right" label="操作" min-width="60">
                 <template v-slot="scope">
@@ -621,16 +633,9 @@ onMounted(() => {
               </el-table-column>
             </el-table>
             <!-- 分页 -->
-            <el-pagination
-              v-if="data.courseList.length !== 0"
-              background 
-              layout="prev, pager, next"
-              :total="data.classTotal" 
-              :page-size="data.classCount"
-              @size-change="classSizeChange"
-              @current-change="classCurrentChange"
-              class="mt-4 mx-auto"
-            />
+            <el-pagination v-if="data.courseList.length !== 0" background layout="prev, pager, next"
+              :total="data.classTotal" :page-size="data.classCount" @size-change="classSizeChange"
+              @current-change="classCurrentChange" class="mt-4 mx-auto" />
           </div>
         </div>
       </el-tab-pane>
@@ -638,35 +643,29 @@ onMounted(() => {
       <el-tab-pane label="已报名班级" name="second" class="experiment-pane">
         <img src="../../assets/img/banner.png" class="banner" alt="大模型实训平台">
         <div class="course-list">
-          <el-empty v-if="data.enrolledClassList.length === 0" description="暂无已报名班级信息"/>
-          <el-table v-if="data.enrolledClassList.length !== 0" :data="data.enrolledClassList" border style="width: 100%">
+          <el-empty v-if="data.enrolledClassList.length === 0" description="暂无已报名班级信息" />
+          <el-table v-if="data.enrolledClassList.length !== 0" :data="data.enrolledClassList" border
+            style="width: 100%">
             <el-table-column prop="id" label="ID" width="50" />
-            <el-table-column prop="name" label="班级名"/>
-            <el-table-column prop="course_name" label="课程名"/>
-            <el-table-column prop="teacher_name" label="教师名"/>
-            <el-table-column prop="capacity" label="学生数量"/>
-            <el-table-column prop="end_time" label="截止时间"/>
-            <el-table-column prop="college_name" label="教学单位名"/>
-            <el-table-column prop="not_apply_reason" label="申请状态"/>
+            <el-table-column prop="name" label="班级名" />
+            <el-table-column prop="course_name" label="课程名" />
+            <el-table-column prop="teacher_name" label="教师名" />
+            <el-table-column prop="capacity" label="学生数量" />
+            <el-table-column prop="end_time" label="截止时间" />
+            <el-table-column prop="college_name" label="教学单位名" />
+            <el-table-column prop="not_apply_reason" label="申请状态" />
             <!-- 右侧固定列 展示详情信息 -->
             <el-table-column fixed="right" label="操作" min-width="60">
               <template v-slot="scope">
                 <el-button link type="primary" size="small" @click="getCourseDetail(scope.row)">详情</el-button>
-                <el-button link type="primary" size="small" @click="checkExamArrangement(scope.row.id)">考试安排</el-button>  
+                <el-button link type="primary" size="small" @click="checkExamArrangement(scope.row.id)">考试安排</el-button>
               </template>
             </el-table-column>
           </el-table>
           <!-- 分页 -->
-          <el-pagination
-            v-if="data.enrolledClassList.length !== 0"
-            background 
-            layout="prev, pager, next"
-            :total="data.enrolledClassTotal" 
-            :page-size="data.enrolledClassCount"
-            @size-change="enrolledClassSizeChange"
-            @current-change="enrolledClassCurrentChange"
-            class="mt-4 mx-auto"
-          />
+          <el-pagination v-if="data.enrolledClassList.length !== 0" background layout="prev, pager, next"
+            :total="data.enrolledClassTotal" :page-size="data.enrolledClassCount" @size-change="enrolledClassSizeChange"
+            @current-change="enrolledClassCurrentChange" class="mt-4 mx-auto" />
         </div>
       </el-tab-pane>
       <!-- 管理的班级 -->
@@ -678,11 +677,11 @@ onMounted(() => {
           <el-button type="primary" class="mr-3" @click="searchManagedClass()">搜索</el-button>
         </div>
         <div class="course-list">
-          <el-empty v-if="data.managedClassList.length === 0" description="暂无管理的班级信息"/>
+          <el-empty v-if="data.managedClassList.length === 0" description="暂无管理的班级信息" />
           <el-table v-if="data.managedClassList.length !== 0" :data="data.managedClassList" border style="width: 100%">
-            <el-table-column prop="id" label="ID" width="60"/>
-            <el-table-column prop="name" label="班级名" width="180"/>
-            <el-table-column prop="course_name" label="课程名" width="160"/>
+            <el-table-column prop="id" label="ID" width="60" />
+            <el-table-column prop="name" label="班级名" width="180" />
+            <el-table-column prop="course_name" label="课程名" width="160" />
             <el-table-column label="学生量" width="80">
               <template v-slot="scope">
                 {{scope.row.student_num}} / {{ scope.row.capacity }}
@@ -693,8 +692,8 @@ onMounted(() => {
                 {{ scope.row.start_time + ' -- ' + scope.row.end_time }}
               </template>
             </el-table-column>
-            <el-table-column prop="college_name" label="教学单位名" width="200"/>
-            <el-table-column prop="not_apply_reason" label="申请状态" width="140"/>
+            <el-table-column prop="college_name" label="教学单位名" width="200" />
+            <el-table-column prop="not_apply_reason" label="申请状态" width="140" />
             <!-- 右侧固定列 展示详情信息 -->
             <el-table-column fixed="right" label="操作" width="220">
               <template v-slot="scope">
@@ -704,25 +703,18 @@ onMounted(() => {
             </el-table-column>
           </el-table>
           <!-- 分页 -->
-          <el-pagination 
-            v-if="data.managedClassList.length !== 0"
-            background 
-            layout="prev, pager, next"
-            :total="data.managedClassTotal" 
-            :page-size="data.managedClassCount"
-            @size-change="managedClassSizeChange"
-            @current-change="managedClassCurrentChange"
-            class="mt-4 mx-auto"
-          />
+          <el-pagination v-if="data.managedClassList.length !== 0" background layout="prev, pager, next"
+            :total="data.managedClassTotal" :page-size="data.managedClassCount" @size-change="managedClassSizeChange"
+            @current-change="managedClassCurrentChange" class="mt-4 mx-auto" />
         </div>
       </el-tab-pane>
       <!-- <el-tab-pane label="已选实验" name="fourth" class="experiment-pane">
         <el-row v-if="data.experimentList.length != 0" class="card-main">
           <el-col :span="8" v-for="experiemnt in data.experimentList" :key="experiemnt.id"> -->
-            <!-- 课程卡片 -->
-            <!-- <el-card body-style="padding:0px" class="course-card"> -->
-              <!-- 配图 -->
-              <!-- <img src="@/assets/img/course.png" style="width: 100%"/>
+      <!-- 课程卡片 -->
+      <!-- <el-card body-style="padding:0px" class="course-card"> -->
+      <!-- 配图 -->
+      <!-- <img src="@/assets/img/course.png" style="width: 100%"/>
               <div class="course-card-main">
                 <span class="course-title">{{ experiemnt.name }}</span>
                 <el-button type='primary' text>{{ experiemnt.student_num }}课时</el-button>
@@ -740,12 +732,13 @@ onMounted(() => {
       </el-tab-pane> -->
       <el-tab-pane label="授课实验" name="fifth" class="experiment-pane">
         <el-row class="experiment-list-container">
-          <el-empty v-if="data.teachExperimentList.length === 0" description="暂无授课实验信息"/>
-          <el-col v-if="data.teachExperimentList.length !== 0" :span="6" v-for="experiment in data.teachExperimentList" :key="experiment.id">
+          <el-empty v-if="data.teachExperimentList.length === 0" description="暂无授课实验信息" />
+          <el-col v-if="data.teachExperimentList.length !== 0" :span="6" v-for="experiment in data.teachExperimentList"
+            :key="experiment.id">
             <!-- 课程卡片 -->
             <div class="experiment-card">
               <!-- 配图 -->
-              <img src="@/assets/img/course.png" style="width: 100%"/>
+              <img src="@/assets/img/course.png" style="width: 100%" />
               <div class="experiment-card-main">
                 <span class="experiment-title">班级名称：{{ experiment.name }}</span>
                 <span class="experiment-title">课程名称：{{ experiment.course_name }}</span>
@@ -759,16 +752,10 @@ onMounted(() => {
             </div>
           </el-col>
           <!-- 分页 -->
-          <el-pagination
-            v-if="data.teachExperimentList.length !== 0"
-            background 
-            layout="prev, pager, next"
-            :total="data.teachExperimentTotal" 
-            :page-size="data.teachExperimentCount"
-            @size-change="teachExperimentSizeChange"
-            @current-change="teachExperimentCurrentChange"
-            class="mt-4 mx-auto"
-          />
+          <el-pagination v-if="data.teachExperimentList.length !== 0" background layout="prev, pager, next"
+            :total="data.teachExperimentTotal" :page-size="data.teachExperimentCount"
+            @size-change="teachExperimentSizeChange" @current-change="teachExperimentCurrentChange"
+            class="mt-4 mx-auto" />
         </el-row>
       </el-tab-pane>
       <!-- 镜像管理 -->
@@ -783,29 +770,24 @@ onMounted(() => {
         </div>
         <!-- 所有镜像信息展示 -->
         <div class="course-list">
-          <el-empty v-if="data.imageList.length === 0" description="暂无镜像信息"/>
+          <el-empty v-if="data.imageList.length === 0" description="暂无镜像信息" />
           <el-table v-if="data.imageList.length !== 0" :data="data.imageList" border style="width: 100%">
-            <el-table-column prop="name" label="镜像名"/>
-            <el-table-column prop="desc" label="描述"/>
+            <el-table-column prop="name" label="镜像名" />
+            <el-table-column prop="desc" label="描述" />
             <el-table-column fixed="right" label="操作">
               <template v-slot="scope">
                 <el-button link type="primary" size="small" @click="addImage(scope.$index)">添加镜像</el-button>
-                <el-button v-if="scope.row.is_used == 0" link type="primary" size="small" @click="updateImage(scope.$index)">修改镜像</el-button>
-                <el-button v-if="scope.row.is_used == 0" link type="primary" size="small" @click="removeImage(scope.$index)">删除镜像</el-button>
+                <el-button v-if="scope.row.is_used == 0" link type="primary" size="small"
+                  @click="updateImage(scope.$index)">修改镜像</el-button>
+                <el-button v-if="scope.row.is_used == 0" link type="primary" size="small"
+                  @click="removeImage(scope.$index)">删除镜像</el-button>
               </template>
             </el-table-column>
           </el-table>
           <!-- 分页 -->
-          <el-pagination
-            v-if="data.imageList.length !== 0"
-            background 
-            layout="prev, pager, next"
-            :total="data.imageTotal" 
-            :page-size="data.imageCount"
-            @size-change="imageSizeChange"
-            @current-change="imageCurrentChange"
-            class="mt-4 mx-auto"
-          />
+          <el-pagination v-if="data.imageList.length !== 0" background layout="prev, pager, next"
+            :total="data.imageTotal" :page-size="data.imageCount" @size-change="imageSizeChange"
+            @current-change="imageCurrentChange" class="mt-4 mx-auto" />
         </div>
       </el-tab-pane>
     </el-tabs>
@@ -814,17 +796,13 @@ onMounted(() => {
   <!-- 班级详情模态框 -->
   <el-dialog v-model="data.courseDetailVisible" title="班级详细信息" width="600" center>
     <div class="experiment-dialog">
-      <el-descriptions
-        direction="vertical"
-        :column="4"
-        border
-        class="class-description"
-      >
+      <el-descriptions direction="vertical" :column="4" border class="class-description">
         <el-descriptions-item label="班级名" :span="2">{{ data.currentCourseDetail.name }}</el-descriptions-item>
         <el-descriptions-item label="教师名" :span="2">{{ data.currentCourseDetail.teacher_name }}</el-descriptions-item>
         <el-descriptions-item label="课程名" :span="2">{{ data.currentCourseDetail.course_name }}</el-descriptions-item>
         <el-descriptions-item label="容量" :span="2">{{ data.currentCourseDetail.capacity }}</el-descriptions-item>
-        <el-descriptions-item label="起止时间" :span="4">{{ data.currentCourseDetail.start_time + '--' + data.currentCourseDetail.end_time}}</el-descriptions-item>
+        <el-descriptions-item label="起止时间" :span="4">{{ data.currentCourseDetail.start_time + '--' +
+          data.currentCourseDetail.end_time}}</el-descriptions-item>
         <el-descriptions-item label="描述" :span="4">{{ data.currentCourseDetail.desc }}</el-descriptions-item>
         <el-descriptions-item label="教学单位名" :span="4">{{ data.currentCourseDetail.college_name }}</el-descriptions-item>
       </el-descriptions>
@@ -833,38 +811,48 @@ onMounted(() => {
 
   <!-- 班级申请记录模态框 -->
   <el-dialog v-model="data.courseApplyDetailVisible" title="班级申请记录" width="1200" center>
-    <el-empty v-if="data.courseApplyList.length === 0" description="暂无申请班级记录信息"/>
-    <el-table v-if="data.courseApplyList.length !== 0" :data="data.courseApplyList" border style="width: 100%">
-      <el-table-column prop="user_name" label="申请人"/>
-      <el-table-column prop="class_name" label="班级班级"/>
-      <el-table-column prop="create_time" label="时间"/>
-      <el-table-column prop="status_desc" label="审核状态"/>
-      <!-- 右侧固定列 展示详情信息 -->
-      <el-table-column fixed="right" label="操作">
-        <template v-slot="scope">
-          <el-button v-if="scope.row.status === 1" size="small" type="success" @click="passClassApplication(scope.row.id)">通过</el-button>
-          <el-button v-if="scope.row.status === 1" size="small" type="danger" @click="refuseClassApplication(scope.row.id)">不通过</el-button>
-          <el-button v-if="scope.row.status !== 1" type="danger" size="small" :disabled="scope.row.status !== 1" @click="removeCourseApply(scope.row.id)">取消</el-button>
-        </template>
-      </el-table-column>
-    </el-table>
+    <div class="apply-list">
+      <el-empty v-if="data.courseApplyList.length === 0" description="暂无申请班级记录信息" />
+      <el-table v-if="data.courseApplyList.length !== 0" :data="data.courseApplyList" border style="width: 100%">
+        <el-table-column prop="user_name" label="申请人" />
+        <el-table-column prop="class_name" label="班级班级" />
+        <el-table-column prop="create_time" label="时间" />
+        <el-table-column prop="status_desc" label="审核状态" />
+        <!-- 右侧固定列 展示详情信息 -->
+        <el-table-column fixed="right" label="操作">
+          <template v-slot="scope">
+            <el-button v-if="scope.row.status === 1" size="small" type="success"
+              @click="passClassApplication(scope.row.id)">通过</el-button>
+            <el-button v-if="scope.row.status === 1" size="small" type="danger"
+              @click="refuseClassApplication(scope.row.id)">不通过</el-button>
+            <el-button v-if="scope.row.status !== 1" type="danger" size="small" :disabled="scope.row.status !== 1"
+              @click="removeCourseApply(scope.row.id)">取消</el-button>
+          </template>
+        </el-table-column>
+      </el-table>
+      <!-- 分页 -->
+      <el-pagination v-if="data.courseApplyList.length !== 0" background layout="prev, pager, next"
+        :total="data.applyTotal" :page-size="data.applyCount" @size-change="applySizeChange"
+        @current-change="applyCurrentChange" class="mt-4 mx-auto" />
+    </div>
   </el-dialog>
 
   <!-- 实验详情框 -->
   <el-dialog v-model="data.experimentDetailVisible" title="实验详情" width="1200" center>
     <!-- 章节列表 -->
     <div class="experiment-dialog">
-      <el-empty v-if="data.subcourseList.length === 0" description="暂无章节信息"/>
+      <el-empty v-if="data.subcourseList.length === 0" description="暂无章节信息" />
       <el-table v-if="data.subcourseList.length !== 0" :data="data.subcourseList" stripe border style="width: 100%">
-        <el-table-column prop="id" label="章节"/>
-        <el-table-column prop="name" label="名称"/>
-        <el-table-column prop="desc" label="描述"/>
-        <el-table-column prop="rate" label="进度"/>
+        <el-table-column prop="id" label="章节" />
+        <el-table-column prop="name" label="名称" />
+        <el-table-column prop="desc" label="描述" />
+        <el-table-column prop="rate" label="进度" />
         <!-- 右侧固定列 展示详情信息 -->
         <el-table-column fixed="right" label="操作" width="350">
           <template v-slot="scope">
             <el-button link type="primary" size="small" @click="openExperiment()">进入实验</el-button>
-            <el-button link type="primary" size="small" @click="openStuReport(data.currentExperimentId, scope.row.id)">学习报告</el-button>
+            <el-button link type="primary" size="small"
+              @click="openStuReport(data.currentExperimentId, scope.row.id)">学习报告</el-button>
             <el-button link type='primary' size="small" @click="openClassProgressModal(scope.row.id)">学习进度</el-button>
             <el-button link type='primary' size="small" @click="openClassContainerModal(scope.row.id)">查看容器</el-button>
           </template>
@@ -886,12 +874,7 @@ onMounted(() => {
                 <Filter />
               </el-icon>
             </template>
-            <el-option
-              v-for="(item, index) in data.imageList"
-              :key="index"
-              :label="item['name']"
-              :value="item['id']"
-            />
+            <el-option v-for="(item, index) in data.imageList" :key="index" :label="item['name']" :value="item['id']" />
           </el-select>
         </el-form-item>
         <!-- 创建镜像 -->
@@ -940,12 +923,7 @@ onMounted(() => {
                 <Filter />
               </el-icon>
             </template>
-            <el-option
-              v-for="(item, index) in data.imageList"
-              :key="index"
-              :label="item['name']"
-              :value="item['id']"
-            />
+            <el-option v-for="(item, index) in data.imageList" :key="index" :label="item['name']" :value="item['id']" />
           </el-select>
         </el-form-item>
         <!-- 创建镜像 -->
@@ -1032,19 +1010,10 @@ onMounted(() => {
         </el-form-item>
         <!-- 文件列表 -->
         <el-form-item>
-          <el-upload 
-            class="file-upload" 
-            drag 
-            :action="data.fileUploadUrl" 
-            :on-remove="handleRemove"
-            :before-remove="beforeRemove" 
-            :on-exceed="handleExceed" 
-            :on-success="handleSuccess"
-            :before-upload="beforeUpload" 
-            :file-list="data.newNotificationForm.files_info"
-            :limit="data.fileLimit" 
-            multiple
-          >
+          <el-upload class="file-upload" drag :action="data.fileUploadUrl" :on-remove="handleRemove"
+            :before-remove="beforeRemove" :on-exceed="handleExceed" :on-success="handleSuccess"
+            :before-upload="beforeUpload" :file-list="data.newNotificationForm.files_info" :limit="data.fileLimit"
+            multiple>
             <el-icon class="el-icon--upload"><upload-filled /></el-icon>
             <div class="el-upload__text">
               把文件拖拽到此处<em>点击上传</em>
@@ -1065,13 +1034,14 @@ onMounted(() => {
   <el-dialog v-model="data.classProgressModalVisible" title="学习进度" width="1200" center>
     <!-- 章节列表 -->
     <div class="experiment-dialog">
-      <el-empty v-if="data.studyProgressList.length === 0" description="暂无学习进度信息"/>
-      <el-table v-if="data.studyProgressList.length !== 0" :data="data.studyProgressList" stripe border style="width: 100%">
-        <el-table-column prop="subcourse_name" label="章节名"/>
-        <el-table-column prop="user_id_number" label="学号"/>
-        <el-table-column prop="user_name" label="学生名"/>
-        <el-table-column prop="learn_time" label="已学习时间"/>
-        <el-table-column prop="use_time" label="规定时间"/>
+      <el-empty v-if="data.studyProgressList.length === 0" description="暂无学习进度信息" />
+      <el-table v-if="data.studyProgressList.length !== 0" :data="data.studyProgressList" stripe border
+        style="width: 100%">
+        <el-table-column prop="subcourse_name" label="章节名" />
+        <el-table-column prop="user_id_number" label="学号" />
+        <el-table-column prop="user_name" label="学生名" />
+        <el-table-column prop="learn_time" label="已学习时间" />
+        <el-table-column prop="use_time" label="规定时间" />
         <el-table-column label="是否完成">
           <template v-slot="scope">
             <span v-if="scope.row.use_time <= scope.row.learn_time">是</span>
@@ -1079,16 +1049,9 @@ onMounted(() => {
           </template>
         </el-table-column>
       </el-table>
-      <el-pagination
-        v-if="data.studyProgressList.length !== 0"
-        background 
-        layout="prev, pager, next"
-        :total="data.studyProgressTotal" 
-        :page-size="data.studyProgressCount"
-        @size-change="studyProgressSizeChange"
-        @current-change="studyProgressCurrentChange"
-        class="mt-4 mx-auto"
-      />
+      <el-pagination v-if="data.studyProgressList.length !== 0" background layout="prev, pager, next"
+        :total="data.studyProgressTotal" :page-size="data.studyProgressCount" @size-change="studyProgressSizeChange"
+        @current-change="studyProgressCurrentChange" class="mt-4 mx-auto" />
     </div>
   </el-dialog>
 
@@ -1096,37 +1059,34 @@ onMounted(() => {
   <el-dialog v-model="data.checkContainerModalVisible" title="学习进度" width="1200" center>
     <!-- 章节列表 -->
     <div class="experiment-dialog">
-      <el-empty v-if="data.containerList.length === 0" description="暂无容器信息"/>
+      <el-empty v-if="data.containerList.length === 0" description="暂无容器信息" />
       <el-table v-if="data.containerList.length !== 0" :data="data.studyProgressList" stripe border style="width: 100%">
         <el-table-column label="序号">
           <template v-slot="scope">
             <span>{{ scope.$index+1 }}</span>
           </template>
         </el-table-column>
-        <el-table-column prop="id_number" label="学号"/>
-        <el-table-column prop="user_name" label="姓名"/>
-        <el-table-column prop="image_name" label="镜像"/>
-        <el-table-column prop="container_status" label="状态"/>
+        <el-table-column prop="id_number" label="学号" />
+        <el-table-column prop="user_name" label="姓名" />
+        <el-table-column prop="image_name" label="镜像" />
+        <el-table-column prop="container_status" label="状态" />
         <!-- 右侧固定列 展示详情信息 -->
         <el-table-column fixed="right" label="操作">
           <template v-slot="scope">
-            <el-button v-if="scope.row.container_status != 'delete' && scope.row.container_status != 'exited'" link type="primary" size="small" @click="enterContainer(scope.row.addr)">进入容器</el-button>
-            <el-button v-if="scope.row.container_status != 'exited' && scope.row.container_status != 'delete'" link type="primary" size="small" @click="ceaseContainer(scope.row.id)">停止容器</el-button>
-            <el-button v-if="scope.row.container_status == 'exited' && scope.row.container_status != 'delete'" link type="primary" size="small" @click="launchContainer(scope.row.id)">启动容器</el-button>
-            <el-button v-if="scope.row.container_status != 'delete'" link type="primary" size="small" @click="removeContainer(scope.row.id)">删除容器</el-button>
+            <el-button v-if="scope.row.container_status != 'delete' && scope.row.container_status != 'exited'" link
+              type="primary" size="small" @click="enterContainer(scope.row.addr)">进入容器</el-button>
+            <el-button v-if="scope.row.container_status != 'exited' && scope.row.container_status != 'delete'" link
+              type="primary" size="small" @click="ceaseContainer(scope.row.id)">停止容器</el-button>
+            <el-button v-if="scope.row.container_status == 'exited' && scope.row.container_status != 'delete'" link
+              type="primary" size="small" @click="launchContainer(scope.row.id)">启动容器</el-button>
+            <el-button v-if="scope.row.container_status != 'delete'" link type="primary" size="small"
+              @click="removeContainer(scope.row.id)">删除容器</el-button>
           </template>
         </el-table-column>
       </el-table>
-      <el-pagination
-        v-if="data.containerList.length !== 0"
-        background 
-        layout="prev, pager, next"
-        :total="data.containerTotal" 
-        :page-size="data.containerCount"
-        @size-change="containerSizeChange"
-        @current-change="containerCurrentChange"
-        class="mt-4 mx-auto"
-      />
+      <el-pagination v-if="data.containerList.length !== 0" background layout="prev, pager, next"
+        :total="data.containerTotal" :page-size="data.containerCount" @size-change="containerSizeChange"
+        @current-change="containerCurrentChange" class="mt-4 mx-auto" />
     </div>
   </el-dialog>
 </template>
@@ -1220,6 +1180,9 @@ onMounted(() => {
 }
 .notification-list {
   width: 100%;
+  @apply flex flex-col mt-4 mr-2;
+}
+.apply-list {
   @apply flex flex-col mt-4 mr-2;
 }
 </style>

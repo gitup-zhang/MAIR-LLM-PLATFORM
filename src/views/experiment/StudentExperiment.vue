@@ -53,7 +53,7 @@ const data = reactive({
 // 获取课程列表
 const getCourseList = async () => {
   const res = await getClassList('study', data.page, data.count);
-  data.userClassNumber = res.data.list.length;
+  data.userClassNumber = res.data.total;
   data.courseList = res.data.list;
   data.total = res.data.total;
 }
@@ -259,10 +259,11 @@ onMounted( async () => {
     </el-row>
     <!-- 左侧实验列表 -->
     <div class="experiment-list">
-      <el-row class="experiment-list-container">
+      <el-row class="experiment-list-container" :gutter="12">
         <el-empty v-if="data.courseList.length === 0" description="暂无课程实验信息"/>
-        <el-col v-if="data.courseList.length !== 0" :span="8" v-for="course in data.courseList" :key="course.id">
-            <div class="class-card">
+        <template v-if="data.courseList.length !== 0">
+          <el-col  :span="8" v-for="course in data.courseList" :key="course.id">
+            <el-card :body-style="{ padding: '10px', margin: '5px' }">
               <img src="@/assets/img/course.png" style="width: 100%" />
               <div class="course-card-main">
                 <span class="course-title">班级名称：{{ course.name }}</span>
@@ -274,8 +275,10 @@ onMounted( async () => {
                 <el-button type='primary' @click="openClassNotificationModal(course.id)">班级通知</el-button>
                 <el-button type='primary' @click="openExperimentDetailModal(course.id)">进入课程</el-button>
               </div>
-            </div>
+            </el-card>
           </el-col>
+        </template>
+
         </el-row>
         <!-- 分页 -->
         <el-pagination

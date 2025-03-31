@@ -167,7 +167,7 @@ onMounted(() => {
               <el-table-column prop="college_name" label="教学单位名" min-width="200" show-overflow-tooltip/>
               <el-table-column prop="not_apply_reason" label="申请状态" min-width="200" show-overflow-tooltip/>
               <!-- 右侧固定列 展示详情信息 -->
-              <el-table-column fixed="right" label="操作" min-width="60">
+              <el-table-column fixed="right" label="操作" min-width="200">
                 <template v-slot="scope">
                   <el-button link type="primary" size="small" @click="getCourseDetail(scope.row)">详情</el-button>
                   <el-button v-if="scope.row.can_apply" link type="primary" size="small" @click="applyNewClass(scope.row.id)">班级申请</el-button>

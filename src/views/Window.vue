@@ -40,7 +40,7 @@ const changePage = (pageName: string) => {
 <template>
   <el-row class="experiment-page">
     <!-- 侧边栏 -->
-    <el-col :xs="0" :sm="2" :md="2" :lg="1" :xl="1" class="sider-nav">
+    <el-col :xs="0" :sm="0" :md="1" :lg="1" :xl="1" class="sider-nav">
       <el-scrollbar class="sider-nav-main">
         <!-- Logo -->
         <img src="../assets/img/logo.png" alt="大模型实训平台" class="logo">
@@ -121,7 +121,7 @@ const changePage = (pageName: string) => {
       </el-scrollbar>
     </el-col>
 
-    <el-col :xs="24" :sm="22" :md="22" :lg="23" :xl="23" class="window-main">
+    <el-col :xs="24" :sm="24" :md="23" :lg="23" :xl="23" class="window-main">
       <!-- 主内容区 -->
       <div class="experiment-left-main">
         <RouterView></RouterView>
@@ -135,6 +135,7 @@ const changePage = (pageName: string) => {
 .experiment-page {
   width: 100vw;
   height: 100vh;
+  min-width: 1300px;
   background-color:hsla(221,94%,51%,1);
   background-image:
   radial-gradient(at 12% 50%, hsla(10,21%,87%,0.87) 0px, transparent 50%),

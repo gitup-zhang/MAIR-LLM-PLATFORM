@@ -8,7 +8,7 @@ import { getFileUploadUrl } from '@/apis/file';
 import { getStuStudyProgessDetail, getTeacherStudyProgessDetail } from '@/apis/record';
 import { getClassList, getCourseDetailInfo } from '@/apis/experiment';
 import { getNotificationList, deleteNotification, createNotification } from '@/apis/notification';
-import { getAllContainerList } from '@/apis/container';
+import { getSubcourseContainerList, stopContainer, startContainer, deleteContainer, createContainer } from "@/apis/container";
 
 const userStore = useUserStore();
 const router = useRouter();
@@ -18,6 +18,7 @@ const data = reactive({
   userClassNumber: 0,
   fileUploadUrl: '',
   currentCourseId: 0,
+  currentSubcourseId: 0,
   fileLimit: 1,
   // 是否可以操作
   canOperate: false,
@@ -42,12 +43,16 @@ const data = reactive({
   classNotificationModalVisible: false,
   createNotificationModalVisible: false,
   studyProgressModalVisible: false,
+  experimentContainerModalVisible: false,
   page: 1,
   count: 3,
   total: 0,
   experimentPage: 1,
   experimentCount: 6,
-  experimentTotal: 0
+  experimentTotal: 0,
+  containerPage: 1,
+  containerCount: 6,
+  containerTotal: 0
 })
 
 // 获取课程列表
@@ -65,7 +70,6 @@ const handleCurrentChange = (val: any) => {
   data.page = val;
   getCourseList();
 }
-
 
 // 获取课程详情
 const getCourseDetail = async (courseId:number, page:number, count:number) => {
@@ -230,6 +234,98 @@ const downloadFile = (fileUrl: string) => {
   window.open(fileUrl);
 }
 
+// 检索容器
+const searchExperimentContainer = async () => {
+  const res = await getSubcourseContainerList(data.currentSubcourseId, data.currentExperimentId, data.containerPage, data.containerCount);
+  data.containerList = res.data ? res.data : [];
+  data.containerTotal = res.data.total ? res.data.total : 0;
+}
+// 查看容器
+const openExperimentContainerModal = async (subcourseId: number) => {
+  data.experimentContainerModalVisible = true;
+  data.currentSubcourseId = subcourseId;
+  searchExperimentContainer();
+}
+
+// 创建容器
+const createNewContainer = async (subcourseId: number) => {
+  const res = await createContainer(userStore.id, subcourseId, data.currentExperimentId);
+  if(res.status !== 0){
+    ElMessage({
+    message: res.message,
+    type: 'warning',
+    plain: true,
+  })
+  }
+}
+
+// 停止容器
+const ceaseContainer = async (id: number) => {
+  const res = await stopContainer(id);
+  if(res.status === 0){
+    ElMessage({
+      message: '已停止该容器',
+      type: 'success',
+      plain: true,
+    })
+  } else {
+    ElMessage({
+      message: '该容器无法停止',
+      type: 'error',
+      plain: true,
+    })
+  }
+  searchExperimentContainer();
+}
+// 启动容器
+const launchContainer = async (id: number) => {
+  const res = await startContainer(id);
+  if(res.status === 0){
+    ElMessage({
+      message: '容器启动成功',
+      type: 'success',
+      plain: true,
+    })
+  } else {
+    ElMessage({
+      message: '容器启动失败',
+      type: 'error',
+      plain: true,
+    })
+  }
+  searchExperimentContainer();
+}
+// 删除容器
+const removeContainer = async (id: number) => {
+  const res = await deleteContainer(id);
+  if(res.status === 0){
+    ElMessage({
+      message: '容器删除成功',
+      type: 'success',
+      plain: true,
+    })
+  } else {
+    ElMessage({
+      message: '容器删除失败',
+      type: 'error',
+      plain: true,
+    })
+  }
+  searchExperimentContainer();
+}
+// 进入容器
+const enterContainer = async (address: string) => {
+  window.open(address)
+}
+// 容器分页
+const containerSizeChange = (val: any) => {
+  searchExperimentContainer();
+}
+const containerCurrentChange = (val: any) => {
+  data.containerPage = val;
+  searchExperimentContainer();
+}
+
 onMounted( async () => {
   // 判断用户类型
   if(userStore.roleId === 1){
@@ -260,9 +356,9 @@ onMounted( async () => {
     <!-- 左侧实验列表 -->
     <div class="experiment-list">
       <el-row class="experiment-list-container" :gutter="12">
-        <el-empty v-if="data.courseList.length === 0" description="暂无课程实验信息"/>
+        <el-empty v-if="data.courseList.length === 0" description="暂无课程实验信息" />
         <template v-if="data.courseList.length !== 0">
-          <el-col  :span="8" v-for="course in data.courseList" :key="course.id">
+          <el-col :span="8" v-for="course in data.courseList" :key="course.id">
             <el-card :body-style="{ padding: '10px', margin: '5px' }">
               <img src="@/assets/img/course.png" style="width: 100%" />
               <div class="course-card-main">
@@ -274,34 +370,28 @@ onMounted( async () => {
                 <el-button type='primary'>{{ course.student_num }}课时</el-button>
                 <el-button type='primary' @click="openClassNotificationModal(course.id)">班级通知</el-button>
                 <el-button type='primary' @click="openExperimentDetailModal(course.id)">进入课程</el-button>
+                <el-button type='primary' @click="openExperimentContainerModal(course.id)">查看容器</el-button>
               </div>
             </el-card>
           </el-col>
         </template>
 
-        </el-row>
-        <!-- 分页 -->
-        <el-pagination
-          v-if="data.courseList.length !== 0"
-          background 
-          layout="prev, pager, next"
-          :total="data.total" 
-          :page-size="data.count"
-          @size-change="handleSizeChange"
-          @current-change="handleCurrentChange"
-          class="mt-4 mx-auto"
-        />
+      </el-row>
+      <!-- 分页 -->
+      <el-pagination v-if="data.courseList.length !== 0" background layout="prev, pager, next" :total="data.total"
+        :page-size="data.count" @size-change="handleSizeChange" @current-change="handleCurrentChange"
+        class="mt-4 mx-auto" />
     </div>
   </div>
-  
+
   <!-- 实验详情框 -->
   <el-dialog v-model="data.experimentDetailModalVisible" title="实验详情" width="1200" center>
     <!-- 章节列表 -->
     <div class="experiment-dialog">
       <el-empty v-if="data.subcourseList.length === 0" description="暂无章节信息" />
       <el-table v-else :data="data.subcourseList" stripe border style="width: 100%" max-height="400">
-        <el-table-column prop="name" label="名称" min-width="200" show-overflow-tooltip/>
-        <el-table-column prop="desc" label="描述" min-width="200" show-overflow-tooltip/>
+        <el-table-column prop="name" label="名称" min-width="200" show-overflow-tooltip />
+        <el-table-column prop="desc" label="描述" min-width="200" show-overflow-tooltip />
         <el-table-column label="实验说明" min-width="200" show-overflow-tooltip>
           <template v-slot="scope">
             <el-button link type="primary" size="small" @click="downloadFile(scope.row.files_info[0].url)">
@@ -313,25 +403,22 @@ onMounted( async () => {
         <el-table-column fixed="right" label="操作" min-width="200" show-overflow-tooltip>
           <template v-slot="scope">
             <el-button link type="primary" size="small" @click="openExperiment()">进入实验</el-button>
-            <el-button v-if="userStore.roleId <= 1" link type="primary" size="small"  @click="openStudyProgressModal(scope.row.id)">学习进度</el-button>
-            <el-button link type="primary" size="small" @click="openStuReport(data.currentExperimentId, scope.row.subcourse_id)">学习报告</el-button>
+            <el-button v-if="userStore.roleId <= 1" link type="primary" size="small"
+              @click="openStudyProgressModal(scope.row.id)">学习进度</el-button>
+            <el-button link type="primary" size="small"
+              @click="openStuReport(data.currentExperimentId, scope.row.subcourse_id)">学习报告</el-button>
+            <el-button link type="primary" size="small"
+              @click="createNewContainer(scope.row.subcourse_id)">创建容器</el-button>
           </template>
         </el-table-column>
       </el-table>
       <!-- 分页 -->
-      <el-pagination
-        v-if="data.subcourseList.length !== 0"
-        background 
-        layout="prev, pager, next"
-        :total="data.experimentTotal" 
-        :page-size="data.experimentCount"
-        @size-change="handleExperimentSizeChange"
-        @current-change="handleExperimentCurrentChange"
-        class="mt-4 mx-auto"
-      />
+      <el-pagination v-if="data.subcourseList.length !== 0" background layout="prev, pager, next"
+        :total="data.experimentTotal" :page-size="data.experimentCount" @size-change="handleExperimentSizeChange"
+        @current-change="handleExperimentCurrentChange" class="mt-4 mx-auto" />
     </div>
   </el-dialog>
-    
+
   <!-- 班级通知框 -->
   <el-dialog v-model="data.classNotificationModalVisible" title="班级通知" width="1200" center>
     <div class="experiment-dialog">
@@ -340,21 +427,22 @@ onMounted( async () => {
         <div class="search-title">班级通知</div>
         <el-input v-model="data.inputNotification" style="width: 240px" class="mr-3" placeholder="请输入通知标题" />
         <el-button type="primary" class="mr-3" @click="searchNotification(data.currentExperimentId)">搜索</el-button>
-        <el-button v-if="data.canOperate" type="primary" class="mr-3" @click="openCreateNotificationModal()">创建新通知</el-button>
+        <el-button v-if="data.canOperate" type="primary" class="mr-3"
+          @click="openCreateNotificationModal()">创建新通知</el-button>
       </div>
       <!-- 通知列表 -->
       <div class="notification-list">
         <el-empty v-if="data.notificationList.length === 0" description="暂无通知" />
         <el-table v-else :data="data.notificationList" border style="width: 100%" max-height="400">
-          <el-table-column prop="content" label="通知内容" show-overflow-tooltip min-width="200"/>
+          <el-table-column prop="content" label="通知内容" show-overflow-tooltip min-width="200" />
           <el-table-column prop="file" label="文件" show-overflow-tooltip min-width="200">
             <template v-slot="scope">
               <el-button link type="primary" size="small" @click="downloadFile(scope.row.files_info[0].url)">
-              {{ scope.row.files_info[0].name }}
-            </el-button>
+                {{ scope.row.files_info[0].name }}
+              </el-button>
             </template>
           </el-table-column>
-          <el-table-column prop="create_time" label="发布时间" show-overflow-tooltip min-width="200"/>
+          <el-table-column prop="create_time" label="发布时间" show-overflow-tooltip min-width="200" />
           <el-table-column v-if="data.canOperate" fixed="right" label="操作" show-overflow-tooltip min-width="200">
             <template v-slot="scope">
               <el-button link type="primary" size="small" @click="removeNotification(scope.row.id)">删除</el-button>
@@ -364,7 +452,7 @@ onMounted( async () => {
       </div>
     </div>
   </el-dialog>
-  
+
   <!-- 创建班级通知框 -->
   <el-dialog v-model="data.createNotificationModalVisible" title="创建班级通知" width="600" center>
     <div class="experiment-dialog">
@@ -382,19 +470,10 @@ onMounted( async () => {
         </el-form-item>
         <!-- 文件列表 -->
         <el-form-item>
-          <el-upload 
-            class="upload-demo" 
-            drag 
-            :action="data.fileUploadUrl" 
-            :on-remove="handleRemove"
-            :before-remove="beforeRemove" 
-            :on-exceed="handleExceed" 
-            :on-success="handleSuccess"
-            :before-upload="beforeUpload" 
-            :file-list="data.newNotificationForm.files_info"
-            :limit="data.fileLimit" 
-            multiple
-          >
+          <el-upload class="upload-demo" drag :action="data.fileUploadUrl" :on-remove="handleRemove"
+            :before-remove="beforeRemove" :on-exceed="handleExceed" :on-success="handleSuccess"
+            :before-upload="beforeUpload" :file-list="data.newNotificationForm.files_info" :limit="data.fileLimit"
+            multiple>
             <el-icon class="el-icon--upload"><upload-filled /></el-icon>
             <div class="el-upload__text">
               把文件拖拽到此处<em>点击上传</em>
@@ -410,7 +489,7 @@ onMounted( async () => {
       </el-form>
     </div>
   </el-dialog>
-    
+
   <!-- 学习进度框 -->
   <el-dialog v-model="data.studyProgressModalVisible" title="学习进度" width="1200" center>
     <!-- 学习进度列表 -->
@@ -429,6 +508,45 @@ onMounted( async () => {
           </template>
         </el-table-column>
       </el-table>
+    </div>
+  </el-dialog>
+
+  <!-- 查看容器 -->
+  <el-dialog v-model="data.experimentContainerModalVisible" title="查看容器" width="1200" center>
+    <!-- 所有容器信息展示 -->
+    <div class="experiment-dialog">
+      <el-empty v-if="data.containerList.length === 0" description="暂无容器信息" />
+      <el-table v-if="data.containerList.length !== 0" :data="data.containerList" border style="width: 100%"
+        max-height="400">
+        <el-table-column prop="image_name" label="名称" min-width="200" />
+        <el-table-column prop="user_id_number" label="ID" min-width="200" />
+        <el-table-column prop="user_name" label="用户" min-width="200" />
+        <el-table-column prop="class_name" label="班级" min-width="200" />
+        <el-table-column prop="subcourse_name" label="章节" min-width="200" />
+        <el-table-column prop="status" label="状态" min-width="200" />
+        <el-table-column fixed="right" label="操作" min-width="300">
+          <template v-slot="scope">
+            <el-button v-if="scope.row.status != 'delete' && scope.row.status != 3" link type="primary" size="small"
+              @click="enterContainer(scope.row.addr)">进入容器</el-button>
+            <el-button v-if="scope.row.status != 'delete' && scope.row.status != 3" link type="primary" size="small"
+              @click="ceaseContainer(scope.row.container_id)">停止容器</el-button>
+            <el-button v-if="scope.row.status != 'delete' && scope.row.status == 3" link type="primary" size="small"
+              @click="launchContainer(scope.row.container_id)">启动容器</el-button>
+            <el-button v-if="scope.row.status != 'delete'" link type="primary" size="small"
+              @click="removeContainer(scope.row.container_id)">删除容器</el-button>
+          </template>
+        </el-table-column>
+      </el-table>
+      <!-- 分页 -->
+      <el-pagination 
+        v-if="data.containerList.length !== 0" 
+        background layout="prev, pager, next"
+        :total="data.containerTotal" 
+        :page-size="data.containerCount" 
+        @size-change="containerSizeChange"
+        @current-change="containerCurrentChange" 
+        class="mt-4 mx-auto"
+      />
     </div>
   </el-dialog>
 </template>

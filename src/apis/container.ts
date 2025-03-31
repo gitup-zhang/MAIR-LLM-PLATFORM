@@ -96,3 +96,23 @@ export const deleteContainer = (id: number) => {
     withCredentials: true
   })
 }
+
+export const createContainer = (
+  userId: number,
+  subcourseId: number,
+  classId: number
+) => {
+  return httpInstance({
+    url:'/image/create/',
+    method: "GET",
+    params: {
+      user_id: userId,
+      subcourse_id: subcourseId,
+      class_id: classId
+    },
+    headers: {
+      "content-type": "application/json",
+    },
+    withCredentials: true
+  })
+}

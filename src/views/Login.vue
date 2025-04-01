@@ -16,7 +16,8 @@ const systemStore = useSystemStore();
 // 页面运行相关数据
 const data = reactive({
   registerVisible: false,
-  forgetVisible: false
+  forgetVisible: false,
+  loginLoading: false,
 })
 const { registerVisible, forgetVisible } = toRefs(data)
 
@@ -74,6 +75,8 @@ const checkPass = (confirmPassword: string) => {
 
 // 登录
 const loginSubmit = async () => {
+  // 等待
+  data.loginLoading = true;
   // 检查手机号格式
   if(!validatePhone(loginForm.value.phone)){
     ElMessage({
@@ -105,6 +108,8 @@ const loginSubmit = async () => {
         plain: true,
       })     
     }
+    // 等待
+    data.loginLoading = false;
     if (userData.data) {
       // 保存用户的登录信息
       sessionStorage.userId = userData.data.id;
@@ -206,7 +211,7 @@ const registerSubmit = async () => {
           </el-input>
         </el-form-item>
         <el-form-item>
-            <el-button class="w-[20rem]" color="#0850f8" round @click="loginSubmit">{{$t('login.login')}}</el-button>
+            <el-button class="w-[20rem]" color="#0850f8" round :loading="data.loginLoading" @click="loginSubmit">{{$t('login.login')}}</el-button>
         </el-form-item>
       </el-form>
       <!-- 注册与忘记密码 -->

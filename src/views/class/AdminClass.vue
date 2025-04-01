@@ -96,6 +96,7 @@ const data = reactive({
   createNotificationModalVisible: false,
   classProgressModalVisible: false,
   checkContainerModalVisible: false,
+  courseListLoading: true,
 })
 
 // 搜索班级
@@ -104,6 +105,7 @@ const searchCourse = async () => {
     data.classPage = 1;
   }
   const res = await getCourseList(data.searchText, data.classPage, data.classCount);
+  data.courseListLoading = false;
   data.courseList = res.data.list;
   data.classTotal = res.data.total;
 }
@@ -614,8 +616,8 @@ onMounted(() => {
             <el-button type="primary" class="ml-3" @click="getCourseApplyDetail()">班级申请记录</el-button>
           </div>
           <!-- 所有班级列表展示 -->
-          <div class="course-list">
-            <el-empty v-if="data.courseList.length === 0" description="暂无班级信息" />
+          <div class="course-list" v-loading="data.courseListLoading">
+            <el-empty v-if="data.courseList.length === 0 && !data.courseListLoading" description="暂无班级信息" />
             <el-table v-if="data.courseList.length !== 0" :data="data.courseList" border style="width: 100%"
               max-height="400">
               <el-table-column prop="name" label="班级名" min-width="200" />

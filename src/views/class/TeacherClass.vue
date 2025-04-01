@@ -9,7 +9,7 @@ import { getClassList, getManagedClassList, getTeachedClassList, passClassApply,
 import { getImageInfo, deleteImage, createImage, buildImage } from '@/apis/image'
 import { getNotificationList, deleteNotification, createNotification } from '@/apis/notification';
 import { getTeacherStudyProgessDetail } from '@/apis/record';
-import { getSubcourseContainerList, stopContainer, startContainer, deleteContainer } from '@/apis/container';
+import { getSubcourseContainerList, stopContainer, startContainer, deleteContainer, getContainerList } from '@/apis/container';
 import { useUserStore } from '@/stores/user'
 import { useRouter } from "vue-router"
 
@@ -45,6 +45,7 @@ const data = reactive({
   notificationList: [],
   studyProgressList: [],
   containerList: [],
+  managedContainerList: [] as any,
   // 新表单
   newImageForm: {
     image_id: 0 || '',
@@ -591,6 +592,14 @@ const downloadFile = (fileUrl: string) => {
   window.open(fileUrl);
 }
 
+// 搜索容器
+const searchManagedContainer = async () => {
+  const res = await getContainerList(data.inputContainer, data.containerPage, data.containerCount);
+  console.log('res', res);
+  data.managedContainerList = res.data.list;
+  data.containerTotal = res.data.total;
+}
+
 onMounted(() => {
   // 初始化
   searchCourse();
@@ -730,10 +739,10 @@ onMounted(() => {
       <el-tab-pane label="授课实验" name="fifth" class="experiment-pane">
         <div class="experiment_area">
         <el-empty v-if="data.teachExperimentList.length === 0" description="暂无授课实验信息"/>
-        <el-row class="experiment-list-container">
+        <el-row class="experiment-list-container" gutter="12">
           <el-col v-if="data.teachExperimentList.length !== 0" :span="8" v-for="experiment in data.teachExperimentList" :key="experiment.id">
             <!-- 课程卡片 -->
-            <div class="experiment-card">
+            <el-card>
               <!-- 配图 -->
               <img src="@/assets/img/course.png" style="width: 100%"/>
               <div class="experiment-card-main">
@@ -746,7 +755,7 @@ onMounted(() => {
                   <el-button type='primary' @click="openExperimentDetailModal(experiment.id)">进入课程</el-button>
                 </div>
               </div>
-            </div>
+            </el-card>
           </el-col>
         </el-row>
         <!-- 分页 -->
@@ -797,6 +806,47 @@ onMounted(() => {
             :page-size="data.imageCount"
             @size-change="imageSizeChange"
             @current-change="imageCurrentChange"
+            class="mt-4 mx-auto"
+          />
+        </div>
+      </el-tab-pane>
+      <el-tab-pane label="容器管理" name="seventh" class="experiment-pane">
+        <div class="search-box">
+          <div class="search-title">容器管理</div>
+          <div class="select-exam">
+            <!-- 搜索 -->
+            <el-input v-model="data.inputContainer" class="mr-3 w-[30vw] h-[2rem]" placeholder="请输入容器名称" />
+            <el-button type="primary" class="mr-3 h-[2rem]" @click="searchManagedContainer()">搜索</el-button>
+          </div>
+        </div>
+        <!-- 所有容器信息展示 -->
+        <div class="show-list">
+          <el-empty v-if="data.managedContainerList.length === 0" description="暂无容器信息"/>
+          <el-table v-if="data.managedContainerList.length !== 0" :data="data.containerList" border style="width: 100%" max-height="400">
+            <el-table-column prop="image_name" label="名称" min-width="200"/>
+            <el-table-column prop="user_id_number" label="ID" min-width="200"/>
+            <el-table-column prop="user_name" label="用户" min-width="200"/>
+            <el-table-column prop="class_name" label="班级" min-width="200"/>
+            <el-table-column prop="subcourse_name" label="章节" min-width="200"/>
+            <el-table-column prop="status" label="状态" min-width="200"/>
+            <el-table-column fixed="right" label="操作" min-width="300">
+              <template v-slot="scope">
+                <el-button v-if="scope.row.status != 'delete' && scope.row.status != 3" link type="primary" size="small" @click="enterContainer(scope.row.addr)">进入容器</el-button>
+                <el-button v-if="scope.row.status != 'delete' && scope.row.status != 3" link type="primary" size="small" @click="ceaseContainer(scope.row.container_id)">停止容器</el-button>
+                <el-button v-if="scope.row.status != 'delete' && scope.row.status == 3" link type="primary" size="small" @click="launchContainer(scope.row.container_id)">启动容器</el-button>
+                <el-button v-if="scope.row.status != 'delete'" link type="primary" size="small" @click="removeContainer(scope.row.container_id)">删除容器</el-button>
+              </template>
+            </el-table-column>
+          </el-table>
+          <!-- 分页 -->
+          <el-pagination 
+            v-if="data.containerList.length !== 0"
+            background 
+            layout="prev, pager, next"
+            :total="data.containerTotal" 
+            :page-size="data.containerCount"
+            @size-change="containerSizeChange"
+            @current-change="containerCurrentChange"
             class="mt-4 mx-auto"
           />
         </div>

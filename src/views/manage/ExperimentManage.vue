@@ -49,7 +49,6 @@ const searchImage = async () => {
   const res = await getImageList(data.inputImage, data.imagePage, data.imageCount);
   data.imageList = res.data.list;
   data.imageTotal = res.data.total;
-  console.log(res);
 }
 
 // 获取镜像相关信息

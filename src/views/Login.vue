@@ -2,12 +2,13 @@
 import { reactive, ref, toRefs } from 'vue'
 import { useRouter } from "vue-router"
 import { Iphone, Lock, User, Document } from '@element-plus/icons-vue'
-import { ElMessage } from 'element-plus'
+import { ElMessage, ElMessageBox } from 'element-plus'
 import { getUserData } from '@/apis/login'
 import { registerUserData } from '@/apis/login'
 import { useSystemStore } from '@/stores/system'
 // 引入国际化组件
 import { useI18n } from "vue-i18n";
+import type { Action } from 'element-plus'
 
 const { t } = useI18n();
 const router = useRouter();
@@ -78,65 +79,82 @@ const loginSubmit = async () => {
   // 等待
   data.loginLoading = true;
   // 检查手机号格式
-  if(!validatePhone(loginForm.value.phone)){
+  if(loginForm.value.phone === "" || loginForm.value.password === ""){
+    data.loginLoading = false;
+      ElMessage({
+      message: '请输入登录信息',
+      type: 'warning',
+      plain: true,
+    })
+  } else if(!validatePhone(loginForm.value.phone)){
+    data.loginLoading = false;
     ElMessage({
       message: '手机号码格式错误',
       type: 'warning',
       plain: true,
     })
   } else if (!validatePassword(loginForm.value.password)) {
+    data.loginLoading = false;
     ElMessage({
       message: '密码格式错误，密码由字母与数字组成',
       type: 'warning',
       plain: true,
     })
   } else {
-    const userData = await getUserData(
-      loginForm.value.phone,
-      loginForm.value.password
-    );
-    if (userData.status == 0) {
-      ElMessage({
-        message: '登录成功',
-        type: 'success',
-        plain: true,
-      })
-    } else {
-      ElMessage({
-        message: '登录失败',
-        type: 'error',
-        plain: true,
-      })     
-    }
-    // 等待
-    data.loginLoading = false;
-    if (userData.data) {
-      // 保存用户的登录信息
-      sessionStorage.userId = userData.data.id;
-      sessionStorage.name = userData.data.name;
-      sessionStorage.email = userData.data.email;
-      sessionStorage.phone = userData.data.phone;
-      sessionStorage.userType = userData.data.type;
-      sessionStorage.userName = userData.data.user_name;
-      sessionStorage.idcard = userData.data.idcard;
-      // 设置登录状态
-      localStorage.setItem('loginflag', 'true');
-      // 设置当前页激活
-      if(sessionStorage.userType === '1'){
-        systemStore.currentPage = 'studentMe';
-      } else if (sessionStorage.userType === '2') {
-        systemStore.currentPage = 'teacherMe';
-      } else if (sessionStorage.userType === '3') {
-        systemStore.currentPage = 'adminMe';
+    try{
+      const userData = await getUserData(
+        loginForm.value.phone,
+        loginForm.value.password
+      );
+      if (userData.status == 0) {
+        data.loginLoading = false;
+        ElMessage({
+          message: '登录成功',
+          type: 'success',
+          plain: true,
+        })
+      } else {
+        data.loginLoading = false;
+        ElMessage({
+          message: '登录失败',
+          type: 'error',
+          plain: true,
+        })     
       }
-    }
-    // 跳转到相应页面
-    if(sessionStorage.userType === '3'){
-      router.push('/adminMe');
-    } else if (sessionStorage.userType === '2') {
-      router.push('/teacherMe');
-    } else if (sessionStorage.userType === '1') {
-      router.push('/studentMe');
+      // 等待
+      if (userData.data) {
+        // 保存用户的登录信息
+        sessionStorage.userId = userData.data.id;
+        sessionStorage.name = userData.data.name;
+        sessionStorage.email = userData.data.email;
+        sessionStorage.phone = userData.data.phone;
+        sessionStorage.userType = userData.data.type;
+        sessionStorage.userName = userData.data.user_name;
+        sessionStorage.idcard = userData.data.idcard;
+        // 设置登录状态
+        localStorage.setItem('loginflag', 'true');
+        localStorage.setItem('userId', userData.data.id);
+        // 设置当前页激活
+        if(sessionStorage.userType === '1'){
+          systemStore.currentPage = 'studentMe';
+        } else if (sessionStorage.userType === '2') {
+          systemStore.currentPage = 'teacherMe';
+        } else if (sessionStorage.userType === '3') {
+          systemStore.currentPage = 'adminMe';
+        }
+      }
+      // 跳转到相应页面
+      if(sessionStorage.userType === '3'){
+        router.push('/adminMe');
+      } else if (sessionStorage.userType === '2') {
+        router.push('/teacherMe');
+      } else if (sessionStorage.userType === '1') {
+        router.push('/studentMe');
+      }
+    }catch (e){
+      ElMessageBox.alert('系统正在维护中，请稍后再试！', '消息提醒', {
+        confirmButtonText: '好的',
+      })
     }
   }
 }
@@ -211,7 +229,7 @@ const registerSubmit = async () => {
           </el-input>
         </el-form-item>
         <el-form-item>
-            <el-button class="w-[20rem]" color="#0850f8" round :loading="data.loginLoading" @click="loginSubmit">{{$t('login.login')}}</el-button>
+          <el-button class="w-[20rem]" color="#0850f8" round :loading="data.loginLoading" @click="loginSubmit">{{$t('login.login')}}</el-button>
         </el-form-item>
       </el-form>
       <!-- 注册与忘记密码 -->

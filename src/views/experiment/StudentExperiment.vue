@@ -214,23 +214,17 @@ const openStudyProgressModal = async (id: number) => {
 }
 // 进入实验
 const openExperiment = () => {
-  router.push({
-    path: "/experimentIndex",
-  })
   data.experimentDetailModalVisible = false
-  // const baseUrl = window.location.origin;
-  // const baseUrl = window.location.origin + window.location.pathname;
-  // // 拼接目标页面的路径
-  // const targetUrl = `${baseUrl}/experimentIndex`;
-  // // 在新窗口打开目标页面
-  // window.open(targetUrl, '_blank');
+  if(data.userName === "马小军"){
+    window.open('http://8.155.19.142:30048/lab?');
+  } else {
+    window.open('http://8.155.19.142:30049/lab?');
+  }
   
-  // window.open('http://8.155.19.142:30048/lab?')
 }
 
 // 下载文件
 const downloadFile = (fileUrl: string) => {
-  console.log(fileUrl)
   window.open(fileUrl);
 }
 
@@ -246,19 +240,6 @@ const openExperimentContainerModal = async (subcourseId: number) => {
   data.currentSubcourseId = subcourseId;
   searchExperimentContainer();
 }
-
-// 创建容器
-const createNewContainer = async (subcourseId: number) => {
-  const res = await createContainer(userStore.id, subcourseId, data.currentExperimentId);
-  if(res.status !== 0){
-    ElMessage({
-    message: res.message,
-    type: 'warning',
-    plain: true,
-  })
-  }
-}
-
 // 停止容器
 const ceaseContainer = async (id: number) => {
   const res = await stopContainer(id);
@@ -326,6 +307,24 @@ const containerCurrentChange = (val: any) => {
   searchExperimentContainer();
 }
 
+// 创建容器
+const createNewContainer = async (subcourseId: number) => {
+  const res = await createContainer(userStore.id, subcourseId, data.currentExperimentId);
+  if(res.status !== 0){
+    ElMessage({
+      message: res.message,
+      type: 'warning',
+      plain: true,
+    })
+  } else {
+    ElMessage({
+      message: "创建成功",
+      type: 'success',
+      plain: true,
+    })
+  }
+}
+
 onMounted( async () => {
   // 判断用户类型
   if(userStore.roleId === 1){
@@ -356,7 +355,7 @@ onMounted( async () => {
     <!-- 左侧实验列表 -->
     <div class="experiment-list">
       <el-row class="experiment-list-container" :gutter="12">
-        <el-empty v-if="data.courseList.length === 0" description="暂无课程实验信息" />
+        <el-empty v-if="data.courseList.length === 0" description="暂无课程实验信息"/>
         <template v-if="data.courseList.length !== 0">
           <el-col :span="8" v-for="course in data.courseList" :key="course.id">
             <el-card :body-style="{ padding: '10px', margin: '5px' }">
@@ -367,31 +366,37 @@ onMounted( async () => {
                 <span class="course-title">上课地点：{{ course.college_name }}</span>
               </div>
               <div class="course-card-btn">
-                <el-button type='primary'>{{ course.student_num }}课时</el-button>
+                <el-button type='primary'>{{ course.total_time }}课时</el-button>
                 <el-button type='primary' @click="openClassNotificationModal(course.id)">班级通知</el-button>
                 <el-button type='primary' @click="openExperimentDetailModal(course.id)">进入课程</el-button>
-                <el-button type='primary' @click="openExperimentContainerModal(course.id)">查看容器</el-button>
+                <!-- <el-button type='primary' @click="openExperimentContainerModal(course.id)">查看容器</el-button> -->
               </div>
             </el-card>
           </el-col>
         </template>
-
-      </el-row>
-      <!-- 分页 -->
-      <el-pagination v-if="data.courseList.length !== 0" background layout="prev, pager, next" :total="data.total"
-        :page-size="data.count" @size-change="handleSizeChange" @current-change="handleCurrentChange"
-        class="mt-4 mx-auto" />
+        </el-row>
+        <!-- 分页 -->
+        <el-pagination
+          v-if="data.courseList.length !== 0"
+          background 
+          layout="prev, pager, next"
+          :total="data.total" 
+          :page-size="data.count"
+          @size-change="handleSizeChange"
+          @current-change="handleCurrentChange"
+          class="mt-4 mx-auto"
+        />
     </div>
   </div>
-
+  
   <!-- 实验详情框 -->
   <el-dialog v-model="data.experimentDetailModalVisible" title="实验详情" width="1200" center>
     <!-- 章节列表 -->
     <div class="experiment-dialog">
       <el-empty v-if="data.subcourseList.length === 0" description="暂无章节信息" />
       <el-table v-else :data="data.subcourseList" stripe border style="width: 100%" max-height="400">
-        <el-table-column prop="name" label="名称" min-width="200" show-overflow-tooltip />
-        <el-table-column prop="desc" label="描述" min-width="200" show-overflow-tooltip />
+        <el-table-column prop="name" label="名称" min-width="200" show-overflow-tooltip/>
+        <el-table-column prop="desc" label="描述" min-width="200" show-overflow-tooltip/>
         <el-table-column label="实验说明" min-width="200" show-overflow-tooltip>
           <template v-slot="scope">
             <el-button link type="primary" size="small" @click="downloadFile(scope.row.files_info[0].url)">
@@ -402,23 +407,28 @@ onMounted( async () => {
         <!-- 右侧固定列 展示详情信息 -->
         <el-table-column fixed="right" label="操作" min-width="200" show-overflow-tooltip>
           <template v-slot="scope">
-            <el-button link type="primary" size="small" @click="openExperiment()">进入实验</el-button>
-            <el-button v-if="userStore.roleId <= 1" link type="primary" size="small"
-              @click="openStudyProgressModal(scope.row.id)">学习进度</el-button>
+            <el-button v-if="!scope.row.name.startsWith('大数据')" link type="primary" size="small" @click="openExperiment()">进入实验</el-button>
+            <el-button v-if="userStore.roleId <= 1" link type="primary" size="small"  @click="openStudyProgressModal(scope.row.id)">学习进度</el-button>
+            <el-button link type="primary" size="small" @click="openStuReport(data.currentExperimentId, scope.row.subcourse_id)">学习报告</el-button>
             <el-button link type="primary" size="small"
-              @click="openStuReport(data.currentExperimentId, scope.row.subcourse_id)">学习报告</el-button>
-            <el-button link type="primary" size="small"
-              @click="createNewContainer(scope.row.subcourse_id)">创建容器</el-button>
+            @click="createNewContainer(scope.row.subcourse_id)">创建容器</el-button>
           </template>
         </el-table-column>
       </el-table>
       <!-- 分页 -->
-      <el-pagination v-if="data.subcourseList.length !== 0" background layout="prev, pager, next"
-        :total="data.experimentTotal" :page-size="data.experimentCount" @size-change="handleExperimentSizeChange"
-        @current-change="handleExperimentCurrentChange" class="mt-4 mx-auto" />
+      <el-pagination
+        v-if="data.subcourseList.length !== 0"
+        background 
+        layout="prev, pager, next"
+        :total="data.experimentTotal" 
+        :page-size="data.experimentCount"
+        @size-change="handleExperimentSizeChange"
+        @current-change="handleExperimentCurrentChange"
+        class="mt-4 mx-auto"
+      />
     </div>
   </el-dialog>
-
+    
   <!-- 班级通知框 -->
   <el-dialog v-model="data.classNotificationModalVisible" title="班级通知" width="1200" center>
     <div class="experiment-dialog">
@@ -427,22 +437,21 @@ onMounted( async () => {
         <div class="search-title">班级通知</div>
         <el-input v-model="data.inputNotification" style="width: 240px" class="mr-3" placeholder="请输入通知标题" />
         <el-button type="primary" class="mr-3" @click="searchNotification(data.currentExperimentId)">搜索</el-button>
-        <el-button v-if="data.canOperate" type="primary" class="mr-3"
-          @click="openCreateNotificationModal()">创建新通知</el-button>
+        <el-button v-if="data.canOperate" type="primary" class="mr-3" @click="openCreateNotificationModal()">创建新通知</el-button>
       </div>
       <!-- 通知列表 -->
       <div class="notification-list">
         <el-empty v-if="data.notificationList.length === 0" description="暂无通知" />
         <el-table v-else :data="data.notificationList" border style="width: 100%" max-height="400">
-          <el-table-column prop="content" label="通知内容" show-overflow-tooltip min-width="200" />
+          <el-table-column prop="content" label="通知内容" show-overflow-tooltip min-width="200"/>
           <el-table-column prop="file" label="文件" show-overflow-tooltip min-width="200">
             <template v-slot="scope">
               <el-button link type="primary" size="small" @click="downloadFile(scope.row.files_info[0].url)">
-                {{ scope.row.files_info[0].name }}
-              </el-button>
+              {{ scope.row.files_info[0].name }}
+            </el-button>
             </template>
           </el-table-column>
-          <el-table-column prop="create_time" label="发布时间" show-overflow-tooltip min-width="200" />
+          <el-table-column prop="create_time" label="发布时间" show-overflow-tooltip min-width="200"/>
           <el-table-column v-if="data.canOperate" fixed="right" label="操作" show-overflow-tooltip min-width="200">
             <template v-slot="scope">
               <el-button link type="primary" size="small" @click="removeNotification(scope.row.id)">删除</el-button>
@@ -452,7 +461,7 @@ onMounted( async () => {
       </div>
     </div>
   </el-dialog>
-
+  
   <!-- 创建班级通知框 -->
   <el-dialog v-model="data.createNotificationModalVisible" title="创建班级通知" width="600" center>
     <div class="experiment-dialog">
@@ -470,10 +479,19 @@ onMounted( async () => {
         </el-form-item>
         <!-- 文件列表 -->
         <el-form-item>
-          <el-upload class="upload-demo" drag :action="data.fileUploadUrl" :on-remove="handleRemove"
-            :before-remove="beforeRemove" :on-exceed="handleExceed" :on-success="handleSuccess"
-            :before-upload="beforeUpload" :file-list="data.newNotificationForm.files_info" :limit="data.fileLimit"
-            multiple>
+          <el-upload 
+            class="upload-demo" 
+            drag 
+            :action="data.fileUploadUrl" 
+            :on-remove="handleRemove"
+            :before-remove="beforeRemove" 
+            :on-exceed="handleExceed" 
+            :on-success="handleSuccess"
+            :before-upload="beforeUpload" 
+            :file-list="data.newNotificationForm.files_info"
+            :limit="data.fileLimit" 
+            multiple
+          >
             <el-icon class="el-icon--upload"><upload-filled /></el-icon>
             <div class="el-upload__text">
               把文件拖拽到此处<em>点击上传</em>
@@ -489,7 +507,7 @@ onMounted( async () => {
       </el-form>
     </div>
   </el-dialog>
-
+    
   <!-- 学习进度框 -->
   <el-dialog v-model="data.studyProgressModalVisible" title="学习进度" width="1200" center>
     <!-- 学习进度列表 -->
@@ -548,7 +566,7 @@ onMounted( async () => {
         class="mt-4 mx-auto"
       />
     </div>
-  </el-dialog>
+  </el-dialog> 
 </template>
 
 <style scoped>
@@ -592,7 +610,7 @@ onMounted( async () => {
 /* 卡片样式 */
 .class-card {
   width: 90%;
-  height: 400px;
+  /* height: 40vh; */
   margin-top: 2rem;
   border-radius: 10px;
   overflow: hidden;

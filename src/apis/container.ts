@@ -116,3 +116,20 @@ export const createContainer = (
     withCredentials: true
   })
 }
+
+// 获取容器列表
+export const getTeacherContainerList = (searchText: string, page: number, count: number) => {
+  return httpInstance({
+    url:'/container/list/',
+    method: "GET",
+    params: {
+      name: searchText,
+      page: page,
+      count: count
+    },
+    headers: {
+      "content-type": "application/json",
+    },
+    withCredentials: true
+  })
+}

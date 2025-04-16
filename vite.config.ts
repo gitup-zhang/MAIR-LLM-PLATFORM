@@ -25,6 +25,11 @@ export default defineConfig({
         target: 'http://8.155.19.142:30027/olexp_server',
         changeOrigin: false,
         rewrite: (path) => path.replace(/^\/system/, '')
+      },
+      '/file': {
+        target: 'https://mair-1.oss-cn-beijing.aliyuncs.com',
+        changeOrigin: false,
+        rewrite: (path) => path.replace(/^\/pdf/, '')
       }
     }
   }

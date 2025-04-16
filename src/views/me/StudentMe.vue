@@ -7,6 +7,7 @@ import { useUserStore } from '@/stores/user'
 import { useSystemStore } from '@/stores/system'
 import { getUserInfo, editUserInfo, submitModifyPassword, applyRole } from '@/apis/user'
 import { getRoleApplyList, cancelRoleApply } from '@/apis/role';
+import { getLocationOption } from '@/apis/location';
 
 const userStore = useUserStore();
 const systemStore = useSystemStore();
@@ -15,6 +16,7 @@ const data = reactive({
   newType: userStore.roleId,
   // 申请记录
   applicationList: [],
+  locationOptions: [],
   // 用户修改密码
   modifyPassword: {
     oldPassword: '',
@@ -22,8 +24,14 @@ const data = reactive({
     checkPassword: ''
   },
   page: 1,
-  count: 5,
-  total: 0
+  count: 2,
+  total: 0,
+  userInfoEditVisible: false,
+  applicationListLoading: true,
+  userInfoEditLoading: false,
+  submitPasswordModifyLoading: false,
+  submitRoleApplyLoading: false,
+  removeRoleApplyLoading: false,
 })
 const { newType, applicationList, page, count, total } = toRefs(data)
 
@@ -74,7 +82,6 @@ const userRoleOptions = ref([
   }
 ])
 
-
 // 获取用户类型
 const getUserType = (userType: number) => {
   if (!userType){
@@ -119,6 +126,7 @@ const getAndStoreUserData = async () => {
 }
 // 提交修改
 const userInfoEditSubmit = async () => {
+  data.userInfoEditLoading = true;
   const res = await editUserInfo(userInfoForm, userStore.id);
   if(res.status === 0){
     ElMessage({
@@ -133,21 +141,23 @@ const userInfoEditSubmit = async () => {
       plain: true,
     })
   }
+  data.userInfoEditLoading = false;
   // 关闭模态框
-  systemStore.userInfoEditVisible = false
+  data.userInfoEditVisible = false;
   // 刷新数据
   getAndStoreUserData()
 }
-
 
 // 获取角色申请记录列表
 const getUserApplyRoleList = async () => {
   const res = await getRoleApplyList(sessionStorage.userId, data.page, data.count);
   data.applicationList = res.data.list;
   data.total = res.data.total;
+  data.applicationListLoading = false;
 }
 // 提交角色修改
 const submitRoleApply = async () => {
+  data.submitRoleApplyLoading = true;
   const res = await applyRole(data.newType)
   if(res.status === 0){
     ElMessage({
@@ -158,14 +168,16 @@ const submitRoleApply = async () => {
   } else {
     ElMessage({
       message: '申请失败',
-      type: 'warning',
+      type: 'error',
       plain: true,
     })
   }
+  data.submitRoleApplyLoading = false;
   getUserApplyRoleList();
 }
 // 取消角色修改
 const removeRoleApply = async (id: number) => {
+  data.removeRoleApplyLoading = true;
   const res = await cancelRoleApply(id);
   if(res.status === 0){
     ElMessage({
@@ -176,10 +188,11 @@ const removeRoleApply = async (id: number) => {
   } else {
     ElMessage({
       message: '角色申请取消失败',
-      type: 'warning',
+      type: 'error',
       plain: true,
     })
   }
+  data.removeRoleApplyLoading = false;
   getUserApplyRoleList();
 }
 // 分页
@@ -189,6 +202,11 @@ const handleSizeChange = (val: any) => {
 const handleCurrentChange = (val: any) => {
   data.page = val;
   getUserApplyRoleList();
+}
+
+// 修改用户信息框
+const openUserInfoEditModal = () => {
+  data.userInfoEditVisible = true;
 }
 
 // 检查密码格式
@@ -210,6 +228,7 @@ const checkPassword = (newPassword: string, confirmPassword: string) => {
 }
 // 提交密码修改
 const submitPasswordModify = async () => {
+  data.submitPasswordModifyLoading = true;
   // 检查非空
   if(data.modifyPassword.oldPassword === '' || data.modifyPassword.newPassowrd === '' || data.modifyPassword.checkPassword ===''){
     ElMessage({
@@ -248,39 +267,30 @@ const submitPasswordModify = async () => {
     } else {
       ElMessage({
         message: '密码修改失败',
-        type: 'warning',
+        type: 'error',
         plain: true,
       })
     }
   }
+  data.submitPasswordModifyLoading = false;
 }
 
-onMounted(() => {
+onMounted(async() => {
   // 挂载用户数据
   getAndStoreUserData();
   // 获取角色申请记录列表
   getUserApplyRoleList();
+    // 挂载地址信息
+  const res = await getLocationOption();
+  data.locationOptions = res.data;
 })
 </script>
 
 <template>
   <div class="me-page">
     <div class="me-container">
-      <!-- 顶部轮播图 -->
-      <el-carousel indicator-position="outside">
-        <el-carousel-item>
-          <img src="../../assets/img/carousel/carousel-1.png" alt="大模型实训平台">
-        </el-carousel-item>
-        <el-carousel-item>
-          <img src="../../assets/img/carousel/carousel-2.png" alt="大模型实训平台">
-        </el-carousel-item>
-        <el-carousel-item>
-          <img src="../../assets/img/carousel/carousel-3.png" alt="大模型实训平台">
-        </el-carousel-item>
-        <el-carousel-item>
-          <img src="../../assets/img/carousel/carousel-4.png" alt="大模型实训平台">
-        </el-carousel-item>
-      </el-carousel>
+      <!-- 顶部图片 -->
+      <img src="../../assets/img/carousel/carousel-1.png" class="banner" alt="大模型实训平台">
       <!-- 个人信息展示 -->
       <el-descriptions border>
         <el-descriptions-item
@@ -294,16 +304,12 @@ onMounted(() => {
             src="https://cube.elemecdn.com/0/88/03b0d39583f48206768a7534e55bcpng.png"
             @click="systemStore.openUserAvatarEditModal()"
           />
-          <el-button type="primary" @click="systemStore.openUserInfoEditModal()">修改我的信息</el-button>
+          <el-button type="primary" @click="openUserInfoEditModal()">修改我的信息</el-button>
         </el-descriptions-item>
         <el-descriptions-item label="用户名">{{ userStore.nickname }}</el-descriptions-item>
         <el-descriptions-item label="手机号">{{ userStore.phone }}</el-descriptions-item>
         <el-descriptions-item label="邮箱">{{ userStore.email }}</el-descriptions-item>
         <el-descriptions-item label="学号">{{ userStore.stuId }}</el-descriptions-item>
-        <el-descriptions-item label="标签">
-          <el-tag size="small">北京邮电大学</el-tag>
-        </el-descriptions-item>
-        <el-descriptions-item label="地址">西土城路10号, 海淀区, 北京市</el-descriptions-item>
       </el-descriptions>
       <el-row class="role-apply">
         <!-- 申请新角色 -->
@@ -318,7 +324,7 @@ onMounted(() => {
               :disabled="item.disabled"
             />
           </el-select>
-          <el-button type="primary" class="ml-2" @click="submitRoleApply()">申请</el-button>
+          <el-button type="primary" class="ml-2" @click="submitRoleApply()" :loading="data.submitRoleApplyLoading">申请</el-button>
         </el-col>
         <!-- 密码修改 -->
         <el-col :span="16">
@@ -358,23 +364,23 @@ onMounted(() => {
             </el-form-item>
             <!-- 确认按钮 -->
             <el-form-item>
-              <el-button class="w-[5rem]" type="primary" @click="submitPasswordModify()">确认修改</el-button>
+              <el-button class="w-[5rem]" type="primary" @click="submitPasswordModify()" :loading="data.submitPasswordModifyLoading">确认修改</el-button>
             </el-form-item>
           </el-form>
         </el-col>
       </el-row>
       <!-- 角色申请记录 -->
-      <div class="edit-dialog">
-        <el-empty v-if="data.applicationList.length === 0" description="暂无角色申请记录" />
+      <div class="apply-list" v-loading="data.applicationListLoading">
+        <el-empty v-if="data.applicationList.length === 0 && !data.applicationListLoading" description="暂无角色申请记录" />
         <el-table v-if="data.applicationList.length !== 0" :data="data.applicationList" border style="width: 100%">
-          <el-table-column prop="user_id_number" label="号码" />
-          <el-table-column prop="user_name" label="昵称"/>
-          <el-table-column prop="new_type_desc" label="申请角色"/>
+          <el-table-column prop="user_id_number" label="学号" />
+          <el-table-column prop="user_name" label="姓名"/>
+          <el-table-column prop="new_type_desc" label="申请角色类型"/>
           <el-table-column prop="create_time" label="时间"/>
           <el-table-column prop="status_desc" label="审核状态"/>
           <el-table-column fixed="right" label="操作">
             <template v-slot="scope">
-              <el-button v-if="scope.row.status === 1" link type="primary" size="small" @click="removeRoleApply(scope.row.id)">取消</el-button>
+              <el-button v-if="scope.row.status === 1" link type="primary" size="small" @click="removeRoleApply(scope.row.id)" :loading="data.removeRoleApplyLoading">取消</el-button>
             </template>
           </el-table-column>
         </el-table>
@@ -394,11 +400,11 @@ onMounted(() => {
   </div>
 
   <!-- 修改个人信息框 -->
-  <el-dialog v-model="systemStore.userInfoEditVisible" title="修改个人信息" width="400" center>
+  <el-dialog v-model="data.userInfoEditVisible" title="修改我的信息" width="400" center>
     <div class="edit-dialog">
-      <el-form :model="userInfoForm" class="w-[20rem]">
+      <el-form :model="userInfoForm" label-width="auto"  class="w-[20rem]">
         <!-- 昵称 -->
-        <el-form-item>
+        <el-form-item label="昵称">
           <el-input v-model="userInfoForm.name" placeholder="请输入昵称">
           <!-- 图标 -->
             <template #prefix>
@@ -409,7 +415,7 @@ onMounted(() => {
           </el-input>
         </el-form-item>
         <!-- 学号 -->
-        <el-form-item>
+        <el-form-item label="学号">
           <el-input v-model="userInfoForm.id_number" placeholder="请输入学号" disabled>
           <!-- 图标 -->
             <template #prefix>
@@ -420,7 +426,7 @@ onMounted(() => {
           </el-input>
         </el-form-item>
         <!-- 邮箱 -->
-        <el-form-item>
+        <el-form-item label="邮箱">
           <el-input v-model="userInfoForm.email" placeholder="请输入邮箱">
             <!-- 图标 -->
             <template #prefix>
@@ -431,8 +437,8 @@ onMounted(() => {
           </el-input>
         </el-form-item>
         <!-- 手机号 -->
-        <el-form-item>
-          <el-input v-model="userInfoForm.phone" placeholder="请输入手机号">
+        <el-form-item label="手机号">
+          <el-input v-model="userInfoForm.phone" placeholder="请输入手机号" disabled>
             <!-- 图标 -->
             <template #prefix>
               <el-icon color="#409efc" class="no-inherit">
@@ -442,8 +448,8 @@ onMounted(() => {
           </el-input>
         </el-form-item>
         <!-- 角色 -->
-        <el-form-item>
-          <el-input v-model="userInfoForm.type" placeholder="角色" disabled>
+        <el-form-item label="角色">
+          <el-input v-model="userStore.role" placeholder="角色" disabled>
             <!-- 图标 -->
             <template #prefix>
               <el-icon color="#409efc" class="no-inherit">
@@ -453,7 +459,7 @@ onMounted(() => {
           </el-input>
         </el-form-item>
         <!-- 真实姓名 -->
-        <el-form-item>
+        <el-form-item label="姓名">
           <el-input v-model="userInfoForm.user_name" placeholder="请输入真实姓名">
             <!-- 图标 -->
             <template #prefix>
@@ -464,18 +470,18 @@ onMounted(() => {
           </el-input>
         </el-form-item>
         <!-- 所属地区 -->
-        <el-form-item>
-          <el-input v-model="userInfoForm.area_id" placeholder="请输入您的所属地区">
+        <el-form-item label="地区">
+          <el-cascader v-model="userInfoForm.area_id" :options="data.locationOptions" style="width:100%" clearable placeholder="请选择所属地区">
             <!-- 图标 -->
             <template #prefix>
               <el-icon color="#409efc" class="no-inherit">
                 <Location />
               </el-icon>
             </template>
-          </el-input>
+          </el-cascader>
         </el-form-item>
-        <!-- 所属地区 -->
-        <el-form-item>
+        <!-- 身份证号 -->
+        <el-form-item label="身份">
           <el-input v-model="userInfoForm.idcard" placeholder="请输入您的身份证号">
             <!-- 图标 -->
             <template #prefix>
@@ -487,7 +493,7 @@ onMounted(() => {
         </el-form-item>
         <!-- 注册按钮 -->
         <el-form-item>
-          <el-button class="w-[20rem]" type="primary" @click="userInfoEditSubmit()">提交修改</el-button>
+          <el-button class="w-[20rem]" type="primary" @click="userInfoEditSubmit()" :loading="data.userInfoEditLoading">提交修改</el-button>
         </el-form-item>
       </el-form>
     </div>
@@ -503,9 +509,16 @@ onMounted(() => {
   @apply bg-light-50 pr-1 rounded-md;
 }
 .me-container {
-  width: 100%;
-  height: 100%;
   @apply  p-3 rounded-md;
+}
+/* 图片样式 */
+.banner {
+  width: 100%;
+  height: 10%;
+  @apply rounded-md mb-1;
+}
+.apply-list {
+  @apply flex flex-col justify-center;
 }
 .role-apply {
   width: 100%;
@@ -515,4 +528,5 @@ onMounted(() => {
 .edit-dialog {
   @apply flex items-center justify-center flex-col;
 }
+
 </style>

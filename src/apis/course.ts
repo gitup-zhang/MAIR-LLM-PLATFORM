@@ -51,6 +51,22 @@ export const getEnrolledClassList = (page: number, count: number) => {
     })
   }
 
+  // 查看班级申请记录
+export const getClassApplyRecord = (userId: number, page: number, count: number) => {
+  return httpInstance({
+    url:'/course_application/',
+    method: "GET",
+    params: {
+      id_number: userId,
+      page: page,
+      count: count
+    },
+    headers: {
+      "content-type": "application/json",
+    },
+    withCredentials: true
+  })
+}
   // 删除申请
   export const deleteCourseApply = (applyId: number) => {
     return httpInstance({

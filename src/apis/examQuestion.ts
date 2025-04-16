@@ -6,7 +6,7 @@ export const getExamQuestionList = (searchText: string, page: number, count: num
     url:'/question/',
     method: "GET",
     params: {
-      desc: searchText,
+      content: searchText,
       page: page,
       count: count
     },

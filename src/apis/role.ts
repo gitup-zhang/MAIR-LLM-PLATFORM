@@ -1,7 +1,7 @@
 import { httpInstance } from '@/utils/http-util'
 // 获取用户角色申请列表
 export const getRoleApplyList = (
-  userId: string,
+  idNumber: string,
   page: number,
   count: number
 ) => {
@@ -9,7 +9,28 @@ export const getRoleApplyList = (
     url: "/user_application/",
     method: "GET",
     params: {
-      user_id: userId,
+      user_id: idNumber,
+      page: page,
+      count: count,
+    },
+    headers: {
+      "content-type": "application/json",
+    },
+    withCredentials: true,
+  });
+};
+
+// 获取用户角色申请列表
+export const getAllRoleApplyList = (
+  idNumber: string,
+  page: number,
+  count: number
+) => {
+  return httpInstance({
+    url: "/user_application/",
+    method: "GET",
+    params: {
+      id_number: idNumber,
       page: page,
       count: count,
     },

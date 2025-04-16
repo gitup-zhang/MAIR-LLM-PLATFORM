@@ -2,7 +2,7 @@
 import { onMounted, reactive } from 'vue';
 import { ElMessage } from 'element-plus';
 import { Document, ChatDotRound, Connection, AlarmClock, UploadFilled, Notebook } from '@element-plus/icons-vue'
-import { getChapterList, createChapter, getChapterDetail, modifyChapter, getChapterOption } from '@/apis/chapter';
+import { getChapterList, createChapter, getChapterDetail, modifyChapter, getChapterOption, deleteFile } from '@/apis/chapter';
 import { getCourseInfoList, createCourse, getCourseDetail, modifyCourse, getCourseChapterList, deleteCourseChapter, addChapter } from '@/apis/course';
 import { getImageOptions } from '@/apis/image'
 
@@ -11,7 +11,7 @@ const data = reactive({
   // 选中
   currentChapterId: 0,
   currentCourseId: 0,
-  currentCourseChapterId: 0,
+  currentCourseChapterId: undefined,
   // 章节名称输入
   inputChapter: '',
   inputCourse: '',
@@ -25,7 +25,7 @@ const data = reactive({
     desc: '',
     files_info: [] as any,
     supplement_files_info: [] as any,
-    image_id: 0,
+    image_id: undefined,
     use_time: 0
   },
   newCourseForm: {
@@ -60,34 +60,49 @@ const data = reactive({
   chapterOptions: [] as any,
   // 分页
   chapterPage: 1,
-  chapterCount: 10,
+  chapterCount: 6,
   chapterTotal: 0,
   coursePage: 1,
-  courseCount: 10,
+  courseCount: 6,
   courseTotal: 0,
   courseChapterPage: 1,
-  courseChapterCount: 10,
+  courseChapterCount: 6,
   courseChapterTotal: 0,
   // 文件上传
-  fileUploadUrl: '',
-  fileLimit: 1
+  fileUploadUrl: 'http://8.155.19.142:30027/olexp_server/file/',
+  fileLimit: 1,
+  chapterListLoading: true,
+  searchChapterLoading: false,
+  searchCourseLoading: false,
+  submitChapterCreateLoading: false,
+  submitChapterModifyLoading: false,
+  submitCourseCreateLoading: false,
+  submitCourseModifyLoading: false,
+  addCourseChapterLoading: false,
+  removeCourseChapterLoading: false,
 })
 
 // 搜索章节
 const searchChapter = async () => {
+  data.searchChapterLoading = true;
+  if(data.inputChapter.length > 0){
+    data.chapterPage = 1;
+  }
   const res = await getChapterList(data.inputChapter, data.chapterPage, data.chapterCount);
+  data.chapterListLoading = false;
   data.chapterList = res.data.list;
   data.chapterTotal = res.data.total;
+  data.searchChapterLoading = false;
 }
 // 打开章节创建模态框
 const openChapterCreateModal = async () => {
   data.createChapterModalVisible = true;
   const res = await getImageOptions();
   data.imageOptions = res.data.list;
-  data.newChapterForm.image_id = data.imageOptions[0]['id'];
 }
 // 提交章节创建
 const submitChapterCreate = async () => {
+  data.submitChapterCreateLoading = true;
   const res = await createChapter(data.newChapterForm);
   if(res.status === 0){
     ElMessage({
@@ -98,19 +113,26 @@ const submitChapterCreate = async () => {
   } else {
     ElMessage({
       message: '新章节创建失败',
-      type: 'warning',
+      type: 'error',
       plain: true,
     })
   }
+  data.submitChapterCreateLoading = false;
   data.createChapterModalVisible = false;
   searchChapter();
 }
 // 文件移除时的钩子
-const handleRemove = (uploadFile: any, uploadFiles: any) => {
+const handleRemove = async (uploadFile: any, uploadFiles: any) => {
   if(!uploadFile.file_id){
     return;
   }
-  data.newChapterForm.files_info = [];
+  const res = await deleteFile(data.newChapterForm.files_info.name);
+  for (let i = 0, len = data.newChapterForm.files_info.length; i < len; i++) {
+    if (data.newChapterForm.files_info[i].url === uploadFile.url) {
+      data.newChapterForm.files_info.splice(i, 1)
+      break
+    }
+  }
 }
 // 删除文件之前的钩子，参数为上传的文件和文件列表
 const beforeRemove = (uploadFile: any, uploadFiles: any) => {
@@ -130,23 +152,22 @@ const handleSuccess = (res: any, file: any) => {
     {
       name: res.data.name,
       url: res.data.url,
-      file_id: res.data.file_id,
-      group_name: res.data.group_name
+      file_id: res.data.file_id
     }
   ]
 }
 // 上传文件之前的钩子
 const beforeUpload = (rawFile: any) => {
   // 检查文件类型
-  const checkFileType = rawFile.name.substring(rawFile.name.lastIndexOf('.') + 1) === 'pdf';
-  if(!checkFileType) {
-    ElMessage({
-      message: '只接收PDF类型的文件',
-      type: 'warning',
-      plain: true,
-    })
-    return false;
-  }
+  // const checkFileType = rawFile.name.substring(rawFile.name.lastIndexOf('.') + 1) === 'pdf' || rawFile.name.substring(rawFile.name.lastIndexOf('.') + 1) === 'pptx';
+  // if(!checkFileType) {
+  //   ElMessage({
+  //     message: '只接收PDF或PPTX类型的文件',
+  //     type: 'warning',
+  //     plain: true,
+  //   })
+  //   return false;
+  // }
   const isLimit20MB = rawFile.size / 1024 / 1024 < 20;
   if(!isLimit20MB){
     ElMessage({
@@ -163,29 +184,33 @@ const handleRemoveSupplement = (uploadFile: any, uploadFiles: any) => {
   if(!uploadFile.file_id){
     return;
   }
-  data.newChapterForm.supplement_files_info = [];
+  for(let i = 0, len = data.newChapterForm.supplement_files_info.length; i < len; i++) {
+    if (data.newChapterForm.supplement_files_info[i].url === uploadFile.url) {
+      data.newChapterForm.supplement_files_info.splice(i, 1);
+      break;
+    }
+  }
 }
 // 辅助文件上传成功时的钩子
 const handleSuccessSupplement = (res: any, file: any) => {
   data.newChapterForm.supplement_files_info = [{
     name: res.data.name,
     url: res.data.url,
-    file_id: res.data.file_id,
-    group_name: res.data.group_name
+    file_id: res.data.file_id
   }]
 }
 // 上传文件之前的钩子
 const beforeUploadSupplement = (rawFile: any) => {
   // 检查文件类型
-  const checkFileType = rawFile.name.substring(rawFile.name.lastIndexOf('.') + 1) === 'pdf';
-  if(!checkFileType) {
-    ElMessage({
-      message: '只接收PDF类型的文件',
-      type: 'warning',
-      plain: true,
-    })
-    return false;
-  }
+  //  const checkFileType = rawFile.name.substring(rawFile.name.lastIndexOf('.') + 1) === 'pdf' || rawFile.name.substring(rawFile.name.lastIndexOf('.') + 1) === 'pptx';
+    //if(!checkFileType) {
+     // ElMessage({
+        //message: '只接收PDF或PPTX类型的文件',
+        //type: 'warning',
+        //plain: true,
+      //})
+      //return false;
+   // }
   const isLimit20MB = rawFile.size / 1024 / 1024 < 20;
   if(!isLimit20MB){
     ElMessage({
@@ -203,9 +228,12 @@ const openModifyChapterModal = async (id: number) => {
   data.modifyChapterModalVisible = true;
   const res = await getChapterDetail(id);
   data.chapterForm = res.data;
+  const imageOptionsRes = await getImageOptions();
+  data.imageOptions = imageOptionsRes.data.list;
 }
 // 提交章节修改
 const submitChapterModify = async () => {
+  data.submitChapterModifyLoading = true;
   const res = await modifyChapter(data.currentChapterId, data.chapterForm);
   if(res.status === 0){
     ElMessage({
@@ -216,10 +244,11 @@ const submitChapterModify = async () => {
   } else {
     ElMessage({
       message: '章节修改失败',
-      type: 'warning',
+      type: 'error',
       plain: true,
     })
   }
+  data.submitChapterModifyLoading = false;
   data.modifyChapterModalVisible = false;
   searchChapter();
 }
@@ -235,12 +264,15 @@ const chapterCurrentChange = (val: any) => {
 
 // 搜索课程
 const searchCourse = async () => {
+  data.searchCourseLoading = true;
   const res = await getCourseInfoList(data.inputCourse, data.coursePage, data.courseCount);
   data.courseList = res.data.list;
   data.courseTotal = res.data.total;
+  data.searchCourseLoading = false;
 }
 // 提交课程创建
 const submitCourseCreate = async () => {
+  data.submitCourseCreateLoading = true;
   const res = await createCourse(data.newCourseForm);
   if(res.status === 0){
     ElMessage({
@@ -251,10 +283,11 @@ const submitCourseCreate = async () => {
   } else {
     ElMessage({
       message: '新课程创建失败',
-      type: 'warning',
+      type: 'error',
       plain: true,
     })
   }
+  data.submitCourseCreateLoading = false;
   data.createCourseModalVisible = false;
   searchCourse();
 }
@@ -271,6 +304,7 @@ const openCourseModifyModal = async (courseId: number) => {
 }
 // 提交课程修改
 const submitCourseModify = async () => {
+  data.submitCourseModifyLoading = true;
   const res = await modifyCourse(data.courseForm.id, data.courseForm);
   if(res.status === 0){
     ElMessage({
@@ -281,10 +315,11 @@ const submitCourseModify = async () => {
   } else {
     ElMessage({
       message: '课程修改失败',
-      type: 'warning',
+      type: 'error',
       plain: true,
     })
   }
+  data.submitCourseModifyLoading = false;
   data.modifyCourseModalVisible = false;
   searchCourse();
 }
@@ -308,6 +343,7 @@ const openChapterAddModal = async (id: number) => {
 }
 // 添加章节
 const addCourseChapter = async () => {
+  data.addCourseChapterLoading = true;
   if(data.currentCourseChapterId === 0){
     ElMessage({
       message: '请选择章节',
@@ -329,10 +365,12 @@ const addCourseChapter = async () => {
       plain: true,
     })
   }
+  data.addCourseChapterLoading = false;
   openChapterAddModal(data.currentCourseId);
 }
 // 删除课程中的章节
 const removeCourseChapter = async (id: number) => {
+  data.removeCourseChapterLoading = true;
   const res = await deleteCourseChapter(id);
   if(res.status === 0){
     ElMessage({
@@ -343,10 +381,11 @@ const removeCourseChapter = async (id: number) => {
   } else {
     ElMessage({
       message: '章节删除失败',
-      type: 'warning',
+      type: 'error',
       plain: true,
     })
   }
+  data.removeCourseChapterLoading = false;
   data.addChapterModalVisible = false;
   openChapterAddModal(data.currentCourseId);
 }
@@ -359,12 +398,57 @@ const courseChapterCurrentChange = (val: any) => {
   openChapterAddModal(data.currentCourseId);
 }
 
+// 文件移除时的钩子
+const handleRemoveModifyFile = (uploadFile: any, uploadFiles: any) => {
+  if(!uploadFile.file_id){
+    return;
+  }
+  for(let i = 0, len = data.chapterForm.files_info.length; i < len; i++) {
+    if (data.chapterForm.files_info[i].url === uploadFile.url) {
+      data.chapterForm.files_info.splice(i, 1);
+      break;
+    }
+  }
+}
+// 文件上传成功时的钩子
+const handleSuccessModifyFile = (res: any, file: any) => {
+  data.chapterForm.files_info = [{
+    name: res.data.name,
+    url: res.data.url,
+    file_id: res.data.file_id
+  }]
+}
 
-onMounted(() => {
+// 文件移除时的钩子
+const handleRemoveModifySupplement = (uploadFile: any, uploadFiles: any) => {
+  if(!uploadFile.file_id){
+    return;
+  }
+  for(let i = 0, len = data.chapterForm.supplement_files_info.length; i < len; i++) {
+    if (data.chapterForm.supplement_files_info[i].url === uploadFile.url) {
+      data.chapterForm.supplement_files_info.splice(i, 1);
+      break;
+    }
+  }
+}
+// 文件上传成功时的钩子
+const handleSuccessModifySupplement = (res: any, file: any) => {
+  data.chapterForm.supplement_files_info = [{
+    name: res.data.name,
+    url: res.data.url,
+    file_id: res.data.file_id
+  }]
+}
+
+// 下载文件
+const downloadFile = (fileUrl: string) => {
+  window.open(fileUrl);
+}
+
+onMounted(async() => {
   // 挂载数据
   searchChapter();
   searchCourse();
-  data.fileUploadUrl = 'http://8.155.19.142:30027/olexp_server/file/';
 })
 </script>
 
@@ -377,27 +461,26 @@ onMounted(() => {
           <div class="search-title">章节管理</div>
           <div class="select-exam">
             <!-- 搜索 -->
-            <el-input v-model="data.inputChapter" class="mr-3 w-[30vw] h-[2rem]" placeholder="请输入章节名称" />
-            <el-button type="primary" class="mr-3 h-[2rem]" @click="searchChapter()">搜索</el-button>
+            <el-input v-model="data.inputChapter" class="mr-3 w-[30vw] h-[2rem]" placeholder="请输入章节名称"/>
+            <el-button type="primary" class="mr-3 h-[2rem]" @click="searchChapter()" :loading="data.searchChapterLoading">搜索</el-button>
             <el-button type="primary" class="mr-3 h-[2rem]" @click="openChapterCreateModal()">创建新章节</el-button>
           </div>
         </div>
         <!-- 所有章节信息展示 -->
-        <div class="show-list">
-          <el-empty v-if="data.chapterList.length === 0" description="暂无章节信息"/>
-          <el-table v-if="data.chapterList.length !== 0" :data="data.chapterList" border style="width: 100%">
-            <el-table-column prop="id" label="ID" width="100"/>
-            <el-table-column prop="name" label="章节名"/>
-            <el-table-column prop="desc" label="描述"/>
-            <el-table-column prop="use_time" label="课时"/>
-            <el-table-column prop="image_name" label="镜像"/>
-            <el-table-column label="文件">
+        <div class="show-list" v-loading="data.chapterListLoading">
+          <el-empty v-if="data.chapterList.length === 0 && !data.chapterListLoading" description="暂无章节信息"/>
+          <el-table v-if="data.chapterList.length !== 0" :data="data.chapterList" border style="width: 100%"  max-height="400">
+            <el-table-column prop="name" label="章节名" min-width="150" show-overflow-tooltip/>
+            <el-table-column prop="desc" label="描述" min-width="200" show-overflow-tooltip/>
+            <el-table-column prop="use_time" label="课时" min-width="50" show-overflow-tooltip/>
+            <el-table-column label="文件" min-width="200" show-overflow-tooltip>
               <template v-slot="scope">
-                <!-- {{ scope.row.files_info[0].name }} -->
-                {{ scope.row.files_info }}
+                <el-button link type="primary" size="small" @click="downloadFile(scope.row.files_info[0].url)">
+                  {{ scope.row.files_info[0].name }}
+                </el-button>
               </template>
             </el-table-column>
-            <el-table-column fixed="right" label="操作">
+            <el-table-column fixed="right" label="操作" min-width="200" show-overflow-tooltip>
               <template v-slot="scope">
                 <el-button link type="primary" size="small" @click="openModifyChapterModal(scope.row.id)">修改</el-button>
               </template>
@@ -416,7 +499,6 @@ onMounted(() => {
           />
         </div>
       </el-tab-pane>
-
       <!-- 课程管理 -->
       <el-tab-pane label="课程管理" name="second">
         <div class="search-box">
@@ -424,19 +506,18 @@ onMounted(() => {
           <div class="select-exam">
             <!-- 搜索 -->
             <el-input v-model="data.inputCourse" class="mr-3 w-[30vw] h-[2rem]" placeholder="请输入课程名称" />
-            <el-button type="primary" class="mr-3 h-[2rem]" @click="searchCourse()">搜索</el-button>
+            <el-button type="primary" class="mr-3 h-[2rem]" @click="searchCourse()" :loading="data.searchCourseLoading">搜索</el-button>
             <el-button type="primary" class="mr-3 h-[2rem]" @click="data.createCourseModalVisible = true">创建新课程</el-button>
           </div>
         </div>
         <!-- 所有课程信息展示 -->
         <div class="show-list">
           <el-empty v-if="data.courseList.length === 0" description="暂无课程信息"/>
-          <el-table v-if="data.courseList.length !== 0" :data="data.courseList" border style="width: 100%">
-            <el-table-column prop="id" label="ID" width="100"/>
-            <el-table-column prop="name" label="课程名"/>
-            <el-table-column prop="desc" label="描述"/>
-            <el-table-column prop="total_time" label="总学时"/>
-            <el-table-column fixed="right" label="操作">
+          <el-table v-if="data.courseList.length !== 0" :data="data.courseList" border style="width: 100%" max-height="400">
+            <el-table-column prop="name" label="课程名" min-width="150" show-overflow-tooltip/>
+            <el-table-column prop="desc" label="描述" min-width="150" show-overflow-tooltip/>
+            <el-table-column prop="total_time" label="总学时" min-width="70" show-overflow-tooltip/>
+            <el-table-column fixed="right" label="操作" min-width="70" show-overflow-tooltip>
               <template v-slot="scope">
                 <el-button link type="primary" size="small" @click="openCourseModifyModal(scope.row.id)">修改</el-button>
                 <el-button link type="primary" size="small" @click="openChapterAddModal(scope.row.id)">添加章节</el-button>
@@ -462,10 +543,15 @@ onMounted(() => {
   <!-- 创建新章节框 -->
   <el-dialog v-model="data.createChapterModalVisible" title="章节创建" width="600" center>
     <div class="course-dialog">
-      <el-form :model="data.newChapterForm" class="w-[30rem]">
+      <el-form :model="data.newChapterForm" label-width="auto" class="w-[30rem]">
         <!-- 章节名 -->
-        <el-form-item>
-          <el-input v-model="data.newChapterForm.name" placeholder="请输入章节名称">
+        <el-form-item label="名称">
+          <el-input 
+            v-model="data.newChapterForm.name" 
+            placeholder="请输入章节名称(不能超过30个字)"
+            show-word-limit="true"
+            maxlength="30" 
+          >
             <!-- 图标 -->
             <template #prefix>
               <el-icon color="#409efc" class="no-inherit">
@@ -475,8 +561,15 @@ onMounted(() => {
           </el-input>
         </el-form-item>
         <!-- 章节描述 -->
-        <el-form-item>
-          <el-input v-model="data.newChapterForm.desc" placeholder="请输入章节描述">
+        <el-form-item label="描述">
+          <el-input 
+            v-model="data.newChapterForm.desc" 
+            placeholder="请输入章节描述(不能超过500个字)"
+            :autosize="{ minRows: 2, maxRows: 4}"
+            type="textarea"
+            maxlength="500"
+            show-word-limit="true"
+          >
             <!-- 图标 -->
             <template #prefix>
               <el-icon color="#409efc" class="no-inherit">
@@ -486,7 +579,7 @@ onMounted(() => {
           </el-input>
         </el-form-item>
         <!-- 镜像 -->
-        <el-form-item>
+        <el-form-item label="镜像">
           <el-select v-model="data.newChapterForm.image_id" placeholder="请选择镜像">
             <!-- 图标 -->
             <template #prefix>
@@ -503,7 +596,7 @@ onMounted(() => {
           </el-select>
         </el-form-item>
         <!-- 课时 -->
-        <el-form-item>
+        <el-form-item label="课时">
           <el-input v-model="data.newChapterForm.use_time" placeholder="请输入课时">
             <!-- 图标 -->
             <template #prefix>
@@ -565,7 +658,7 @@ onMounted(() => {
         </el-form-item>
         <!-- 创建按钮 -->
         <el-form-item>
-          <el-button class="w-[30rem]" type="primary" @click="submitChapterCreate()">创建新章节</el-button>
+          <el-button class="w-[30rem]" type="primary" @click="submitChapterCreate()" :loading="data.submitChapterCreateLoading">创建新章节</el-button>
         </el-form-item>
       </el-form>
     </div>
@@ -574,10 +667,15 @@ onMounted(() => {
   <!-- 修改章节框 -->
   <el-dialog v-model="data.modifyChapterModalVisible" title="章节修改" width="600" center>
     <div class="course-dialog">
-      <el-form :model="data.chapterForm" class="w-[30rem]">
+      <el-form :model="data.chapterForm" label-width="auto" class="w-[30rem]">
         <!-- 章节名 -->
-        <el-form-item>
-          <el-input v-model="data.chapterForm.name" placeholder="请输入章节名称">
+        <el-form-item label="名称">
+          <el-input 
+            v-model="data.chapterForm.name" 
+            placeholder="请输入章节名称(不能超过30个字)"
+            show-word-limit="true"
+            maxlength="30" 
+          >
             <!-- 图标 -->
             <template #prefix>
               <el-icon color="#409efc" class="no-inherit">
@@ -587,8 +685,15 @@ onMounted(() => {
           </el-input>
         </el-form-item>
         <!-- 章节描述 -->
-        <el-form-item>
-          <el-input v-model="data.chapterForm.desc" placeholder="请输入章节描述">
+        <el-form-item label="描述">
+          <el-input 
+            v-model="data.chapterForm.desc" 
+            placeholder="请输入章节描述(不能超过500个字)"
+            :autosize="{ minRows: 2, maxRows: 4}"
+            type="textarea"
+            maxlength="500"
+            show-word-limit="true"
+          >
             <!-- 图标 -->
             <template #prefix>
               <el-icon color="#409efc" class="no-inherit">
@@ -598,7 +703,7 @@ onMounted(() => {
           </el-input>
         </el-form-item>
         <!-- 镜像 -->
-        <el-form-item>
+        <el-form-item label="镜像">
           <el-select v-model="data.chapterForm.image_id" placeholder="请选择镜像">
             <!-- 图标 -->
             <template #prefix>
@@ -615,7 +720,7 @@ onMounted(() => {
           </el-select>
         </el-form-item>
         <!-- 课时 -->
-        <el-form-item>
+        <el-form-item label="课时">
           <el-input v-model="data.chapterForm.use_time" placeholder="请输入课时">
             <!-- 图标 -->
             <template #prefix>
@@ -631,12 +736,12 @@ onMounted(() => {
             drag
             class="w-[30rem]"
             :action="data.fileUploadUrl"
-            :on-remove="handleRemove" 
+            :on-remove="handleRemoveModifyFile"
             :before-remove="beforeRemove" 
             :limit="data.fileLimit"
             :on-exceed="handleExceed" 
             :file-list="data.chapterForm.files_info" 
-            :on-success="handleSuccess" 
+            :on-success="handleSuccessModifyFile" 
             :before-upload="beforeUpload"
           >
             <el-icon class="el-icon--upload"><upload-filled /></el-icon>
@@ -656,12 +761,12 @@ onMounted(() => {
             class="w-[30rem]"
             drag
             :action="data.fileUploadUrl"
-            :on-remove="handleRemoveSupplement" 
+            :on-remove="handleRemoveModifySupplement" 
             :before-remove="beforeRemove"
             :limit="data.fileLimit"
             :on-exceed="handleExceed"
             :file-list="data.chapterForm.supplement_files_info" 
-            :on-success="handleSuccessSupplement" 
+            :on-success="handleSuccessModifySupplement" 
             :before-upload="beforeUploadSupplement"
           >
             <el-icon class="el-icon--upload"><upload-filled /></el-icon>
@@ -677,7 +782,7 @@ onMounted(() => {
         </el-form-item>
         <!-- 创建按钮 -->
         <el-form-item>
-          <el-button class="w-[30rem]" type="primary" @click="submitChapterModify()">提交修改</el-button>
+          <el-button class="w-[30rem]" type="primary" @click="submitChapterModify()" :loading="data.submitChapterModifyLoading">提交修改</el-button>
         </el-form-item>
       </el-form>
     </div>
@@ -689,7 +794,12 @@ onMounted(() => {
       <el-form :model="data.newChapterForm" class="w-[30rem]">
         <!-- 课程名 -->
         <el-form-item>
-          <el-input v-model="data.newCourseForm.name" placeholder="请输入课程名称">
+          <el-input 
+            v-model="data.newCourseForm.name" 
+            placeholder="请输入课程名称(不能超过30个字)"
+            show-word-limit="true"
+            maxlength="30" 
+          >
             <!-- 图标 -->
             <template #prefix>
               <el-icon color="#409efc" class="no-inherit">
@@ -700,7 +810,14 @@ onMounted(() => {
         </el-form-item>
         <!-- 描述 -->
         <el-form-item>
-          <el-input v-model="data.newCourseForm.desc" placeholder="请输入课程描述">
+          <el-input 
+            v-model="data.newCourseForm.desc" 
+            placeholder="请输入课程描述(不能超过500个字)"
+            :autosize="{ minRows: 2, maxRows: 4}"
+            type="textarea"
+            maxlength="500"
+            show-word-limit="true"
+          >
             <!-- 图标 -->
             <template #prefix>
               <el-icon color="#409efc" class="no-inherit">
@@ -711,7 +828,7 @@ onMounted(() => {
         </el-form-item>
         <!-- 创建按钮 -->
         <el-form-item>
-          <el-button class="w-[30rem]" type="primary" @click="submitCourseCreate()">创建新课程</el-button>
+          <el-button class="w-[30rem]" type="primary" @click="submitCourseCreate()" :loading="data.submitCourseCreateLoading">创建新课程</el-button>
         </el-form-item>
       </el-form>
     </div>
@@ -720,10 +837,15 @@ onMounted(() => {
   <!-- 修改课程框 -->
   <el-dialog v-model="data.modifyCourseModalVisible" title="课程修改" width="600" center>
     <div class="course-dialog">
-      <el-form :model="data.courseForm" class="w-[30rem]">
+      <el-form :model="data.courseForm" label-width="auto" class="w-[30rem]">
         <!-- 课程名 -->
-        <el-form-item>
-          <el-input v-model="data.courseForm.name" placeholder="请输入课程名称">
+        <el-form-item label="课程名称">
+          <el-input 
+            v-model="data.courseForm.name" 
+            placeholder="请输入课程名称(不能超过30个字)"
+            show-word-limit="true"
+            maxlength="30" 
+          >
             <!-- 图标 -->
             <template #prefix>
               <el-icon color="#409efc" class="no-inherit">
@@ -733,8 +855,15 @@ onMounted(() => {
           </el-input>
         </el-form-item>
         <!-- 描述 -->
-        <el-form-item>
-          <el-input v-model="data.courseForm.desc" placeholder="请输入课程描述">
+        <el-form-item label="描述">
+          <el-input 
+            v-model="data.courseForm.desc" 
+            placeholder="请输入课程描述(不能超过500个字)"
+            :autosize="{ minRows: 2, maxRows: 4}"
+            type="textarea"
+            maxlength="500"
+            show-word-limit="true"
+          >
             <!-- 图标 -->
             <template #prefix>
               <el-icon color="#409efc" class="no-inherit">
@@ -744,7 +873,7 @@ onMounted(() => {
           </el-input>
         </el-form-item>
         <!-- 总学时 -->
-        <el-form-item>
+        <el-form-item label="学时">
           <el-input v-model="data.courseForm.total_time" placeholder="请输入课程学时" disabled="disabled">
             <!-- 图标 -->
             <template #prefix>
@@ -756,7 +885,7 @@ onMounted(() => {
         </el-form-item>
         <!-- 创建按钮 -->
         <el-form-item>
-          <el-button class="w-[30rem]" type="primary" @click="submitCourseModify()">提交课程修改</el-button>
+          <el-button class="w-[30rem]" type="primary" @click="submitCourseModify()" :loading="data.submitCourseModifyLoading">提交课程修改</el-button>
         </el-form-item>
       </el-form>
     </div>
@@ -774,24 +903,23 @@ onMounted(() => {
           :value="item.value"
         />
       </el-select>
-      <el-button type="primary" class="ml-1" @click="addCourseChapter()">添加章节</el-button>
+      <el-button type="primary" class="ml-1" @click="addCourseChapter()" :loading="data.addCourseChapterLoading">添加章节</el-button>
     </div>
     <div class="course-dialog">
       <el-table :data="data.courseChapterList" border style="width: 100%">
-        <el-table-column prop="id" label="ID"/>
         <el-table-column prop="name" label="章节名"/>
         <el-table-column prop="desc" label="描述"/>
         <el-table-column prop="use_time" label="课时"/>
-        <el-table-column prop="image_name" label="镜像"/>
         <el-table-column label="文件">
           <template v-slot="scope">
-            <!-- {{ scope.row.files_info[0].name }} -->
-            {{ scope.row.files_info }}
+            <el-button link type="primary" size="small" @click="downloadFile(scope.row.files_info[0].url)">
+              {{ scope.row.files_info[0].name }}
+            </el-button>
           </template>
         </el-table-column>
         <el-table-column fixed="right" label="操作">
           <template v-slot="scope">
-            <el-button link type="primary" size="small" @click="removeCourseChapter(scope.row.id)">删除</el-button>
+            <el-button link type="primary" size="small" @click="removeCourseChapter(scope.row.id)" :loading="data.removeCourseChapterLoading">删除</el-button>
           </template>
         </el-table-column>
       </el-table>

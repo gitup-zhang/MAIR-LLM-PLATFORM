@@ -19,7 +19,7 @@ const data = reactive({
   },
   // 简答题答案
   questionList: [],
-  examPaperId: route.query.userExamId as any,
+  examPaperId: route.query.id as any,
   type: route.query.type,
   // 各部分题目可见性
   jugementQuestionVisible: false,
@@ -28,7 +28,13 @@ const data = reactive({
   gapFillQuestionVisible: false,
   easyQuestionVisible:false,
   // 是否生成自动评论
-  isCommentsFetched: false
+  isCommentsFetched: false,
+  getExamPaperDetailLoading: true,
+  fetchCommentsLoading: false,
+  saveScoreLoading: false,
+  submitScoreLoading: false,
+  saveAnswerLoading: false,
+  submitAnswerLoading: false,
 })
 
 // 获取试卷详情
@@ -64,9 +70,11 @@ const getExamPaperDetail = async () => {
     data.easyQuestionVisible = true
   }
   data.questionList = res.data.question_list
+  data.getExamPaperDetailLoading = false;
 }
 // 自动获取试卷评分
 const fetchComments = async () => {
+  data.fetchCommentsLoading = true;
   const res = await getExamComment(data.examPaperId);
   if(res.status === 0){
     ElMessage({
@@ -81,11 +89,13 @@ const fetchComments = async () => {
       plain: true,
     })
   }
+  data.fetchCommentsLoading = false;
   data.isCommentsFetched = true;
   getExamPaperDetail();
 }
 // 保存评分
 const saveScore = async (operation: string) => {
+  data.saveScoreLoading = true;
   const res = await saveExamScore(data.examPaperId, data.questionList, operation);
   if(res.status === 0){
     ElMessage({
@@ -100,10 +110,12 @@ const saveScore = async (operation: string) => {
       plain: true,
     })
   }
+  data.saveScoreLoading = false;
   getExamPaperDetail();
 }
 // 提交评分
 const submitScore = async () => {
+  data.submitScoreLoading = true;
   const res = await saveExamScore(data.examPaperId, data.questionList, 'submit');
   if(res.status === 0){
     ElMessage({
@@ -118,10 +130,12 @@ const submitScore = async () => {
       plain: true,
     })
   }
+  data.submitScoreLoading = false;
   getExamPaperDetail();
 }
 // 保存作答结果
 const saveAnswer = async (operation: string) => {
+  data.saveAnswerLoading = true;
   const res = await saveExamAnswer(data.examPaperId, data.questionList, operation);
   if(res.status === 0){
     ElMessage({
@@ -136,10 +150,12 @@ const saveAnswer = async (operation: string) => {
       plain: true,
     })
   }
+  data.saveAnswerLoading = false;
   getExamPaperDetail();
 }
 // 提交作答结果
 const submitAnswer = async () => {
+  data.submitAnswerLoading = true;
   const res = await saveExamAnswer(data.examPaperId, data.questionList, 'submit');
   if(res.status === 0){
     ElMessage({
@@ -154,117 +170,21 @@ const submitAnswer = async () => {
       plain: true,
     })
   }
+  data.submitAnswerLoading = false;
   getExamPaperDetail();
 }
 
 onMounted(() => {
   // 挂载试卷详情信息
   getExamPaperDetail()
-
-  // testdatamanage()
 })
-
-const testdatamanage = () => {
-  data.jugementQuestionVisible = true;
-  data.singleChoiceQuestionVisible = true;
-  data.multipleChoiceQuestionVisible = true;
-  data.gapFillQuestionVisible = true;
-  data.easyQuestionVisible = true;
-  data.canAnswer = false;
-  data.canScore = true;
-}
-const titileTest = ref('考试1')
-const examTest = reactive(
-  {
-    judgment: 
-      [
-        {
-          content: '今天我是不是吃了一个小面包',
-          question_score: 1,
-          answer: true,
-          answer_score: 4
-        },
-        {
-          content: '今天我是不是吃了一个小面包',
-          question_score: 1,
-          answer: true,
-          answer_score: 4
-        },
-      ],
-    single_choice: [
-      {
-        content: '今天是星期几',
-        answer_option: [ 
-          '星期一',
-          '星期二',
-          '星期三',
-          '星期四'
-        ],
-        question_score: 1,
-        answer: true,
-        answer_score: 4
-      },
-    ],
-    multiple_choice: [
-    {
-        content: '昨天是星期几',
-        answer_option: [ 
-          '星期一',
-          '星期二',
-          '星期三',
-          '星期四'
-        ],
-        question_score: 1,
-        answer: 1,
-        answer_score: 4
-      },
-    ],
-    gap_filling: [
-      {
-        content: '今天我吃了个什么牌子的小面包',
-        question_score: 1,
-        answer: true,
-        answer_score: 4,
-        answer_words_limit: 20,
-        comment: ''
-      },
-      {
-        content: '今天我吃了个什么牌子的小面包',
-        question_score: 1,
-        answer: true,
-        answer_score: 4,
-        answer_words_limit: 20,
-        comment: ''
-      },
-      {
-        content: '今天我吃了个什么牌子的小面包',
-        question_score: 1,
-        answer: true,
-        answer_score: 4,
-        answer_words_limit: 20,
-        comment: ''
-      },
-    ],
-    essay_question: [
-      {
-        content: '今天我吃了个什么牌子的小面包',
-        question_score: 1,
-        answer: true,
-        answer_score: 4,
-        answer_words_limit: 20,
-        comment: ''
-      },
-    ]
-  }
-)
-
 </script>
 
 <template>
-  <div class="exam-paper-page">
+  <el-scrollbar class="exam-paper-page" v-loading="data.getExamPaperDetailLoading">
     <!-- 考试头部 -->
     <div class="exam-paper-heading">
-      <span class="exam-paper-title">{{ titileTest }}</span>
+      <span class="exam-paper-title">{{ data.title }}</span>
       <!-- 考试注意事项 -->
       <div v-if="data.canAnswer" class="exam-paper-caution">注意：（1）到达截止时间后，试卷将不可提交，请及时保存。（2）提交试卷后，试卷将不可修改，请谨慎提交。</div>
       <div v-if="data.canScore" class="exam-paper-caution">注意：（1）提交评分后，试卷将不可修改，请谨慎提交</div>
@@ -416,7 +336,7 @@ const examTest = reactive(
                   <el-input type="textarea" :autosize="{ minRows: 2, maxRows: 10}" placeholder="请输入评论" v-model="item.comment"/>
                 </el-col>
                 <el-col :span="4" class="p-2">
-                  <el-button size="mini" type="primary" @click="fetchComments">自动获取评语</el-button>
+                  <el-button size="mini" type="primary" @click="fetchComments" :loading="data.fetchCommentsLoading">自动获取评语</el-button>
                 </el-col>
               </el-row>
             </div>
@@ -426,15 +346,15 @@ const examTest = reactive(
     </div>
     <div class="btn-box">
       <template v-if="data.canScore">
-        <el-button size="mini" type="primary" @click="saveScore('score')">保存评分</el-button>
-        <el-button size="mini" type="primary" @click="submitScore()">提交评分</el-button>
+        <el-button size="mini" type="primary" @click="saveScore('score')" :loading="data.saveScoreLoading">保存评分</el-button>
+        <el-button size="mini" type="primary" @click="submitScore()" :loading="data.submitScoreLoading">提交评分</el-button>
       </template>
       <template v-if="data.canAnswer">
-        <el-button size="mini" type="primary" @click="saveAnswer('save')">保存作答</el-button>
-        <el-button size="mini" type="primary" @click="submitAnswer()">提交试卷</el-button>
+        <el-button size="mini" type="primary" @click="saveAnswer('save')" :loading="data.saveAnswerLoading">保存作答</el-button>
+        <el-button size="mini" type="primary" @click="submitAnswer()" :loading="data.submitAnswerLoading">提交试卷</el-button>
       </template>
     </div>
-  </div>
+  </el-scrollbar>
 </template>
 
 <style scoped>

@@ -66,3 +66,18 @@ export const getChapterOption = () => {
     withCredentials: true
   })
 }
+
+// 删除文件
+export const deleteFile = (name: string) => {
+  return httpInstance({
+    url:'/file/',
+    method: "DELETE",
+    params: {
+      name: name,
+    },
+    headers: {
+      "content-type": "application/json",
+    },
+    withCredentials: true
+  })
+}

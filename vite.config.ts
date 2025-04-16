@@ -17,8 +17,9 @@ export default defineConfig({
   },
   // 解决跨域问题
   server: {
-    port: 3000,
-    open: true,
+    port: 30033,
+    host: '0.0.0.0',
+    open: false,
     proxy: {
       '/system': {
         target: 'http://8.155.19.142:30027/olexp_server',

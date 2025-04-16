@@ -13,14 +13,17 @@ const data = reactive({
   reportPage: 1,
   reportCount: 10,
   reportTotal: 0,
-  reportDetailModalVisible: false
+  reportDetailModalVisible: false,
+  searchUserReportLoading: false,
 })
 
 // 获取报告
 const searchUserReport = async () => {
+  data.searchUserReportLoading = true;
   const res = await getStudentReportList(Number(data.subcourseId), Number(data.courseId), data.searchText, data.reportPage, data.reportCount);
   data.courseReportList = res.data.list;
   data.reportTotal = res.data.total;
+  data.searchUserReportLoading = false;
 }
 // 考试安排分页
 const reportSizeChange = (val: any) => {
@@ -38,6 +41,11 @@ const getReportDetail = async (reportDetail: any) => {
   data.currentReportDetail = reportDetail;
 }
 
+// 下载文件
+const downloadFile = (fileUrl: string) => {
+  window.open(fileUrl);
+}
+
 onMounted(async () => {
   // 挂载报告列表
   searchUserReport();
@@ -51,29 +59,28 @@ onMounted(async () => {
       <!-- 搜索框 -->
       <div class="search-box">
         <div class="search-title">班级报告</div>
-        <el-input v-model="data.searchText" class="w-[20vw] h-[2rem]" placeholder="请输入标题" />
-        <el-button type="primary" class="ml-3" @click="searchUserReport()">搜索</el-button>
+        <!-- <el-input v-model="data.searchText" class="w-[20vw] h-[2rem]" placeholder="请输入标题" />
+        <el-button type="primary" class="ml-3" @click="searchUserReport()" :loading="data.searchUserReportLoading">搜索</el-button> -->
       </div>
       <div class="report-list">
         <!-- 报告展示 -->
         <el-empty v-if="data.courseReportList.length === 0" description="暂无班级报告信息" />
-        <el-table v-else :data="data.courseReportList" border style="width: 100%">
-          <el-table-column prop="id" label="ID"/>
-          <el-table-column prop="title" label="标题"/>
-          <el-table-column label="文件">
+        <el-table v-else :data="data.courseReportList" border style="width: 100%" max-height="400">
+          <el-table-column prop="title" label="标题" min-width="150" show-overflow-tooltip/>
+          <el-table-column label="文件" min-width="350" show-overflow-tooltip>
             <template v-slot="scope" >
-              <template v-for="(file, index) in scope.row.files_info">
-                  {{ file.name }}<br>
-              </template>
+              <el-button link type="primary" size="small" @click="downloadFile(scope.row.files_info[0].url)">
+                {{ scope.row.files_info[0].name }}
+              </el-button>
             </template>
           </el-table-column>
-          <el-table-column label="学生姓名(ID)">
+          <el-table-column label="学生姓名(ID)" min-width="150" show-overflow-tooltip>
             <template v-slot="scope" >
               <span>{{ scope.row.user_name }}({{scope.row.user_id}})</span>
             </template>
           </el-table-column>
-          <el-table-column prop="create_time" label="发表时间" />
-          <el-table-column fixed="right" label="操作" min-width="60">
+          <el-table-column prop="create_time" label="发表时间" min-width="200" show-overflow-tooltip/>
+          <el-table-column fixed="right" label="操作" min-width="200">
             <template v-slot="scope">
               <el-button link type="primary" size="small" @click="getReportDetail(scope.row)">详情</el-button>
             </template>

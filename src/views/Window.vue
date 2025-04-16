@@ -18,10 +18,11 @@ const { aboutUsVisible, settingVisible } = toRefs(data)
 
 // 打开对话框
 const openLLMWindow = () => {
-  window.open('http://localhost:3001/');
+  window.open(`http://8.155.19.142:30035/`);
 }
 // 退出系统
 const quit = () => {
+  sessionStorage.clear()
   router.push("/")
 }
 // 判断是否是当前页
@@ -39,10 +40,10 @@ const changePage = (pageName: string) => {
 <template>
   <el-row class="experiment-page">
     <!-- 侧边栏 -->
-    <el-col :xs="0" :sm="2" :md="2" :lg="1" :xl="1" class="sider-nav">
-      <div class="sider-nav-main">
+    <el-col :xs="0" :sm="0" :md="1" :lg="1" :xl="1" class="sider-nav">
+      <el-scrollbar class="sider-nav-main">
         <!-- Logo -->
-        <img src="../assets/img/logo.png" alt="大模型实训平台" class="h-10 w-10 mt-2 mb-2">
+        <img src="../assets/img/logo.png" alt="大模型实训平台" class="logo">
         <span class="h-[0.15rem] w-14 bg-gray-200 mb-2 mt-2"></span>
         <!-- 个人信息 学生 -->
         <RouterLink  v-if="data.userType === '1'" class="sider-nav-icon" to="/studentMe" @click="changePage('Me')" :class="{ active: isCurrentPage('Me') }">
@@ -112,22 +113,15 @@ const changePage = (pageName: string) => {
           <div class="icon-text">实验</div>
         </RouterLink>
 
-        <!-- 关于平台 -->
-        <About>
-          <template #default>
-            <icon-question-circle  size="33" strokeWidth="3" class="mt-2"/>
-            <div class="mt-1 text-xs font-medium">关于</div>
-          </template>
-        </About>
         <!-- 退出 -->
-        <div class="sider-nav-icon-bottom" @click="quit">
+        <div class="sider-nav-icon" @click="quit">
           <icon-export  size="33" strokeWidth="3" class="mt-2"/>
           <div class="icon-text">退出</div>
         </div>
-      </div>
+      </el-scrollbar>
     </el-col>
 
-    <el-col :xs="24" :sm="22" :md="22" :lg="23" :xl="23" class="window-main">
+    <el-col :xs="24" :sm="24" :md="23" :lg="23" :xl="23" class="window-main">
       <!-- 主内容区 -->
       <div class="experiment-left-main">
         <RouterView></RouterView>
@@ -141,15 +135,25 @@ const changePage = (pageName: string) => {
 .experiment-page {
   width: 100vw;
   height: 100vh;
+  min-width: 1300px;
   background-color:hsla(221,94%,51%,1);
   background-image:
   radial-gradient(at 12% 50%, hsla(10,21%,87%,0.87) 0px, transparent 50%),
   radial-gradient(at 65% 9%, hsla(12,80%,86%,1) 0px, transparent 50%),
   radial-gradient(at 86% 74%, hsla(12,28%,83%,1) 0px, transparent 50%);
 }
+/* LOGO大小 */
+.logo {
+  width: 3vw; /* 根据视口宽度调整 */
+  height: auto;
+  /* @apply h-10 w-10 mt-1 mb-1; */
+}
+
+
 /* 右侧侧边栏区 */
 .sider-nav {
-  height: 100vh;
+  height: 100%;
+  width: 100px;
   box-sizing: border-box;
   @apply flex-col pt-1 pl-2 pr-1 pb-2;
 }
@@ -158,12 +162,13 @@ const changePage = (pageName: string) => {
   height: 100%;
   position: relative;
   /* box-shadow: 1px 1px 2px #d1d5db; */
-  @apply flex flex-col items-center rounded-md p-1;
+  @apply flex flex-col items-center rounded-md;
 }
 .sider-nav-icon {
-  width: 100%;
+  width: 3vw; /* 根据视口宽度调整 */
+  height: auto;
   transition: all .2s;
-  @apply mb-3 flex flex-col items-center text-white rounded-md;
+  @apply mb-1 flex flex-col items-center text-white rounded-md;
 }
 .sider-nav-icon:hover{
   transform: scale(1.2);
@@ -172,12 +177,13 @@ const changePage = (pageName: string) => {
   transform: scale(1.2);
 }
 .icon-text {
-  @apply mt-1 text-xs font-medium ;
+  font-size: clamp(0.6rem, 1vw, 0.7rem);
+  @apply mt-1 font-medium;
 }
 .sider-nav-icon-bottom {
   position: absolute;
-  bottom: 10px;
-  width: 100%;
+  bottom: 5px;
+  width: 90%;
   transition: all .2s;
   @apply mb-3 flex flex-col items-center text-white rounded-md;
 }

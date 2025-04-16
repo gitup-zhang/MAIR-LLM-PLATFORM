@@ -13,6 +13,7 @@ import ArcoVueIcon from '@arco-design/web-vue/es/icon'
 import ElementPlus from 'element-plus'
 import 'element-plus/dist/index.css'
 import 'element-plus/theme-chalk/display.css'
+import zhCn from 'element-plus/es/locale/lang/zh-cn'
 
 // 引入国际化组件
 import i18n from "@/i18n"
@@ -23,7 +24,9 @@ pinia.use(piniaPluginPersistedstate)
 const app = createApp(App)
 app.use(ArcoVueIcon)
 app.use(ArcoVue);
-app.use(ElementPlus)
+app.use(ElementPlus, {
+  locale: zhCn,
+});
 // 引入 Windi CSS
 import 'virtual:windi.css'
 app.use(i18n)

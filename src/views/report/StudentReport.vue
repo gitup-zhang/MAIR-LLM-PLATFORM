@@ -3,7 +3,7 @@ import { onMounted, reactive } from 'vue';
 import { useRoute } from 'vue-router';
 import { ElMessage } from 'element-plus';
 import { UploadFilled } from '@element-plus/icons-vue';
-import { getUserReportList, createCourseReport } from '@/apis/report';
+import { getStudentReportList, createCourseReport } from '@/apis/report';
 
 const route = useRoute();
 const data = reactive({
@@ -24,15 +24,28 @@ const data = reactive({
   courseId: route.query.courseId,
   subcourseId: route.query.subcourseId,
   page: 1,
-  count: 10,
+  count: 6,
   total: 0,
-  reportDetailModalVisible: false
+  reportDetailModalVisible: false,
+  searchUserReportLoading: false,
+  submitCourseReportCreateLoading: false,
 })
 
 // 获取报告
 const searchUserReport = async () => {
-  const res = await getUserReportList(Number(data.subcourseId), Number(data.courseId), data.searchText, data.page, data.count);
+  data.searchUserReportLoading = true;
+  const res = await getStudentReportList(Number(data.subcourseId), Number(data.courseId), data.searchText, data.page, data.count);
   data.courseReportList = res.data.list;
+  data.total = res.data.total;
+  data.searchUserReportLoading = false;
+}
+// 分页
+const reportSizeChange = (val: any) => {
+  searchUserReport();
+}
+const reportCurrentChange = (val: any) => {
+  data.page = val;
+  searchUserReport();
 }
 
 // 查看报告详情
@@ -70,8 +83,7 @@ const handleSuccess = (res: any, file: any) => {
   data.newCourseReportForm.files_info.push({
     name: res.data.name,
     url: res.data.url,
-    file_id: res.data.file_id,
-    group_name: res.data.group_name
+    file_id: res.data.file_id
   })
 }
 // 上传文件之前的钩子
@@ -87,6 +99,7 @@ const beforeUpload = (rawFile: any) => {
 }
 // 创建新的课程报告
 const submitCourseReportCreate = async () => {
+  data.submitCourseReportCreateLoading = true;
   const res = await createCourseReport(data.newCourseReportForm);
   console.log(res);
   if(res.status === 0){
@@ -102,7 +115,13 @@ const submitCourseReportCreate = async () => {
       plain: true,
     })
   }
+  data.submitCourseReportCreateLoading = false;
   searchUserReport();
+}
+
+// 下载文件
+const downloadFile = (fileUrl: string) => {
+  window.open(fileUrl);
 }
 
 onMounted(async () => {
@@ -122,42 +141,61 @@ onMounted(async () => {
         <div class="search-box">
           <div class="report-title">班级报告</div>
           <el-input v-model="data.searchText" class="w-[20vw] h-[2rem]" placeholder="请输入标题" />
-          <el-button type="primary" class="ml-3" @click="searchUserReport()">搜索</el-button>
+          <el-button type="primary" class="ml-3" @click="searchUserReport()" :loading="data.searchUserReportLoading">搜索</el-button>
         </div>
         <!-- 报告展示 -->
-        <el-empty v-if="data.courseReportList.length === 0" description="暂无班级报告信息" />
-        <el-table v-else :data="data.courseReportList" border style="width: 100%">
-          <el-table-column prop="id" label="ID" width="60" />
-          <el-table-column prop="title" label="标题"/>
-          <el-table-column label="文件">
-            <template v-slot="scope" >
-              <template v-for="(file, index) in scope.row.files_info">
-                  {{ file.name }}<br>
+        <div class="report-table-list" v-loading="data.searchUserReportLoading">
+          <el-empty v-if="data.courseReportList.length === 0 && !data.searchUserReportLoading" description="暂无班级报告信息" />
+          <el-table v-else :data="data.courseReportList" border style="width: 100%">
+            <el-table-column prop="title" label="标题" min-width="150" show-overflow-tooltip/>
+            <el-table-column label="文件" min-width="200" show-overflow-tooltip>
+              <template v-slot="scope" >
+                <el-button link type="primary" size="small" @click="downloadFile(scope.row.files_info[0].url)">
+                  {{ scope.row.files_info[0].name }}
+                </el-button>
               </template>
-            </template>
-          </el-table-column>
-          <el-table-column prop="create_time" label="发表时间" />
-          <el-table-column fixed="right" label="操作" min-width="60">
-            <template v-slot="scope">
-              <el-button link type="primary" size="small" @click="getReportDetail(scope.row)">详情</el-button>
-            </template>
-          </el-table-column>
-        </el-table>
+            </el-table-column>
+            <el-table-column prop="create_time" label="发表时间" min-width="200" show-overflow-tooltip/>
+            <el-table-column fixed="right" label="操作" min-width="60">
+              <template v-slot="scope">
+                <el-button link type="primary" size="small" @click="getReportDetail(scope.row)">详情</el-button>
+              </template>
+            </el-table-column>
+          </el-table>
+          <!-- 分页 -->
+          <el-pagination
+            v-if="data.courseReportList.length !== 0"
+            background 
+            layout="prev, pager, next"
+            :total="data.total" 
+            :page-size="data.count"
+            @size-change="reportSizeChange"
+            @current-change="reportCurrentChange"
+            class="mt-4 mx-auto"
+          />
+        </div>
       </div>
     </el-col>
     <!-- 创建新报告 -->
     <el-col :span="8" class="create-report">
-      <el-input v-model="data.newCourseReportForm.title" placeholder="请输入标题" class="mb-2"></el-input>
+      <el-input 
+        v-model="data.newCourseReportForm.title" 
+        placeholder="请输入标题(不能超过30个字)" 
+        class="mb-2"
+        show-word-limit="true"
+        maxlength="30"
+      ></el-input>
       <el-input
         v-model="data.newCourseReportForm.content"
-        :rows="20"
+         :autosize="{ minRows: 6, maxRows: 12 }"
         type="textarea"
-        placeholder="请输入内容"
+        placeholder="请输入内容(不能超过500个字)"
+        maxlength="500"
+        show-word-limit="true"
         class="mb-2"
       />
       <!-- 上传按钮 -->
       <el-upload
-        class="upload-demo"
         drag
         :action="data.fileUploadUrl"
         :on-remove="handleRemove" 
@@ -179,7 +217,7 @@ onMounted(async () => {
           </div>
         </template>
       </el-upload>
-      <el-button type="primary" class="report-btn mr-3" @click="submitCourseReportCreate">创建报告</el-button>
+      <el-button type="primary" class="report-btn mr-3" @click="submitCourseReportCreate" :loading="data.submitCourseReportCreateLoading">创建报告</el-button>
     </el-col>
   </el-row>
 
@@ -187,7 +225,7 @@ onMounted(async () => {
   <el-dialog v-model="data.reportDetailModalVisible" title="报告详情" width="600" center>
     <el-descriptions direction="vertical" :column="4" border>
       <el-descriptions-item label="班级名" :span="2">{{ data.currentReportDetail.class_name }}</el-descriptions-item>
-      <el-descriptions-item label="报告标题" :span="2">{{ data.currentReportDetail.content }}</el-descriptions-item>
+      <el-descriptions-item label="报告内容" :span="2">{{ data.currentReportDetail.content }}</el-descriptions-item>
       <el-descriptions-item label="发表时间" :span="4">{{ data.currentReportDetail.create_time }}</el-descriptions-item>
     </el-descriptions>
   </el-dialog>
@@ -199,18 +237,17 @@ onMounted(async () => {
 .course-report-page {
   width: 100%;
   height: 100%;
+  box-shadow: 1px 1px 2px #d1d5db;
+  @apply bg-light-50 p-1 rounded-md;
 }
 /* 页面左侧 */
 .page-left {
   width: 100%;
   height: 100%;
-  @apply bg-light-500 pr-1;
 }
 .report-list {
   width: 100%;
   height: 100%;
-  box-shadow: 1px 1px 2px #d1d5db;
-  @apply bg-light-50 p-3 rounded-md;
 }
 .search-box {
   height: 10vh;
@@ -227,11 +264,13 @@ onMounted(async () => {
 .create-report {
   width: 100%;
   height: 100%;
-  box-shadow: 1px 1px 2px #d1d5db;
-  @apply bg-light-50 p-3 rounded-md;
+  @apply p-3 rounded-md;
 }
 /* 按钮 */
 .report-btn {
   width: 100%;
+}
+.report-table-list {
+  @apply flex flex-col mt-4 mr-2;
 }
 </style>

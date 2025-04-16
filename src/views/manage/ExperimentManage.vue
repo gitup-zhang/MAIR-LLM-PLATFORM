@@ -34,21 +34,26 @@ const data = reactive({
   // 选项
   imageOptions: [],
   imagePage: 1,
-  imageCount: 10,
+  imageCount: 6,
   imageTotal: 0,
   containerPage: 1,
-  containerCount: 10,
+  containerCount: 6,
   containerTotal: 0,
   page: 1,
-  count: 10,
-  total: 0
+  count: 6,
+  total: 0,
+  imageListLoading: true,
+  searchImageLoading: false,
 })
 
 // 搜索镜像
 const searchImage = async () => {
+  data.searchImageLoading = true;
   const res = await getImageList(data.inputImage, data.imagePage, data.imageCount);
+  data.imageListLoading = false;
   data.imageList = res.data.list;
   data.imageTotal = res.data.total;
+  data.searchImageLoading = false;
 }
 
 // 获取镜像相关信息
@@ -107,7 +112,7 @@ const removeImage = async (index: number) => {
   } else {
     ElMessage({
       message: '镜像删除失败',
-      type: 'warning',
+      type: 'error',
       plain: true,
     })
   }
@@ -128,7 +133,25 @@ const submitImageCreate = async () => {
   } else {
     ElMessage({
       message: '镜像创建失败',
-      type: 'warning',
+      type: 'error',
+      plain: true,
+    })
+  }
+}
+const submitOriginImageCreate  = async () => {
+  const res = await createImage(data.newImageForm.image_id);
+  if(res.status === 0){
+    ElMessage({
+      message: '源镜像选择成功',
+      type: 'success',
+      plain: true,
+    })
+    data.newImageForm.container_id = res.data.container_id
+    data.containerAddr = res.data.addr
+  } else {
+    ElMessage({
+      message: '源镜像选择失败',
+      type: 'error',
       plain: true,
     })
   }
@@ -149,18 +172,21 @@ const saveImageCreate = async () => {
         type: 'success',
         plain: true,
       })
-      data.createImageModalVisible = false;
     } else {
       ElMessage({
         message: '镜像创建失败',
-        type: 'warning',
+        type: 'error',
         plain: true,
       })
     }
   }
+  data.modifyImageModalVisible = false;
+  searchImage();
+  searchContainer();
 }
 // 查看镜像
 const checkImageDetail = async (index: number) => {
+  data.checkImageDetailLoading = true;
   const res = await getImageDetail(data.imageList[index]['id']);
   if(res.status === 0){
     ElMessage({
@@ -176,6 +202,7 @@ const checkImageDetail = async (index: number) => {
       plain: true,
     })
   }
+  data.checkImageDetailLoading = false;
 }
 // 镜像分页
 const imageSizeChange = (val: any) => {
@@ -277,24 +304,23 @@ onMounted(() => {
           <div class="select-exam">
             <!-- 搜索 -->
             <el-input v-model="data.inputImage" class="mr-3 w-[30vw] h-[2rem]" placeholder="请输入镜像名称" />
-            <el-button type="primary" class="mr-3 h-[2rem]" @click="searchImage()">搜索</el-button>
-            <el-button type="primary" class="mr-3 h-[2rem]" @click="addImage(-1)">创建新镜像</el-button>
+            <el-button type="primary" class="mr-3 h-[2rem]" @click="searchImage()" :loading="data.searchImageLoading">搜索</el-button>
+            <!-- <el-button type="primary" class="mr-3 h-[2rem]" @click="addImage(-1)">创建新镜像</el-button> -->
           </div>
         </div>
         <!-- 所有镜像信息展示 -->
-        <div class="show-list">
-          <el-empty v-if="data.imageList.length === 0" description="暂无镜像信息"/>
+        <div class="show-list" v-loading="data.imageListLoading">
+          <el-empty v-if="data.imageList.length === 0 && !data.imageListLoading" description="暂无镜像信息"/>
           <el-table v-if="data.imageList.length !== 0" :data="data.imageList" border style="width: 100%">
-            <el-table-column prop="id" label="ID" width="100"/>
             <el-table-column prop="name" label="镜像名"/>
             <el-table-column prop="desc" label="描述"/>
             <el-table-column prop="type_name" label="镜像类型"/>
             <el-table-column fixed="right" label="操作">
               <template v-slot="scope">
-                <el-button link type="primary" size="small" @click="checkImageDetail(scope.$index)">查看镜像</el-button>
-                <el-button link type="primary" size="small" @click="addImage(scope.$index)">创建镜像</el-button>
-                <el-button v-if="scope.row.type === 1" link type="primary" size="small" @click="updateImage(scope.$index)">修改镜像</el-button>
-                <el-button v-if="scope.row.type === 2" link type="primary" size="small" @click="removeImage(scope.$index)">删除镜像</el-button>
+                <el-button link type="primary" size="small" @click="checkImageDetail(scope.$index)">创建容器</el-button>
+                <!-- <el-button link type="primary" size="small" @click="addImage(scope.$index)">创建镜像</el-button> -->
+                <el-button v-if="scope.row.type === 1" link type="primary" size="small" @click="updateImage(scope.$index)">创建镜像与容器</el-button>
+                <el-button v-if="scope.row.type === 1" link type="primary" size="small" @click="removeImage(scope.$index)">删除镜像</el-button>
               </template>
             </el-table-column>
           </el-table>
@@ -323,20 +349,19 @@ onMounted(() => {
         <!-- 所有容器信息展示 -->
         <div class="show-list">
           <el-empty v-if="data.containerList.length === 0" description="暂无容器信息"/>
-          <el-table v-if="data.containerList.length !== 0" :data="data.containerList" border style="width: 100%">
-            <el-table-column prop="id" label="ID" width="100"/>
-            <el-table-column prop="user_id_number" label="学号"/>
-            <el-table-column prop="user_name" label="用户"/>
-            <el-table-column prop="class_name" label="班级"/>
-            <el-table-column prop="subcourse_name" label="章节"/>
-            <el-table-column prop="image_name" label="镜像"/>
-            <el-table-column prop="status" label="状态"/>
-            <el-table-column fixed="right" label="操作">
+          <el-table v-if="data.containerList.length !== 0" :data="data.containerList" border style="width: 100%" max-height="400">
+            <el-table-column prop="image_name" label="名称" min-width="200"/>
+            <el-table-column prop="user_id_number" label="ID" min-width="200"/>
+            <el-table-column prop="user_name" label="用户" min-width="200"/>
+            <el-table-column prop="class_name" label="班级" min-width="200"/>
+            <el-table-column prop="subcourse_name" label="章节" min-width="200"/>
+            <el-table-column prop="status" label="状态" min-width="200"/>
+            <el-table-column fixed="right" label="操作" min-width="300">
               <template v-slot="scope">
-                <el-button v-if="scope.row.status != 'delete' && scope.row.status != 'exited'" link type="primary" size="small" @click="enterContainer(scope.row.addr)">进入容器</el-button>
-                <el-button v-if="scope.row.status != 'delete' && scope.row.status != 'exited'" link type="primary" size="small" @click="ceaseContainer(scope.row.id)">停止容器</el-button>
-                <el-button v-if="scope.row.status != 'delete' && scope.row.status == 'exited'" link type="primary" size="small" @click="launchContainer(scope.row.id)">启动容器</el-button>
-                <el-button v-if="scope.row.status != 'delete'" link type="primary" size="small" @click="removeContainer(scope.row.id)">删除容器</el-button>
+                <el-button v-if="scope.row.status != 'delete' && scope.row.status != 3" link type="primary" size="small" @click="enterContainer(scope.row.addr)">进入容器</el-button>
+                <el-button v-if="scope.row.status != 'delete' && scope.row.status != 3" link type="primary" size="small" @click="ceaseContainer(scope.row.container_id)">停止容器</el-button>
+                <el-button v-if="scope.row.status != 'delete' && scope.row.status == 3" link type="primary" size="small" @click="launchContainer(scope.row.container_id)">启动容器</el-button>
+                <el-button v-if="scope.row.status != 'delete'" link type="primary" size="small" @click="removeContainer(scope.row.container_id)">删除容器</el-button>
               </template>
             </el-table-column>
           </el-table>
@@ -384,7 +409,12 @@ onMounted(() => {
         </el-form-item>
         <!-- 镜像名称 -->
         <el-form-item>
-          <el-input v-model="data.newImageForm.name" placeholder="请输入镜像名称">
+          <el-input 
+            v-model="data.newImageForm.name" 
+            placeholder="请输入镜像名称(不能超过20个字)"
+            show-word-limit="true"
+            maxlength="20"
+          >
             <!-- 图标 -->
             <template #prefix>
               <el-icon color="#409efc" class="no-inherit">
@@ -395,7 +425,14 @@ onMounted(() => {
         </el-form-item>
         <!-- 镜像描述 -->
         <el-form-item>
-          <el-input v-model="data.newImageForm.desc" placeholder="请输入镜像描述">
+          <el-input 
+            v-model="data.newImageForm.desc" 
+            placeholder="请输入镜像描述(不能超过500个字)"
+            :autosize="{ minRows: 2, maxRows: 4}"
+            type="textarea"
+            maxlength="500"
+            show-word-limit="true"
+          >
             <!-- 图标 -->
             <template #prefix>
               <el-icon color="#409efc" class="no-inherit">
@@ -433,11 +470,16 @@ onMounted(() => {
         </el-form-item>
         <!-- 创建镜像 -->
         <el-form-item>
-          <el-button class="w-[30rem]" type="primary" @click="submitImageCreate()">创建镜像</el-button>
+          <el-button class="w-[30rem]" type="primary" @click="submitOriginImageCreate()">选择源镜像</el-button>
         </el-form-item>
         <!-- 镜像名称 -->
         <el-form-item>
-          <el-input v-model="data.newImageForm.name" placeholder="请输入镜像名称">
+          <el-input 
+            v-model="data.newImageForm.name"
+            placeholder="请输入镜像名称(不能超过20个字)"
+            show-word-limit="true"
+            maxlength="20"
+          >
             <!-- 图标 -->
             <template #prefix>
               <el-icon color="#409efc" class="no-inherit">
@@ -448,7 +490,14 @@ onMounted(() => {
         </el-form-item>
         <!-- 镜像描述 -->
         <el-form-item>
-          <el-input v-model="data.newImageForm.desc" placeholder="请输入镜像描述">
+          <el-input 
+            v-model="data.newImageForm.desc" 
+            placeholder="请输入镜像描述(不能超过500个字)"
+            :autosize="{ minRows: 2, maxRows: 4}"
+            type="textarea"
+            maxlength="500"
+            show-word-limit="true"
+          >
             <!-- 图标 -->
             <template #prefix>
               <el-icon color="#409efc" class="no-inherit">

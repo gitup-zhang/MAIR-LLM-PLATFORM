@@ -4,7 +4,7 @@ import { onMounted, reactive } from "vue"
 import { ElMessage } from 'element-plus';
 import { Document, Edit, Filter, UploadFilled } from '@element-plus/icons-vue'
 import { getCourseDetailInfo } from '@/apis/experiment'
-import { getCourseList, getCourseApplyRecord, deleteCourseApply } from '@/apis/course'
+import { getCourseList, deleteCourseApply, getClassApplyRecord } from '@/apis/course'
 import { getClassList, getManagedClassList, getTeachedClassList, passClassApply, refuseClassApply } from '@/apis/class'
 import { getImageInfo, deleteImage, createImage, buildImage } from '@/apis/image'
 import { getNotificationList, deleteNotification, createNotification } from '@/apis/notification';
@@ -61,25 +61,25 @@ const data = reactive({
   containerAddr: '',
   // 分页相关
   classPage: 1,
-  classCount: 10,
+  classCount: 6,
   classTotal: 0,
   applyPage: 1,
-  applyCount: 10,
+  applyCount: 6,
   applyTotal: 0,
   enrolledClassPage: 1,
-  enrolledClassCount: 10,
+  enrolledClassCount: 6,
   enrolledClassTotal: 0,
   managedClassPage: 1,
-  managedClassCount: 10,
+  managedClassCount: 6,
   managedClassTotal: 0,
   imagePage: 1,
-  imageCount: 10,
+  imageCount: 6,
   imageTotal: 0,
   studyProgressPage: 1,
-  studyProgressCount: 10,
+  studyProgressCount: 6,
   studyProgressTotal: 0,
   containerPage: 1,
-  containerCount: 10,
+  containerCount: 6,
   containerTotal: 0,
   teachExperimentPage: 1,
   teachExperimentCount: 8,
@@ -96,11 +96,17 @@ const data = reactive({
   createNotificationModalVisible: false,
   classProgressModalVisible: false,
   checkContainerModalVisible: false,
+  courseListLoading: true,
+  enrolledClassListLoading: true,
 })
 
 // 搜索班级
 const searchCourse = async () => {
+  if(data.searchText.length > 0){
+    data.classPage = 1;
+  }
   const res = await getCourseList(data.searchText, data.classPage, data.classCount);
+  data.courseListLoading = false;
   data.courseList = res.data.list;
   data.classTotal = res.data.total;
 }
@@ -121,9 +127,19 @@ const getCourseDetail = (courseDetail: any) => {
 // 查看课程申请记录
 const getCourseApplyDetail = async () => {
   data.courseApplyDetailVisible = true;
-  const res = await getCourseApplyRecord(userStore.id, data.applyPage, data.applyCount);
+  searchClassApply();
+}
+const searchClassApply = async () => {
+  const res = await getClassApplyRecord(userStore.id, data.applyPage, data.applyCount);
   data.courseApplyList = res.data.list;
   data.applyTotal = res.data.total;
+}
+const applySizeChange = async (val: any) => {
+  searchClassApply();
+}
+const applyCurrentChange = async (val: any) => {
+  data.applyPage = val;
+  searchClassApply();
 }
 // 通过班级申请
 const passClassApplication = async (id: number) => {
@@ -137,7 +153,7 @@ const passClassApplication = async (id: number) => {
   }else {
     ElMessage({
       message: '班级申请通过失败',
-      type: 'success',
+      type: 'error',
       plain: true,
     })
   }
@@ -155,7 +171,7 @@ const refuseClassApplication = async (id: number) => {
   }else {
     ElMessage({
       message: '班级申请拒绝失败',
-      type: 'success',
+      type: 'error',
       plain: true,
     })
   }
@@ -173,7 +189,7 @@ const removeCourseApply = async (applyId:number) => {
   }else {
     ElMessage({
       message: '班级申请取消失败',
-      type: 'success',
+      type: 'error',
       plain: true,
     })
   }
@@ -183,6 +199,7 @@ const removeCourseApply = async (applyId:number) => {
 // 搜索已报名的班级信息
 const searchEnrolledClass = async () => {
   const res = await getClassList(data.enrolledClassPage, data.enrolledClassCount);
+  data.enrolledClassListLoading = false;
   data.enrolledClassList = res.data.list;
   data.enrolledClassTotal = res.data.total;
 }
@@ -206,6 +223,9 @@ const checkExamArrangement = (id: number) => {
 
 // 搜索管理的班级
 const searchManagedClass = async () => {
+  if(data.searchManageClassText.length > 0){
+    data.managedClassPage = 1;
+  }
   const res = await getManagedClassList(data.searchManageClassText, data.managedClassPage, data.managedClassCount);
   data.managedClassList = res.data.list;
   data.managedClassTotal = res.data.total;
@@ -281,7 +301,7 @@ const removeImage = async (index: number) => {
   } else {
     ElMessage({
       message: '镜像删除失败',
-      type: 'warning',
+      type: 'error',
       plain: true,
     })
   }
@@ -302,7 +322,7 @@ const submitImageCreate = async () => {
   } else {
     ElMessage({
       message: '镜像创建失败',
-      type: 'warning',
+      type: 'error',
       plain: true,
     })
   }
@@ -327,7 +347,7 @@ const saveImageCreate = async () => {
     } else {
       ElMessage({
         message: '镜像创建失败',
-        type: 'warning',
+        type: 'error',
         plain: true,
       })
     }
@@ -377,7 +397,7 @@ const removeNotification = async (id: number) => {
   } else {
     ElMessage({
       message: '消息删除失败',
-      type: 'warning',
+      type: 'error',
       plain: true,
     })
   }
@@ -439,7 +459,7 @@ const submitNotificationCreate = async () => {
   } else {
     ElMessage({
       message: '消息创建失败',
-      type: 'warning',
+      type: 'error',
       plain: true,
     })
   }
@@ -592,22 +612,21 @@ onMounted(() => {
           <!-- 课程搜索框 -->
           <div class="select-course">
             <!-- 搜索 -->
-            <el-input v-model="data.searchText" style="width: 240px" class="mr-3" placeholder="请输入课程名称" />
+            <el-input v-model="data.searchText" style="width: 240px" class="mr-3" placeholder="请输入班级名称" />
             <el-button type="primary" class="mr-3" @click="searchCourse()">搜索</el-button>
             <el-button type="primary" class="ml-3" @click="getCourseApplyDetail()">班级申请记录</el-button>
           </div>
           <!-- 所有班级列表展示 -->
-          <div class="course-list">
-            <el-empty v-if="data.courseList.length === 0" description="暂无班级信息"/>
-            <el-table v-if="data.courseList.length !== 0" :data="data.courseList" border style="width: 100%">
-              <el-table-column prop="id" label="ID" width="50" />
-              <el-table-column prop="name" label="班级名"/>
-              <el-table-column prop="course_name" label="课程名"/>
-              <el-table-column prop="teacher_name" label="教师名"/>
-              <el-table-column prop="capacity" label="学生数量"/>
-              <el-table-column prop="end_time" label="截止时间"/>
-              <el-table-column prop="college_name" label="教学单位名"/>
-              <el-table-column prop="not_apply_reason" label="申请状态"/>
+          <div class="course-list" v-loading="data.courseListLoading">
+            <el-empty v-if="data.courseList.length === 0 && !data.courseListLoading" description="暂无班级信息" />
+            <el-table v-if="data.courseList.length !== 0" :data="data.courseList" border style="width: 100%" max-height="400">
+              <el-table-column prop="name" label="班级名" min-width="200"/>
+              <el-table-column prop="course_name" label="课程名" min-width="200"/>
+              <el-table-column prop="teacher_name" label="教师名" min-width="200"/>
+              <el-table-column prop="capacity" label="学生数量" min-width="200"/>
+              <el-table-column prop="end_time" label="截止时间" min-width="200"/>
+              <el-table-column prop="college_name" label="教学单位名" min-width="200"/>
+              <el-table-column prop="not_apply_reason" label="申请状态" min-width="200"/>
               <!-- 右侧固定列 展示详情信息 -->
               <el-table-column fixed="right" label="操作" min-width="60">
                 <template v-slot="scope">
@@ -632,10 +651,9 @@ onMounted(() => {
       <!-- 已报名班级 -->
       <el-tab-pane label="已报名班级" name="second" class="experiment-pane">
         <img src="../../assets/img/banner.png" class="banner" alt="大模型实训平台">
-        <div class="course-list">
-          <el-empty v-if="data.enrolledClassList.length === 0" description="暂无已报名班级信息"/>
+        <div class="course-list" v-loading="data.enrolledClassListLoading">
+          <el-empty v-if="data.enrolledClassList.length === 0 && !data.enrolledClassListLoading" description="暂无已报名班级信息"/>
           <el-table v-if="data.enrolledClassList.length !== 0" :data="data.enrolledClassList" border style="width: 100%">
-            <el-table-column prop="id" label="ID" width="50" />
             <el-table-column prop="name" label="班级名"/>
             <el-table-column prop="course_name" label="课程名"/>
             <el-table-column prop="teacher_name" label="教师名"/>
@@ -644,7 +662,7 @@ onMounted(() => {
             <el-table-column prop="college_name" label="教学单位名"/>
             <el-table-column prop="not_apply_reason" label="申请状态"/>
             <!-- 右侧固定列 展示详情信息 -->
-            <el-table-column fixed="right" label="操作" min-width="60">
+            <el-table-column fixed="right" label="操作" min-width="80">
               <template v-slot="scope">
                 <el-button link type="primary" size="small" @click="getCourseDetail(scope.row)">详情</el-button>
                 <el-button link type="primary" size="small" @click="checkExamArrangement(scope.row.id)">考试安排</el-button>  
@@ -780,7 +798,6 @@ onMounted(() => {
         <div class="course-list">
           <el-empty v-if="data.imageList.length === 0" description="暂无镜像信息"/>
           <el-table v-if="data.imageList.length !== 0" :data="data.imageList" border style="width: 100%">
-            <el-table-column prop="id" label="ID" width="100"/>
             <el-table-column prop="name" label="镜像名"/>
             <el-table-column prop="desc" label="描述"/>
             <el-table-column fixed="right" label="操作">
@@ -808,12 +825,13 @@ onMounted(() => {
   </div>
 
   <!-- 班级详情模态框 -->
-  <el-dialog v-model="data.courseDetailVisible" title="班级详细信息" width="600">
+  <el-dialog v-model="data.courseDetailVisible" title="班级详细信息" width="600" center>
     <div class="experiment-dialog">
       <el-descriptions
         direction="vertical"
         :column="4"
         border
+        class="class-description"
       >
         <el-descriptions-item label="班级名" :span="2">{{ data.currentCourseDetail.name }}</el-descriptions-item>
         <el-descriptions-item label="教师名" :span="2">{{ data.currentCourseDetail.teacher_name }}</el-descriptions-item>
@@ -827,22 +845,35 @@ onMounted(() => {
   </el-dialog>
 
   <!-- 班级申请记录模态框 -->
-  <el-dialog v-model="data.courseApplyDetailVisible" title="课程申请记录" width="1200" center>
-    <el-empty v-if="data.courseApplyList.length === 0" description="暂无申请班级记录信息"/>
-    <el-table v-if="data.courseApplyList.length !== 0" :data="data.courseApplyList" border style="width: 100%">
-      <el-table-column prop="class_id" label="ID"/>
-      <el-table-column prop="class_name" label="班级名"/>
-      <el-table-column prop="create_time" label="时间"/>
-      <el-table-column prop="status_desc" label="审核状态"/>
-      <!-- 右侧固定列 展示详情信息 -->
-      <el-table-column fixed="right" label="操作">
-        <template v-slot="scope">
-          <el-button v-if="scope.row.status === 1" size="small" type="success" @click="passClassApplication(scope.row.id)">通过</el-button>
-          <el-button v-if="scope.row.status === 1" size="small" type="danger" @click="refuseClassApplication(scope.row.id)">不通过</el-button>
-          <el-button v-if="scope.row.status !== 1" type="danger" size="small" :disabled="scope.row.status !== 1" @click="removeCourseApply(scope.row.id)">取消</el-button>
-        </template>
-      </el-table-column>
-    </el-table>
+  <el-dialog v-model="data.courseApplyDetailVisible" title="班级申请记录" width="1200" center>
+    <div class="apply-list">
+      <el-empty v-if="data.courseApplyList.length === 0" description="暂无申请班级记录信息"/>
+      <el-table v-if="data.courseApplyList.length !== 0" :data="data.courseApplyList" border style="width: 100%">
+        <el-table-column prop="user_name" label="申请人"/>
+        <el-table-column prop="class_name" label="班级班级"/>
+        <el-table-column prop="create_time" label="时间"/>
+        <el-table-column prop="status_desc" label="审核状态"/>
+        <!-- 右侧固定列 展示详情信息 -->
+        <el-table-column fixed="right" label="操作">
+          <template v-slot="scope">
+            <el-button v-if="scope.row.status === 1" size="small" type="success" @click="passClassApplication(scope.row.id)">通过</el-button>
+            <el-button v-if="scope.row.status === 1" size="small" type="danger" @click="refuseClassApplication(scope.row.id)">不通过</el-button>
+            <el-button v-if="scope.row.status !== 1" type="danger" size="small" :disabled="scope.row.status !== 1" @click="removeCourseApply(scope.row.id)">取消</el-button>
+          </template>
+        </el-table-column>
+      </el-table>
+      <!-- 分页 -->
+      <el-pagination 
+        v-if="data.courseApplyList.length !== 0" 
+        background 
+        layout="prev, pager, next"
+        :total="data.applyTotal" 
+        :page-size="data.applyCount" 
+        @size-change="applySizeChange"
+        @current-change="applyCurrentChange" 
+        class="mt-4 mx-auto" 
+      />
+    </div>
   </el-dialog>
 
   <!-- 实验详情框 -->
@@ -1156,7 +1187,7 @@ onMounted(() => {
 .experiment-list-container {
   width: 100%;
   height: 100%;
-  @apply pt-1 pl-1 flex flex-row;
+  @apply pt-1 pl-1 flex flex-row justify-center;
 }
 .experiment-card {
   width: 90%;
@@ -1183,6 +1214,9 @@ onMounted(() => {
 /* 模态框 */
 .experiment-dialog {
   @apply flex items-center justify-center flex-col;
+}
+.class-description {
+  width: 100%;
 }
 .dialog-search-box {
   height: 10vh;
@@ -1212,6 +1246,9 @@ onMounted(() => {
 }
 .notification-list {
   width: 100%;
+  @apply flex flex-col mt-4 mr-2;
+}
+.apply-list {
   @apply flex flex-col mt-4 mr-2;
 }
 </style>

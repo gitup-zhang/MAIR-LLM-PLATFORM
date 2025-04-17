@@ -1493,6 +1493,7 @@ onMounted(() => {
     </div>
   </el-dialog>
   <!-- 查看考试详情 -->
+    <!-- eslint-disable vue/no-multiple-template-root -->
   <el-dialog v-model="data.checkExamDetailModalVisible" title="考试详情" width="600" center>
     <div class="exam-dialog">
       <el-descriptions
@@ -1556,3 +1557,4 @@ onMounted(() => {
 .exam-description {
   width: 100%;
 }
+</style>

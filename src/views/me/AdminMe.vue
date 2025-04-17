@@ -382,6 +382,7 @@ onMounted(async () => {
   </div>
 
   <!-- 修改个人信息框 -->
+  <!-- eslint-disable vue/no-multiple-template-root -->
   <el-dialog
     v-model="systemStore.userInfoEditVisible"
     title="修改我的信息"

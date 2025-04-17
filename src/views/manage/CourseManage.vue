@@ -1171,6 +1171,7 @@ onMounted(async () => {
   </el-dialog>
 
   <!-- 添加章节框 -->
+  <!-- eslint-disable vue/no-multiple-template-root -->
   <el-dialog
     v-model="data.addChapterModalVisible"
     title="添加章节"

@@ -1,30 +1,54 @@
 <script setup lang="ts">
 // 教师课程页
-import { onMounted, reactive } from "vue"
-import { ElMessage } from 'element-plus';
-import { Document, Edit, Filter, UploadFilled } from '@element-plus/icons-vue'
-import { getCourseDetailInfo } from '@/apis/experiment'
-import { getCourseList, deleteCourseApply, getClassApplyRecord } from '@/apis/course'
-import { getClassList, getManagedClassList, getTeachedClassList, passClassApply, refuseClassApply } from '@/apis/class'
-import { getImageInfo, deleteImage, createImage, buildImage } from '@/apis/image'
-import { getNotificationList, deleteNotification, createNotification } from '@/apis/notification';
-import { getTeacherStudyProgessDetail } from '@/apis/record';
-import { getSubcourseContainerList, stopContainer, startContainer, deleteContainer } from '@/apis/container';
-import { useUserStore } from '@/stores/user'
-import { useRouter } from "vue-router"
+import { onMounted, reactive } from "vue";
+import { ElMessage } from "element-plus";
+import { Document, Edit, Filter, UploadFilled } from "@element-plus/icons-vue";
+import { getCourseDetailInfo } from "@/apis/experiment";
+import {
+  getCourseList,
+  deleteCourseApply,
+  getClassApplyRecord,
+} from "@/apis/course";
+import {
+  getClassList,
+  getManagedClassList,
+  getTeachedClassList,
+  passClassApply,
+  refuseClassApply,
+} from "@/apis/class";
+import {
+  getImageInfo,
+  deleteImage,
+  createImage,
+  buildImage,
+} from "@/apis/image";
+import {
+  getNotificationList,
+  deleteNotification,
+  createNotification,
+} from "@/apis/notification";
+import { getTeacherStudyProgessDetail } from "@/apis/record";
+import {
+  getSubcourseContainerList,
+  stopContainer,
+  startContainer,
+  deleteContainer,
+} from "@/apis/container";
+import { useUserStore } from "@/stores/user";
+import { useRouter } from "vue-router";
 
 const userStore = useUserStore();
 const router = useRouter();
 
 const data = reactive({
-  activeName: 'first',
-  fileUploadUrl: '',
-  inputContainer:'',
+  activeName: "first",
+  fileUploadUrl: "",
+  inputContainer: "",
   fileLimit: 1,
-  inputImage: '',
-  inputNotification: '',
-  searchText: '',
-  searchManageClassText: '',
+  inputImage: "",
+  inputNotification: "",
+  searchText: "",
+  searchManageClassText: "",
   currentExperimentId: -1,
   currentSubcourseId: -1,
   // 全部班级信息
@@ -47,18 +71,18 @@ const data = reactive({
   containerList: [],
   // 新表单
   newImageForm: {
-    image_id: 0 || '',
-    desc: '',
-    container_id: '',
-    name: ''
+    image_id: 0 || "",
+    desc: "",
+    container_id: "",
+    name: "",
   },
   newNotificationForm: {
-    content: '',
+    content: "",
     class_id: -1,
-    files_info: [] as any
+    files_info: [] as any,
   },
   // 容器地址
-  containerAddr: '',
+  containerAddr: "",
   // 分页相关
   classPage: 1,
   classCount: 6,
@@ -98,499 +122,550 @@ const data = reactive({
   checkContainerModalVisible: false,
   courseListLoading: true,
   enrolledClassListLoading: true,
-})
+});
 
 // 搜索班级
 const searchCourse = async () => {
-  if(data.searchText.length > 0){
+  if (data.searchText.length > 0) {
     data.classPage = 1;
   }
-  const res = await getCourseList(data.searchText, data.classPage, data.classCount);
+  const res = await getCourseList(
+    data.searchText,
+    data.classPage,
+    data.classCount
+  );
   data.courseListLoading = false;
   data.courseList = res.data.list;
   data.classTotal = res.data.total;
-}
+};
 // 班级分页
 const classSizeChange = (val: any) => {
   searchCourse();
-}
+};
 const classCurrentChange = (val: any) => {
   data.classPage = val;
   searchCourse();
-}
+};
 // 查看课程详情
 const getCourseDetail = (courseDetail: any) => {
   data.courseDetailVisible = true;
   data.currentCourseDetail = courseDetail;
-}
+};
 
 // 查看课程申请记录
 const getCourseApplyDetail = async () => {
   data.courseApplyDetailVisible = true;
   searchClassApply();
-}
+};
 const searchClassApply = async () => {
-  const res = await getClassApplyRecord(userStore.id, data.applyPage, data.applyCount);
+  const res = await getClassApplyRecord(
+    userStore.id,
+    data.applyPage,
+    data.applyCount
+  );
   data.courseApplyList = res.data.list;
   data.applyTotal = res.data.total;
-}
+};
 const applySizeChange = async (val: any) => {
   searchClassApply();
-}
+};
 const applyCurrentChange = async (val: any) => {
   data.applyPage = val;
   searchClassApply();
-}
+};
 // 通过班级申请
 const passClassApplication = async (id: number) => {
   const res = await passClassApply(id);
-  if(res.status === 0){
+  if (res.status === 0) {
     ElMessage({
-      message: '班级申请已通过',
-      type: 'success',
+      message: "班级申请已通过",
+      type: "success",
       plain: true,
-    })
-  }else {
+    });
+  } else {
     ElMessage({
-      message: '班级申请通过失败',
-      type: 'error',
+      message: "班级申请通过失败",
+      type: "error",
       plain: true,
-    })
+    });
   }
-  getCourseApplyDetail()
-}
+  getCourseApplyDetail();
+};
 // 拒绝班级申请
 const refuseClassApplication = async (id: number) => {
   const res = await refuseClassApply(id);
-  if(res.status === 0){
+  if (res.status === 0) {
     ElMessage({
-      message: '班级申请拒绝成功',
-      type: 'success',
+      message: "班级申请拒绝成功",
+      type: "success",
       plain: true,
-    })
-  }else {
+    });
+  } else {
     ElMessage({
-      message: '班级申请拒绝失败',
-      type: 'error',
+      message: "班级申请拒绝失败",
+      type: "error",
       plain: true,
-    })
+    });
   }
-  getCourseApplyDetail()
-}
+  getCourseApplyDetail();
+};
 // 取消申请
-const removeCourseApply = async (applyId:number) => {
+const removeCourseApply = async (applyId: number) => {
   const res = await deleteCourseApply(applyId);
-  if(res.status === 0){
+  if (res.status === 0) {
     ElMessage({
-      message: '班级申请取消成功',
-      type: 'success',
+      message: "班级申请取消成功",
+      type: "success",
       plain: true,
-    })
-  }else {
+    });
+  } else {
     ElMessage({
-      message: '班级申请取消失败',
-      type: 'error',
+      message: "班级申请取消失败",
+      type: "error",
       plain: true,
-    })
+    });
   }
-  getCourseApplyDetail()
-}
+  getCourseApplyDetail();
+};
 
 // 搜索已报名的班级信息
 const searchEnrolledClass = async () => {
-  const res = await getClassList(data.enrolledClassPage, data.enrolledClassCount);
+  const res = await getClassList(
+    data.enrolledClassPage,
+    data.enrolledClassCount
+  );
   data.enrolledClassListLoading = false;
   data.enrolledClassList = res.data.list;
   data.enrolledClassTotal = res.data.total;
-}
+};
 // 已报名的班级分页
 const enrolledClassSizeChange = (val: any) => {
   searchEnrolledClass();
-}
+};
 const enrolledClassCurrentChange = (val: any) => {
   data.enrolledClassPage = val;
   searchEnrolledClass();
-}
+};
 // 获取考试安排信息
 const checkExamArrangement = (id: number) => {
   router.push({
     path: "/examArrange",
     query: {
-      id: id
-    }
-  })
-}
+      id: id,
+    },
+  });
+};
 
 // 搜索管理的班级
 const searchManagedClass = async () => {
-  if(data.searchManageClassText.length > 0){
+  if (data.searchManageClassText.length > 0) {
     data.managedClassPage = 1;
   }
-  const res = await getManagedClassList(data.searchManageClassText, data.managedClassPage, data.managedClassCount);
+  const res = await getManagedClassList(
+    data.searchManageClassText,
+    data.managedClassPage,
+    data.managedClassCount
+  );
   data.managedClassList = res.data.list;
   data.managedClassTotal = res.data.total;
-}
+};
 // 班级分页
 const managedClassSizeChange = (val: any) => {
   searchManagedClass();
-}
+};
 const managedClassCurrentChange = (val: any) => {
   data.managedClassPage = val;
   searchManagedClass();
-}
+};
 
 // 搜索镜像
 const searchImage = async () => {
   const res = await getImageInfo(data.imagePage, data.imageCount);
   data.imageList = res.data.normal_image_list;
   data.imageTotal = res.data.total;
-}
+};
 // 获取镜像相关信息
 const getImageData = async () => {
   var tmp = {} as any;
-  if (sessionStorage.image_id === '-1') {
+  if (sessionStorage.image_id === "-1") {
     const res = await getImageInfo(data.imagePage, data.imageCount);
     data.imageList = res.data.normal_image_list;
-    data.newImageForm.image_id = data.imageList[0]['id'];
+    data.newImageForm.image_id = data.imageList[0]["id"];
   } else if (sessionStorage.image_name !== sessionStorage.flag_name) {
-    tmp = {}
-    tmp['name'] = sessionStorage.image_name;
-    tmp['id'] = sessionStorage.image_id;
+    tmp = {};
+    tmp["name"] = sessionStorage.image_name;
+    tmp["id"] = sessionStorage.image_id;
     data.imageList.push(tmp);
     data.newImageForm.desc = sessionStorage.desc;
-    data.newImageForm.container_id = 'modify';
-    data.newImageForm.image_id = 'modify';
+    data.newImageForm.container_id = "modify";
+    data.newImageForm.image_id = "modify";
     data.newImageForm.name = sessionStorage.flag_name;
-    data.containerAddr = 'modify';
+    data.containerAddr = "modify";
   }
-  data.newImageForm.image_id = data.imageList[0]['id'];
-}
+  data.newImageForm.image_id = data.imageList[0]["id"];
+};
 // 添加镜像
 const addImage = (index: number) => {
-  if(index === -1){
+  if (index === -1) {
     sessionStorage.image_id = index;
   } else {
-    sessionStorage.image_id = data.imageList[index]['id'];
-    sessionStorage.image_name = data.imageList[index]['name'];
+    sessionStorage.image_id = data.imageList[index]["id"];
+    sessionStorage.image_name = data.imageList[index]["name"];
   }
   getImageData();
   // 打开创建镜像模态框
   data.createImageModalVisible = true;
-}
+};
 // 修改镜像
 const updateImage = (index: number) => {
-  sessionStorage.desc = data.imageList[index]['desc'];
-  sessionStorage.flag_name = data.imageList[index]['name'];
-  if(index === -1){
+  sessionStorage.desc = data.imageList[index]["desc"];
+  sessionStorage.flag_name = data.imageList[index]["name"];
+  if (index === -1) {
     sessionStorage.image_id = index;
   } else {
-    sessionStorage.image_id = data.imageList[index]['id'];
-    sessionStorage.image_name = data.imageList[index]['name']
+    sessionStorage.image_id = data.imageList[index]["id"];
+    sessionStorage.image_name = data.imageList[index]["name"];
   }
   data.modifyImageModalVisible = true;
-}
+};
 // 删除镜像
 const removeImage = async (index: number) => {
-  const res = await deleteImage(data.imageList[index]['id'] as number, data.imageList[index]['image_tag'] as string);
-  if(res.status === 0){
+  const res = await deleteImage(
+    data.imageList[index]["id"] as number,
+    data.imageList[index]["image_tag"] as string
+  );
+  if (res.status === 0) {
     ElMessage({
-      message: '镜像删除成功',
-      type: 'success',
+      message: "镜像删除成功",
+      type: "success",
       plain: true,
-    })
+    });
   } else {
     ElMessage({
-      message: '镜像删除失败',
-      type: 'error',
+      message: "镜像删除失败",
+      type: "error",
       plain: true,
-    })
+    });
   }
   searchImage();
-}
+};
 // 创建镜像
 const submitImageCreate = async () => {
   const res = await createImage(data.newImageForm.image_id);
-  if(res.status === 0){
+  if (res.status === 0) {
     ElMessage({
-      message: '镜像创建成功',
-      type: 'success',
+      message: "镜像创建成功",
+      type: "success",
       plain: true,
-    })
-    data.newImageForm.container_id = res.data.container_id
-    data.containerAddr = res.data.addr
-    window.open(data.containerAddr)
+    });
+    data.newImageForm.container_id = res.data.container_id;
+    data.containerAddr = res.data.addr;
+    window.open(data.containerAddr);
   } else {
     ElMessage({
-      message: '镜像创建失败',
-      type: 'error',
+      message: "镜像创建失败",
+      type: "error",
       plain: true,
-    })
+    });
   }
-}
+};
 // 保存镜像
 const saveImageCreate = async () => {
-  if(data.containerAddr === ''){
+  if (data.containerAddr === "") {
     ElMessage({
-      message: '请设置镜像',
-      type: 'warning',
+      message: "请设置镜像",
+      type: "warning",
       plain: true,
-    })
+    });
   } else {
-    const res = await buildImage(data.newImageForm.container_id, data.newImageForm.desc, data.newImageForm.name, data.newImageForm.image_id);
-    if(res.status === 0){
+    const res = await buildImage(
+      data.newImageForm.container_id,
+      data.newImageForm.desc,
+      data.newImageForm.name,
+      data.newImageForm.image_id
+    );
+    if (res.status === 0) {
       ElMessage({
-        message: '镜像创建成功',
-        type: 'success',
+        message: "镜像创建成功",
+        type: "success",
         plain: true,
-      })
+      });
       data.createImageModalVisible = false;
     } else {
       ElMessage({
-        message: '镜像创建失败',
-        type: 'error',
+        message: "镜像创建失败",
+        type: "error",
         plain: true,
-      })
+      });
     }
   }
-}
+};
 // 镜像分页
 const imageSizeChange = (val: any) => {
   searchImage();
-}
+};
 const imageCurrentChange = (val: any) => {
   data.imagePage = val;
   searchImage();
-}
+};
 
 // 搜索授课实验信息
 const searchTeachedExperiment = async () => {
-  const res = await getTeachedClassList(data.teachExperimentPage, data.teachExperimentCount);
+  const res = await getTeachedClassList(
+    data.teachExperimentPage,
+    data.teachExperimentCount
+  );
   data.teachExperimentList = res.data.list;
   data.teachExperimentTotal = res.data.total;
-}
+};
 // 搜索班级通知
 const searchNotification = async (classId: number) => {
-  const res = await getNotificationList(classId, data.inputNotification, data.page, data.count);
+  const res = await getNotificationList(
+    classId,
+    data.inputNotification,
+    data.page,
+    data.count
+  );
   data.notificationList = res.data.list;
   data.total = res.data.total;
-}
+};
 // 获取班级通知
 const openClassNotificationModal = (id: number) => {
   data.classNotificationModalVisible = true;
   data.currentExperimentId = id;
   searchNotification(id);
-}
+};
 // 打开创建通知模态框
 const openCreateNotificationModal = () => {
   data.createNotificationModalVisible = true;
   data.newNotificationForm.class_id = data.currentExperimentId;
-}
+};
 // 删除通知
 const removeNotification = async (id: number) => {
   const res = await deleteNotification(id);
-  if(res.status === 0){
+  if (res.status === 0) {
     ElMessage({
-      message: '消息删除成功',
-      type: 'success',
+      message: "消息删除成功",
+      type: "success",
       plain: true,
-    })
+    });
   } else {
     ElMessage({
-      message: '消息删除失败',
-      type: 'error',
+      message: "消息删除失败",
+      type: "error",
       plain: true,
-    })
+    });
   }
   searchNotification(data.currentExperimentId);
-}
+};
 // 文件移除时的钩子
 const handleRemove = (uploadFile: any, uploadFiles: any) => {
-  if(!uploadFile.file_id){
+  if (!uploadFile.file_id) {
     return;
   }
-  for (let i = 0, len = data.newNotificationForm.files_info.length; i < len; i++) {
+  for (
+    let i = 0, len = data.newNotificationForm.files_info.length;
+    i < len;
+    i++
+  ) {
     if (data.newNotificationForm.files_info[i].url === uploadFile.url) {
-      data.newNotificationForm.files_info.splice(i, 1)
-      break
+      data.newNotificationForm.files_info.splice(i, 1);
+      break;
     }
   }
-}
+};
 // 删除文件之前的钩子，参数为上传的文件和文件列表
 const beforeRemove = (uploadFile: any, uploadFiles: any) => {
   return true;
-}
+};
 // 当超出限制时，执行的钩子函数
 const handleExceed = (files: any, uploadFiles: any) => {
   ElMessage({
-    message: `当前限制选择 ${data.fileLimit} 个文件，共选择了 ${files.length + uploadFiles.length} 个文件`,
-    type: 'warning',
+    message: `当前限制选择 ${data.fileLimit} 个文件，共选择了 ${
+      files.length + uploadFiles.length
+    } 个文件`,
+    type: "warning",
     plain: true,
-  })
-}
+  });
+};
 // 文件上传成功时的钩子
 const handleSuccess = (res: any, file: any) => {
   data.newNotificationForm.files_info.push({
     name: res.data.name,
     url: res.data.url,
     file_id: res.data.file_id,
-    group_name: res.data.group_name
-  })
-}
+    group_name: res.data.group_name,
+  });
+};
 // 上传文件之前的钩子
 const beforeUpload = (rawFile: any) => {
-  const isLimit20MB = rawFile.size / 1024 / 1024 < 20
-  if(! isLimit20MB){
+  const isLimit20MB = rawFile.size / 1024 / 1024 < 20;
+  if (!isLimit20MB) {
     ElMessage({
-      message: '上传单个文件且大小不能超过20MB',
-      type: 'warning',
+      message: "上传单个文件且大小不能超过20MB",
+      type: "warning",
       plain: true,
-    })
+    });
   }
-}
+};
 // 提交通知创建
 const submitNotificationCreate = async () => {
   const res = await createNotification(data.newNotificationForm);
-  if(res.status === 0){
+  if (res.status === 0) {
     ElMessage({
-      message: '消息创建成功',
-      type: 'success',
+      message: "消息创建成功",
+      type: "success",
       plain: true,
-    })
+    });
   } else {
     ElMessage({
-      message: '消息创建失败',
-      type: 'error',
+      message: "消息创建失败",
+      type: "error",
       plain: true,
-    })
+    });
   }
   searchNotification(data.currentExperimentId);
-} 
+};
 
 // 进入学生课程报告页面
 const openStuReport = (courseId: number, subcourseId: number) => {
-  data.experimentDetailVisible = false
+  data.experimentDetailVisible = false;
   router.push({
     path: "/teacherReport",
     query: {
-      courseId: courseId, 
-      subcourseId: subcourseId
-    }
-  })
-}
+      courseId: courseId,
+      subcourseId: subcourseId,
+    },
+  });
+};
 // 获取课程详情
-const getExperimentDetail = async (courseId:number, page:number, count:number) => {
+const getExperimentDetail = async (
+  courseId: number,
+  page: number,
+  count: number
+) => {
   const res = await getCourseDetailInfo(courseId, page, count);
   data.subcourseList = res.data.list;
-}
+};
 // 进入课程
 const openExperimentDetailModal = (courseId: number) => {
   data.currentExperimentId = courseId;
   data.experimentDetailVisible = true;
   getExperimentDetail(courseId, 1, 10);
-}
+};
 // 进入实验
 const openExperiment = () => {
   data.experimentDetailVisible = false;
-  window.open('http://8.155.19.142:30049/lab?');
-}
+  window.open("http://8.155.19.142:30049/lab?");
+};
 // 查看学生学习进度
 const openClassProgressModal = async (subcouseId: number) => {
   data.classProgressModalVisible = true;
   data.currentSubcourseId = subcouseId;
-  const res = await getTeacherStudyProgessDetail(subcouseId, data.currentExperimentId, data.studyProgressPage, data.studyProgressCount);
+  const res = await getTeacherStudyProgessDetail(
+    subcouseId,
+    data.currentExperimentId,
+    data.studyProgressPage,
+    data.studyProgressCount
+  );
   data.studyProgressList = res.data.list;
   data.studyProgressTotal = res.data.total;
-}
+};
 // 查看容器
 const openClassContainerModal = async (subcouseId: number) => {
   data.currentSubcourseId = subcouseId;
   data.checkContainerModalVisible = true;
-  const res = await getSubcourseContainerList(subcouseId, data.currentExperimentId, data.containerPage, data.containerCount);
+  const res = await getSubcourseContainerList(
+    subcouseId,
+    data.currentExperimentId,
+    data.containerPage,
+    data.containerCount
+  );
   data.containerList = res.data.list;
   data.containerTotal = res.data.total;
-}
+};
 // 停止容器
 const ceaseContainer = async (id: number) => {
   const res = await stopContainer(id);
-  if(res.status === 0){
+  if (res.status === 0) {
     ElMessage({
-      message: '已停止该容器',
-      type: 'success',
+      message: "已停止该容器",
+      type: "success",
       plain: true,
-    })
+    });
   } else {
     ElMessage({
-      message: '该容器无法停止',
-      type: 'warning',
+      message: "该容器无法停止",
+      type: "warning",
       plain: true,
-    })
+    });
   }
   openClassContainerModal(data.currentSubcourseId);
-}
+};
 // 启动容器
 const launchContainer = async (id: number) => {
   const res = await startContainer(id);
-  if(res.status === 0){
+  if (res.status === 0) {
     ElMessage({
-      message: '容器启动成功',
-      type: 'success',
+      message: "容器启动成功",
+      type: "success",
       plain: true,
-    })
+    });
   } else {
     ElMessage({
-      message: '容器启动失败',
-      type: 'warning',
+      message: "容器启动失败",
+      type: "warning",
       plain: true,
-    })
+    });
   }
   openClassContainerModal(data.currentSubcourseId);
-}
+};
 // 删除容器
 const removeContainer = async (id: number) => {
   const res = await deleteContainer(id);
-  if(res.status === 0){
+  if (res.status === 0) {
     ElMessage({
-      message: '容器删除成功',
-      type: 'success',
+      message: "容器删除成功",
+      type: "success",
       plain: true,
-    })
+    });
   } else {
     ElMessage({
-      message: '容器删除失败',
-      type: 'warning',
+      message: "容器删除失败",
+      type: "warning",
       plain: true,
-    })
+    });
   }
   openClassContainerModal(data.currentSubcourseId);
-}
+};
 // 进入容器
 const enterContainer = async (address: string) => {
-  window.open(address)
-}
+  window.open(address);
+};
 // 学生学习进度分页
 const studyProgressSizeChange = (val: any) => {
   openClassProgressModal(data.currentSubcourseId);
-}
+};
 const studyProgressCurrentChange = (val: any) => {
   data.studyProgressPage = val;
   openClassProgressModal(data.currentSubcourseId);
-}
+};
 // 容器分页
 const containerSizeChange = (val: any) => {
   openClassContainerModal(data.currentSubcourseId);
-}
+};
 const containerCurrentChange = (val: any) => {
   data.containerPage = val;
   openClassContainerModal(data.currentSubcourseId);
-}
+};
 // 授课实验分页
 const teachExperimentSizeChange = (val: any) => {
   searchTeachedExperiment();
-}
+};
 const teachExperimentCurrentChange = (val: any) => {
   data.teachExperimentPage = val;
   searchTeachedExperiment();
-}
+};
 
 onMounted(() => {
   // 初始化
@@ -599,47 +674,106 @@ onMounted(() => {
   searchManagedClass();
   searchTeachedExperiment();
   searchImage();
-})
+});
 </script>
 
 <template>
   <div class="class-page">
-    <el-tabs v-model="data.activeName" type="border-card" class="experiment-tabs">
+    <el-tabs
+      v-model="data.activeName"
+      type="border-card"
+      class="experiment-tabs"
+    >
       <!-- 班级信息 -->
       <el-tab-pane label="班级信息" name="first" class="experiment-pane">
-        <img src="../../assets/img/banner.png" class="banner" alt="大模型实训平台">
+        <img
+          src="../../assets/img/banner.png"
+          class="banner"
+          alt="大模型实训平台"
+        />
         <div class="course-main">
           <!-- 课程搜索框 -->
           <div class="select-course">
             <!-- 搜索 -->
-            <el-input v-model="data.searchText" style="width: 240px" class="mr-3" placeholder="请输入班级名称" />
-            <el-button type="primary" class="mr-3" @click="searchCourse()">搜索</el-button>
-            <el-button type="primary" class="ml-3" @click="getCourseApplyDetail()">班级申请记录</el-button>
+            <el-input
+              v-model="data.searchText"
+              style="width: 240px"
+              class="mr-3"
+              placeholder="请输入班级名称"
+            />
+            <el-button type="primary" class="mr-3" @click="searchCourse()"
+              >搜索</el-button
+            >
+            <el-button
+              type="primary"
+              class="ml-3"
+              @click="getCourseApplyDetail()"
+              >班级申请记录</el-button
+            >
           </div>
           <!-- 所有班级列表展示 -->
           <div class="course-list" v-loading="data.courseListLoading">
-            <el-empty v-if="data.courseList.length === 0 && !data.courseListLoading" description="暂无班级信息" />
-            <el-table v-if="data.courseList.length !== 0" :data="data.courseList" border style="width: 100%" max-height="400">
-              <el-table-column prop="name" label="班级名" min-width="200"/>
-              <el-table-column prop="course_name" label="课程名" min-width="200"/>
-              <el-table-column prop="teacher_name" label="教师名" min-width="200"/>
-              <el-table-column prop="capacity" label="学生数量" min-width="200"/>
-              <el-table-column prop="end_time" label="截止时间" min-width="200"/>
-              <el-table-column prop="college_name" label="教学单位名" min-width="200"/>
-              <el-table-column prop="not_apply_reason" label="申请状态" min-width="200"/>
+            <el-empty
+              v-if="data.courseList.length === 0 && !data.courseListLoading"
+              description="暂无班级信息"
+            />
+            <el-table
+              v-if="data.courseList.length !== 0"
+              :data="data.courseList"
+              border
+              style="width: 100%"
+              max-height="400"
+            >
+              <el-table-column prop="name" label="班级名" min-width="200" />
+              <el-table-column
+                prop="course_name"
+                label="课程名"
+                min-width="200"
+              />
+              <el-table-column
+                prop="teacher_name"
+                label="教师名"
+                min-width="200"
+              />
+              <el-table-column
+                prop="capacity"
+                label="学生数量"
+                min-width="200"
+              />
+              <el-table-column
+                prop="end_time"
+                label="截止时间"
+                min-width="200"
+              />
+              <el-table-column
+                prop="college_name"
+                label="教学单位名"
+                min-width="200"
+              />
+              <el-table-column
+                prop="not_apply_reason"
+                label="申请状态"
+                min-width="200"
+              />
               <!-- 右侧固定列 展示详情信息 -->
               <el-table-column fixed="right" label="操作" min-width="60">
                 <template v-slot="scope">
-                  <el-button link type="primary" size="small" @click="getCourseDetail(scope.row)">详情</el-button>
+                  <el-button
+                    link
+                    type="primary"
+                    size="small"
+                    @click="getCourseDetail(scope.row)"
+                    >详情</el-button
+                  >
                 </template>
               </el-table-column>
             </el-table>
             <!-- 分页 -->
             <el-pagination
               v-if="data.courseList.length !== 0"
-              background 
+              background
               layout="prev, pager, next"
-              :total="data.classTotal" 
+              :total="data.classTotal"
               :page-size="data.classCount"
               @size-change="classSizeChange"
               @current-change="classCurrentChange"
@@ -650,31 +784,58 @@ onMounted(() => {
       </el-tab-pane>
       <!-- 已报名班级 -->
       <el-tab-pane label="已报名班级" name="second" class="experiment-pane">
-        <img src="../../assets/img/banner.png" class="banner" alt="大模型实训平台">
+        <img
+          src="../../assets/img/banner.png"
+          class="banner"
+          alt="大模型实训平台"
+        />
         <div class="course-list" v-loading="data.enrolledClassListLoading">
-          <el-empty v-if="data.enrolledClassList.length === 0 && !data.enrolledClassListLoading" description="暂无已报名班级信息"/>
-          <el-table v-if="data.enrolledClassList.length !== 0" :data="data.enrolledClassList" border style="width: 100%">
-            <el-table-column prop="name" label="班级名"/>
-            <el-table-column prop="course_name" label="课程名"/>
-            <el-table-column prop="teacher_name" label="教师名"/>
-            <el-table-column prop="capacity" label="学生数量"/>
-            <el-table-column prop="end_time" label="截止时间"/>
-            <el-table-column prop="college_name" label="教学单位名"/>
-            <el-table-column prop="not_apply_reason" label="申请状态"/>
+          <el-empty
+            v-if="
+              data.enrolledClassList.length === 0 &&
+              !data.enrolledClassListLoading
+            "
+            description="暂无已报名班级信息"
+          />
+          <el-table
+            v-if="data.enrolledClassList.length !== 0"
+            :data="data.enrolledClassList"
+            border
+            style="width: 100%"
+          >
+            <el-table-column prop="name" label="班级名" />
+            <el-table-column prop="course_name" label="课程名" />
+            <el-table-column prop="teacher_name" label="教师名" />
+            <el-table-column prop="capacity" label="学生数量" />
+            <el-table-column prop="end_time" label="截止时间" />
+            <el-table-column prop="college_name" label="教学单位名" />
+            <el-table-column prop="not_apply_reason" label="申请状态" />
             <!-- 右侧固定列 展示详情信息 -->
             <el-table-column fixed="right" label="操作" min-width="80">
               <template v-slot="scope">
-                <el-button link type="primary" size="small" @click="getCourseDetail(scope.row)">详情</el-button>
-                <el-button link type="primary" size="small" @click="checkExamArrangement(scope.row.id)">考试安排</el-button>  
+                <el-button
+                  link
+                  type="primary"
+                  size="small"
+                  @click="getCourseDetail(scope.row)"
+                  >详情</el-button
+                >
+                <el-button
+                  link
+                  type="primary"
+                  size="small"
+                  @click="checkExamArrangement(scope.row.id)"
+                  >考试安排</el-button
+                >
               </template>
             </el-table-column>
           </el-table>
           <!-- 分页 -->
           <el-pagination
             v-if="data.enrolledClassList.length !== 0"
-            background 
+            background
             layout="prev, pager, next"
-            :total="data.enrolledClassTotal" 
+            :total="data.enrolledClassTotal"
             :page-size="data.enrolledClassCount"
             @size-change="enrolledClassSizeChange"
             @current-change="enrolledClassCurrentChange"
@@ -684,44 +845,86 @@ onMounted(() => {
       </el-tab-pane>
       <!-- 管理的班级 -->
       <el-tab-pane label="管理的班级" name="third" class="experiment-pane">
-        <img src="../../assets/img/banner.png" class="banner" alt="大模型实训平台">
-        <div v-if="data.managedClassList.length != 0" class="select-course mt-3">
+        <img
+          src="../../assets/img/banner.png"
+          class="banner"
+          alt="大模型实训平台"
+        />
+        <div
+          v-if="data.managedClassList.length != 0"
+          class="select-course mt-3"
+        >
           <!-- 搜索 -->
-          <el-input v-model="data.searchManageClassText" style="width: 240px" class="mr-3" placeholder="请输入课程名称" />
-          <el-button type="primary" class="mr-3" @click="searchManagedClass()">搜索</el-button>
+          <el-input
+            v-model="data.searchManageClassText"
+            style="width: 240px"
+            class="mr-3"
+            placeholder="请输入课程名称"
+          />
+          <el-button type="primary" class="mr-3" @click="searchManagedClass()"
+            >搜索</el-button
+          >
         </div>
         <div class="course-list">
-          <el-empty v-if="data.managedClassList.length === 0" description="暂无管理的班级信息"/>
-          <el-table v-if="data.managedClassList.length !== 0" :data="data.managedClassList" border style="width: 100%">
-            <el-table-column prop="id" label="ID" width="60"/>
-            <el-table-column prop="name" label="班级名" width="180"/>
-            <el-table-column prop="course_name" label="课程名" width="160"/>
+          <el-empty
+            v-if="data.managedClassList.length === 0"
+            description="暂无管理的班级信息"
+          />
+          <el-table
+            v-if="data.managedClassList.length !== 0"
+            :data="data.managedClassList"
+            border
+            style="width: 100%"
+          >
+            <el-table-column prop="id" label="ID" width="60" />
+            <el-table-column prop="name" label="班级名" width="180" />
+            <el-table-column prop="course_name" label="课程名" width="160" />
             <el-table-column label="学生量" width="80">
               <template v-slot="scope">
-                {{scope.row.student_num}} / {{ scope.row.capacity }}
+                {{ scope.row.student_num }} / {{ scope.row.capacity }}
               </template>
             </el-table-column>
             <el-table-column label="启止时间">
               <template v-slot="scope">
-                {{ scope.row.start_time + ' -- ' + scope.row.end_time }}
+                {{ scope.row.start_time + " -- " + scope.row.end_time }}
               </template>
             </el-table-column>
-            <el-table-column prop="college_name" label="教学单位名" width="200"/>
-            <el-table-column prop="not_apply_reason" label="申请状态" width="140"/>
+            <el-table-column
+              prop="college_name"
+              label="教学单位名"
+              width="200"
+            />
+            <el-table-column
+              prop="not_apply_reason"
+              label="申请状态"
+              width="140"
+            />
             <!-- 右侧固定列 展示详情信息 -->
             <el-table-column fixed="right" label="操作" width="220">
               <template v-slot="scope">
-                <el-button link type="primary" size="small" @click="getCourseDetail(scope.row)">详情</el-button>
-                <el-button link type="primary" size="small" @click="checkExamArrangement(scope.row.id)">考试安排</el-button>
+                <el-button
+                  link
+                  type="primary"
+                  size="small"
+                  @click="getCourseDetail(scope.row)"
+                  >详情</el-button
+                >
+                <el-button
+                  link
+                  type="primary"
+                  size="small"
+                  @click="checkExamArrangement(scope.row.id)"
+                  >考试安排</el-button
+                >
               </template>
             </el-table-column>
           </el-table>
           <!-- 分页 -->
-          <el-pagination 
+          <el-pagination
             v-if="data.managedClassList.length !== 0"
-            background 
+            background
             layout="prev, pager, next"
-            :total="data.managedClassTotal" 
+            :total="data.managedClassTotal"
             :page-size="data.managedClassCount"
             @size-change="managedClassSizeChange"
             @current-change="managedClassCurrentChange"
@@ -729,44 +932,46 @@ onMounted(() => {
           />
         </div>
       </el-tab-pane>
-      <!-- <el-tab-pane label="已选实验" name="fourth" class="experiment-pane">
-        <el-row v-if="data.experimentList.length != 0" class="card-main">
-          <el-col :span="8" v-for="experiemnt in data.experimentList" :key="experiemnt.id"> -->
-            <!-- 课程卡片 -->
-            <!-- <el-card body-style="padding:0px" class="course-card"> -->
-              <!-- 配图 -->
-              <!-- <img src="@/assets/img/course.png" style="width: 100%"/>
-              <div class="course-card-main">
-                <span class="course-title">{{ experiemnt.name }}</span>
-                <el-button type='primary' text>{{ experiemnt.student_num }}课时</el-button>
-                <el-button type='primary' text @click="openClassNotificationModal(experiemnt.id)">班级通知</el-button>
-                <el-button type='primary' text @click="openExperimentDetailModal(experiemnt.id)">进入课程</el-button>
-                <el-button type='primary' text @click="openClassNotificationModal(experiemnt.id)">查看容器</el-button>
-                <el-button type='primary' text @click="openExperimentDetailModal(experiemnt.id)">学习进度</el-button>
-              </div>
-            </el-card>
-          </el-col>
-        </el-row>
-        <div v-else>
-          <el-empty description="暂无已选实验信息" />
-        </div>
-      </el-tab-pane> -->
       <el-tab-pane label="授课实验" name="fifth" class="experiment-pane">
         <el-row class="experiment-list-container">
-          <el-empty v-if="data.teachExperimentList.length === 0" description="暂无授课实验信息"/>
-          <el-col v-if="data.teachExperimentList.length !== 0" :span="6" v-for="experiment in data.teachExperimentList" :key="experiment.id">
+          <el-empty
+            v-if="data.teachExperimentList.length === 0"
+            description="暂无授课实验信息"
+          />
+          <el-col
+            v-if="data.teachExperimentList.length !== 0"
+            :span="6"
+            v-for="experiment in data.teachExperimentList"
+            :key="experiment.id"
+          >
             <!-- 课程卡片 -->
             <div class="experiment-card">
               <!-- 配图 -->
-              <img src="@/assets/img/course.png" style="width: 100%"/>
+              <img src="@/assets/img/course.png" style="width: 100%" />
               <div class="experiment-card-main">
-                <span class="experiment-title">班级名称：{{ experiment.name }}</span>
-                <span class="experiment-title">课程名称：{{ experiment.course_name }}</span>
-                <span class="experiment-title">上课地点：{{ experiment.college_name }}</span>
-                <span class="experiment-title">课时：{{ experiment.student_num }}</span>
+                <span class="experiment-title"
+                  >班级名称：{{ experiment.name }}</span
+                >
+                <span class="experiment-title"
+                  >课程名称：{{ experiment.course_name }}</span
+                >
+                <span class="experiment-title"
+                  >上课地点：{{ experiment.college_name }}</span
+                >
+                <span class="experiment-title"
+                  >课时：{{ experiment.student_num }}</span
+                >
                 <div class="experiment-card-btn">
-                  <el-button type='primary' @click="openClassNotificationModal(experiment.id)">班级通知</el-button>
-                  <el-button type='primary' @click="openExperimentDetailModal(experiment.id)">进入课程</el-button>
+                  <el-button
+                    type="primary"
+                    @click="openClassNotificationModal(experiment.id)"
+                    >班级通知</el-button
+                  >
+                  <el-button
+                    type="primary"
+                    @click="openExperimentDetailModal(experiment.id)"
+                    >进入课程</el-button
+                  >
                 </div>
               </div>
             </div>
@@ -774,9 +979,9 @@ onMounted(() => {
           <!-- 分页 -->
           <el-pagination
             v-if="data.teachExperimentList.length !== 0"
-            background 
+            background
             layout="prev, pager, next"
-            :total="data.teachExperimentTotal" 
+            :total="data.teachExperimentTotal"
             :page-size="data.teachExperimentCount"
             @size-change="teachExperimentSizeChange"
             @current-change="teachExperimentCurrentChange"
@@ -789,31 +994,73 @@ onMounted(() => {
         <div class="search-box">
           <div class="select-exam">
             <!-- 搜索 -->
-            <el-input v-model="data.inputImage" class="mr-3 w-[30vw] h-[2rem]" placeholder="请输入镜像名称" />
-            <el-button type="primary" class="mr-3 h-[2rem]" @click="searchImage()">搜索</el-button>
-            <el-button type="primary" class="mr-3 h-[2rem]" @click="addImage(-1)">创建新镜像</el-button>
+            <el-input
+              v-model="data.inputImage"
+              class="mr-3 w-[30vw] h-[2rem]"
+              placeholder="请输入镜像名称"
+            />
+            <el-button
+              type="primary"
+              class="mr-3 h-[2rem]"
+              @click="searchImage()"
+              >搜索</el-button
+            >
+            <el-button
+              type="primary"
+              class="mr-3 h-[2rem]"
+              @click="addImage(-1)"
+              >创建新镜像</el-button
+            >
           </div>
         </div>
         <!-- 所有镜像信息展示 -->
         <div class="course-list">
-          <el-empty v-if="data.imageList.length === 0" description="暂无镜像信息"/>
-          <el-table v-if="data.imageList.length !== 0" :data="data.imageList" border style="width: 100%">
-            <el-table-column prop="name" label="镜像名"/>
-            <el-table-column prop="desc" label="描述"/>
+          <el-empty
+            v-if="data.imageList.length === 0"
+            description="暂无镜像信息"
+          />
+          <el-table
+            v-if="data.imageList.length !== 0"
+            :data="data.imageList"
+            border
+            style="width: 100%"
+          >
+            <el-table-column prop="name" label="镜像名" />
+            <el-table-column prop="desc" label="描述" />
             <el-table-column fixed="right" label="操作">
               <template v-slot="scope">
-                <el-button link type="primary" size="small" @click="addImage(scope.$index)">添加镜像</el-button>
-                <el-button v-if="scope.row.is_used == 0" link type="primary" size="small" @click="updateImage(scope.$index)">修改镜像</el-button>
-                <el-button v-if="scope.row.is_used == 0" link type="primary" size="small" @click="removeImage(scope.$index)">删除镜像</el-button>
+                <el-button
+                  link
+                  type="primary"
+                  size="small"
+                  @click="addImage(scope.$index)"
+                  >添加镜像</el-button
+                >
+                <el-button
+                  v-if="scope.row.is_used == 0"
+                  link
+                  type="primary"
+                  size="small"
+                  @click="updateImage(scope.$index)"
+                  >修改镜像</el-button
+                >
+                <el-button
+                  v-if="scope.row.is_used == 0"
+                  link
+                  type="primary"
+                  size="small"
+                  @click="removeImage(scope.$index)"
+                  >删除镜像</el-button
+                >
               </template>
             </el-table-column>
           </el-table>
           <!-- 分页 -->
           <el-pagination
             v-if="data.imageList.length !== 0"
-            background 
+            background
             layout="prev, pager, next"
-            :total="data.imageTotal" 
+            :total="data.imageTotal"
             :page-size="data.imageCount"
             @size-change="imageSizeChange"
             @current-change="imageCurrentChange"
@@ -825,7 +1072,12 @@ onMounted(() => {
   </div>
 
   <!-- 班级详情模态框 -->
-  <el-dialog v-model="data.courseDetailVisible" title="班级详细信息" width="600" center>
+  <el-dialog
+    v-model="data.courseDetailVisible"
+    title="班级详细信息"
+    width="600"
+    center
+  >
     <div class="experiment-dialog">
       <el-descriptions
         direction="vertical"
@@ -833,66 +1085,152 @@ onMounted(() => {
         border
         class="class-description"
       >
-        <el-descriptions-item label="班级名" :span="2">{{ data.currentCourseDetail.name }}</el-descriptions-item>
-        <el-descriptions-item label="教师名" :span="2">{{ data.currentCourseDetail.teacher_name }}</el-descriptions-item>
-        <el-descriptions-item label="课程名" :span="2">{{ data.currentCourseDetail.course_name }}</el-descriptions-item>
-        <el-descriptions-item label="容量" :span="2">{{ data.currentCourseDetail.capacity }}</el-descriptions-item>
-        <el-descriptions-item label="起止时间" :span="4">{{ data.currentCourseDetail.start_time + '--' + data.currentCourseDetail.end_time}}</el-descriptions-item>
-        <el-descriptions-item label="描述" :span="4">{{ data.currentCourseDetail.desc }}</el-descriptions-item>
-        <el-descriptions-item label="教学单位名" :span="4">{{ data.currentCourseDetail.college_name }}</el-descriptions-item>
+        <el-descriptions-item label="班级名" :span="2">{{
+          data.currentCourseDetail.name
+        }}</el-descriptions-item>
+        <el-descriptions-item label="教师名" :span="2">{{
+          data.currentCourseDetail.teacher_name
+        }}</el-descriptions-item>
+        <el-descriptions-item label="课程名" :span="2">{{
+          data.currentCourseDetail.course_name
+        }}</el-descriptions-item>
+        <el-descriptions-item label="容量" :span="2">{{
+          data.currentCourseDetail.capacity
+        }}</el-descriptions-item>
+        <el-descriptions-item label="起止时间" :span="4">{{
+          data.currentCourseDetail.start_time +
+          "--" +
+          data.currentCourseDetail.end_time
+        }}</el-descriptions-item>
+        <el-descriptions-item label="描述" :span="4">{{
+          data.currentCourseDetail.desc
+        }}</el-descriptions-item>
+        <el-descriptions-item label="教学单位名" :span="4">{{
+          data.currentCourseDetail.college_name
+        }}</el-descriptions-item>
       </el-descriptions>
     </div>
   </el-dialog>
 
   <!-- 班级申请记录模态框 -->
-  <el-dialog v-model="data.courseApplyDetailVisible" title="班级申请记录" width="1200" center>
+  <el-dialog
+    v-model="data.courseApplyDetailVisible"
+    title="班级申请记录"
+    width="1200"
+    center
+  >
     <div class="apply-list">
-      <el-empty v-if="data.courseApplyList.length === 0" description="暂无申请班级记录信息"/>
-      <el-table v-if="data.courseApplyList.length !== 0" :data="data.courseApplyList" border style="width: 100%">
-        <el-table-column prop="user_name" label="申请人"/>
-        <el-table-column prop="class_name" label="班级班级"/>
-        <el-table-column prop="create_time" label="时间"/>
-        <el-table-column prop="status_desc" label="审核状态"/>
+      <el-empty
+        v-if="data.courseApplyList.length === 0"
+        description="暂无申请班级记录信息"
+      />
+      <el-table
+        v-if="data.courseApplyList.length !== 0"
+        :data="data.courseApplyList"
+        border
+        style="width: 100%"
+      >
+        <el-table-column prop="user_name" label="申请人" />
+        <el-table-column prop="class_name" label="班级班级" />
+        <el-table-column prop="create_time" label="时间" />
+        <el-table-column prop="status_desc" label="审核状态" />
         <!-- 右侧固定列 展示详情信息 -->
         <el-table-column fixed="right" label="操作">
           <template v-slot="scope">
-            <el-button v-if="scope.row.status === 1" size="small" type="success" @click="passClassApplication(scope.row.id)">通过</el-button>
-            <el-button v-if="scope.row.status === 1" size="small" type="danger" @click="refuseClassApplication(scope.row.id)">不通过</el-button>
-            <el-button v-if="scope.row.status !== 1" type="danger" size="small" :disabled="scope.row.status !== 1" @click="removeCourseApply(scope.row.id)">取消</el-button>
+            <el-button
+              v-if="scope.row.status === 1"
+              size="small"
+              type="success"
+              @click="passClassApplication(scope.row.id)"
+              >通过</el-button
+            >
+            <el-button
+              v-if="scope.row.status === 1"
+              size="small"
+              type="danger"
+              @click="refuseClassApplication(scope.row.id)"
+              >不通过</el-button
+            >
+            <el-button
+              v-if="scope.row.status !== 1"
+              type="danger"
+              size="small"
+              :disabled="scope.row.status !== 1"
+              @click="removeCourseApply(scope.row.id)"
+              >取消</el-button
+            >
           </template>
         </el-table-column>
       </el-table>
       <!-- 分页 -->
-      <el-pagination 
-        v-if="data.courseApplyList.length !== 0" 
-        background 
+      <el-pagination
+        v-if="data.courseApplyList.length !== 0"
+        background
         layout="prev, pager, next"
-        :total="data.applyTotal" 
-        :page-size="data.applyCount" 
+        :total="data.applyTotal"
+        :page-size="data.applyCount"
         @size-change="applySizeChange"
-        @current-change="applyCurrentChange" 
-        class="mt-4 mx-auto" 
+        @current-change="applyCurrentChange"
+        class="mt-4 mx-auto"
       />
     </div>
   </el-dialog>
 
   <!-- 实验详情框 -->
-  <el-dialog v-model="data.experimentDetailVisible" title="实验详情" width="1200" center>
+  <el-dialog
+    v-model="data.experimentDetailVisible"
+    title="实验详情"
+    width="1200"
+    center
+  >
     <!-- 章节列表 -->
     <div class="experiment-dialog">
-      <el-empty v-if="data.subcourseList.length === 0" description="暂无章节信息"/>
-      <el-table v-if="data.subcourseList.length !== 0" :data="data.subcourseList" stripe border style="width: 100%">
-        <el-table-column prop="id" label="章节"/>
-        <el-table-column prop="name" label="名称"/>
-        <el-table-column prop="desc" label="描述"/>
-        <el-table-column prop="rate" label="进度"/>
+      <el-empty
+        v-if="data.subcourseList.length === 0"
+        description="暂无章节信息"
+      />
+      <el-table
+        v-if="data.subcourseList.length !== 0"
+        :data="data.subcourseList"
+        stripe
+        border
+        style="width: 100%"
+      >
+        <el-table-column prop="id" label="章节" />
+        <el-table-column prop="name" label="名称" />
+        <el-table-column prop="desc" label="描述" />
+        <el-table-column prop="rate" label="进度" />
         <!-- 右侧固定列 展示详情信息 -->
         <el-table-column fixed="right" label="操作" width="350">
           <template v-slot="scope">
-            <el-button link type="primary" size="small" @click="openExperiment()">进入实验</el-button>
-            <el-button link type="primary" size="small" @click="openStuReport(data.currentExperimentId, scope.row.id)">学习报告</el-button>
-            <el-button link type='primary' size="small" @click="openClassProgressModal(scope.row.id)">学习进度</el-button>
-            <el-button link type='primary' size="small" @click="openClassContainerModal(scope.row.id)">查看容器</el-button>
+            <el-button
+              link
+              type="primary"
+              size="small"
+              @click="openExperiment()"
+              >进入实验</el-button
+            >
+            <el-button
+              link
+              type="primary"
+              size="small"
+              @click="openStuReport(data.currentExperimentId, scope.row.id)"
+              >学习报告</el-button
+            >
+            <el-button
+              link
+              type="primary"
+              size="small"
+              @click="openClassProgressModal(scope.row.id)"
+              >学习进度</el-button
+            >
+            <el-button
+              link
+              type="primary"
+              size="small"
+              @click="openClassContainerModal(scope.row.id)"
+              >查看容器</el-button
+            >
           </template>
         </el-table-column>
       </el-table>
@@ -900,12 +1238,21 @@ onMounted(() => {
   </el-dialog>
 
   <!-- 创建镜像框 -->
-  <el-dialog v-model="data.createImageModalVisible" title="创建镜像" width="600" center>
+  <el-dialog
+    v-model="data.createImageModalVisible"
+    title="创建镜像"
+    width="600"
+    center
+  >
     <div class="experiment-dialog">
       <el-form :model="data.newImageForm" class="w-[30rem]">
         <!-- 选择源镜像 -->
         <el-form-item>
-          <el-select v-model="data.newImageForm.image_id" placeholder="请选择源镜像" class="w-[30rem]">
+          <el-select
+            v-model="data.newImageForm.image_id"
+            placeholder="请选择源镜像"
+            class="w-[30rem]"
+          >
             <!-- 图标 -->
             <template #prefix>
               <el-icon color="#409efc" class="no-inherit">
@@ -922,11 +1269,19 @@ onMounted(() => {
         </el-form-item>
         <!-- 创建镜像 -->
         <el-form-item>
-          <el-button class="w-[30rem]" type="primary" @click="submitImageCreate()">创建镜像</el-button>
+          <el-button
+            class="w-[30rem]"
+            type="primary"
+            @click="submitImageCreate()"
+            >创建镜像</el-button
+          >
         </el-form-item>
         <!-- 镜像名称 -->
         <el-form-item>
-          <el-input v-model="data.newImageForm.name" placeholder="请输入镜像名称">
+          <el-input
+            v-model="data.newImageForm.name"
+            placeholder="请输入镜像名称"
+          >
             <!-- 图标 -->
             <template #prefix>
               <el-icon color="#409efc" class="no-inherit">
@@ -937,7 +1292,10 @@ onMounted(() => {
         </el-form-item>
         <!-- 镜像描述 -->
         <el-form-item>
-          <el-input v-model="data.newImageForm.desc" placeholder="请输入镜像描述">
+          <el-input
+            v-model="data.newImageForm.desc"
+            placeholder="请输入镜像描述"
+          >
             <!-- 图标 -->
             <template #prefix>
               <el-icon color="#409efc" class="no-inherit">
@@ -947,19 +1305,30 @@ onMounted(() => {
           </el-input>
         </el-form-item>
         <el-form-item>
-          <el-button class="w-[30rem]" type="primary" @click="saveImageCreate()">保存镜像</el-button>
+          <el-button class="w-[30rem]" type="primary" @click="saveImageCreate()"
+            >保存镜像</el-button
+          >
         </el-form-item>
       </el-form>
     </div>
   </el-dialog>
 
   <!-- 修改镜像框 -->
-  <el-dialog v-model="data.modifyImageModalVisible" title="修改镜像" width="600" center>
+  <el-dialog
+    v-model="data.modifyImageModalVisible"
+    title="修改镜像"
+    width="600"
+    center
+  >
     <div class="experiment-dialog">
       <el-form :model="data.newImageForm" class="w-[30rem]">
         <!-- 选择源镜像 -->
         <el-form-item>
-          <el-select v-model="data.newImageForm.image_id" placeholder="请选择源镜像" class="w-[30rem]">
+          <el-select
+            v-model="data.newImageForm.image_id"
+            placeholder="请选择源镜像"
+            class="w-[30rem]"
+          >
             <!-- 图标 -->
             <template #prefix>
               <el-icon color="#409efc" class="no-inherit">
@@ -976,11 +1345,19 @@ onMounted(() => {
         </el-form-item>
         <!-- 创建镜像 -->
         <el-form-item>
-          <el-button class="w-[30rem]" type="primary" @click="submitImageCreate()">创建镜像</el-button>
+          <el-button
+            class="w-[30rem]"
+            type="primary"
+            @click="submitImageCreate()"
+            >创建镜像</el-button
+          >
         </el-form-item>
         <!-- 镜像名称 -->
         <el-form-item>
-          <el-input v-model="data.newImageForm.name" placeholder="请输入镜像名称">
+          <el-input
+            v-model="data.newImageForm.name"
+            placeholder="请输入镜像名称"
+          >
             <!-- 图标 -->
             <template #prefix>
               <el-icon color="#409efc" class="no-inherit">
@@ -991,7 +1368,10 @@ onMounted(() => {
         </el-form-item>
         <!-- 镜像描述 -->
         <el-form-item>
-          <el-input v-model="data.newImageForm.desc" placeholder="请输入镜像描述">
+          <el-input
+            v-model="data.newImageForm.desc"
+            placeholder="请输入镜像描述"
+          >
             <!-- 图标 -->
             <template #prefix>
               <el-icon color="#409efc" class="no-inherit">
@@ -1001,39 +1381,75 @@ onMounted(() => {
           </el-input>
         </el-form-item>
         <el-form-item>
-          <el-button class="w-[30rem]" type="primary" @click="saveImageCreate()">保存镜像</el-button>
+          <el-button class="w-[30rem]" type="primary" @click="saveImageCreate()"
+            >保存镜像</el-button
+          >
         </el-form-item>
       </el-form>
     </div>
   </el-dialog>
 
   <!-- 班级通知框 -->
-  <el-dialog v-model="data.classNotificationModalVisible" title="班级通知" width="1200" center>
+  <el-dialog
+    v-model="data.classNotificationModalVisible"
+    title="班级通知"
+    width="1200"
+    center
+  >
     <div class="experiment-dialog">
       <!-- 搜索框 -->
       <div class="dialog-search-box">
         <div class="search-title">班级通知</div>
-        <el-input v-model="data.inputNotification" style="width: 240px" class="mr-3" placeholder="请输入通知标题" />
-        <el-button type="primary" class="mr-3" @click="searchNotification(data.currentExperimentId)">搜索</el-button>
-        <el-button type="primary" class="mr-3" @click="openCreateNotificationModal()">创建新通知</el-button>
+        <el-input
+          v-model="data.inputNotification"
+          style="width: 240px"
+          class="mr-3"
+          placeholder="请输入通知标题"
+        />
+        <el-button
+          type="primary"
+          class="mr-3"
+          @click="searchNotification(data.currentExperimentId)"
+          >搜索</el-button
+        >
+        <el-button
+          type="primary"
+          class="mr-3"
+          @click="openCreateNotificationModal()"
+          >创建新通知</el-button
+        >
       </div>
       <!-- 通知列表 -->
       <div class="notification-list">
-        <el-empty v-if="data.notificationList.length === 0" description="暂无通知" />
-        <el-table v-else :data="data.notificationList" border style="width: 100%">
+        <el-empty
+          v-if="data.notificationList.length === 0"
+          description="暂无通知"
+        />
+        <el-table
+          v-else
+          :data="data.notificationList"
+          border
+          style="width: 100%"
+        >
           <el-table-column prop="id" label="ID" width="60" />
           <el-table-column prop="content" label="通知内容" />
           <el-table-column prop="file" label="文件">
             <template v-slot="scope">
               <template v-for="(file, index) in scope.row.files_info">
-                {{ file.name }} <br>
+                {{ file.name }} <br />
               </template>
             </template>
           </el-table-column>
           <el-table-column prop="create_time" label="发布时间" />
           <el-table-column fixed="right" label="操作">
             <template v-slot="scope">
-              <el-button link type="primary" size="small" @click="removeNotification(scope.row.id)">删除</el-button>
+              <el-button
+                link
+                type="primary"
+                size="small"
+                @click="removeNotification(scope.row.id)"
+                >删除</el-button
+              >
             </template>
           </el-table-column>
         </el-table>
@@ -1042,12 +1458,20 @@ onMounted(() => {
   </el-dialog>
 
   <!-- 创建班级通知框 -->
-  <el-dialog v-model="data.createNotificationModalVisible" title="创建班级通知" width="600" center>
+  <el-dialog
+    v-model="data.createNotificationModalVisible"
+    title="创建班级通知"
+    width="600"
+    center
+  >
     <div class="experiment-dialog">
       <el-form :model="data.newNotificationForm" class="w-[30rem]">
         <!-- 输入通知标题 -->
         <el-form-item>
-          <el-input v-model="data.newNotificationForm.content" placeholder="请输入通知标题">
+          <el-input
+            v-model="data.newNotificationForm.content"
+            placeholder="请输入通知标题"
+          >
             <!-- 图标 -->
             <template #prefix>
               <el-icon color="#409efc">
@@ -1058,46 +1482,63 @@ onMounted(() => {
         </el-form-item>
         <!-- 文件列表 -->
         <el-form-item>
-          <el-upload 
-            class="file-upload" 
-            drag 
-            :action="data.fileUploadUrl" 
+          <el-upload
+            class="file-upload"
+            drag
+            :action="data.fileUploadUrl"
             :on-remove="handleRemove"
-            :before-remove="beforeRemove" 
-            :on-exceed="handleExceed" 
+            :before-remove="beforeRemove"
+            :on-exceed="handleExceed"
             :on-success="handleSuccess"
-            :before-upload="beforeUpload" 
+            :before-upload="beforeUpload"
             :file-list="data.newNotificationForm.files_info"
-            :limit="data.fileLimit" 
+            :limit="data.fileLimit"
             multiple
           >
             <el-icon class="el-icon--upload"><upload-filled /></el-icon>
-            <div class="el-upload__text">
-              把文件拖拽到此处<em>点击上传</em>
-            </div>
+            <div class="el-upload__text">把文件拖拽到此处<em>点击上传</em></div>
             <template #tip>
               <div class="el-upload__tip">上传单个文件大小不能超过 20MB</div>
             </template>
           </el-upload>
         </el-form-item>
         <el-form-item>
-          <el-button class="w-[30rem]" type="primary" @click="submitNotificationCreate()">创建新通知</el-button>
+          <el-button
+            class="w-[30rem]"
+            type="primary"
+            @click="submitNotificationCreate()"
+            >创建新通知</el-button
+          >
         </el-form-item>
       </el-form>
     </div>
   </el-dialog>
 
   <!-- 查看学习进度框 -->
-  <el-dialog v-model="data.classProgressModalVisible" title="学习进度" width="1200" center>
+  <el-dialog
+    v-model="data.classProgressModalVisible"
+    title="学习进度"
+    width="1200"
+    center
+  >
     <!-- 章节列表 -->
     <div class="experiment-dialog">
-      <el-empty v-if="data.studyProgressList.length === 0" description="暂无学习进度信息"/>
-      <el-table v-if="data.studyProgressList.length !== 0" :data="data.studyProgressList" stripe border style="width: 100%">
-        <el-table-column prop="subcourse_name" label="章节名"/>
-        <el-table-column prop="user_id_number" label="学号"/>
-        <el-table-column prop="user_name" label="学生名"/>
-        <el-table-column prop="learn_time" label="已学习时间"/>
-        <el-table-column prop="use_time" label="规定时间"/>
+      <el-empty
+        v-if="data.studyProgressList.length === 0"
+        description="暂无学习进度信息"
+      />
+      <el-table
+        v-if="data.studyProgressList.length !== 0"
+        :data="data.studyProgressList"
+        stripe
+        border
+        style="width: 100%"
+      >
+        <el-table-column prop="subcourse_name" label="章节名" />
+        <el-table-column prop="user_id_number" label="学号" />
+        <el-table-column prop="user_name" label="学生名" />
+        <el-table-column prop="learn_time" label="已学习时间" />
+        <el-table-column prop="use_time" label="规定时间" />
         <el-table-column label="是否完成">
           <template v-slot="scope">
             <span v-if="scope.row.use_time <= scope.row.learn_time">是</span>
@@ -1107,9 +1548,9 @@ onMounted(() => {
       </el-table>
       <el-pagination
         v-if="data.studyProgressList.length !== 0"
-        background 
+        background
         layout="prev, pager, next"
-        :total="data.studyProgressTotal" 
+        :total="data.studyProgressTotal"
         :page-size="data.studyProgressCount"
         @size-change="studyProgressSizeChange"
         @current-change="studyProgressCurrentChange"
@@ -1119,35 +1560,87 @@ onMounted(() => {
   </el-dialog>
 
   <!-- 查看容器框 -->
-  <el-dialog v-model="data.checkContainerModalVisible" title="学习进度" width="1200" center>
+  <!-- eslint-disable vue/no-multiple-template-root -->
+  <el-dialog
+    v-model="data.checkContainerModalVisible"
+    title="学习进度"
+    width="1200"
+    center
+  >
     <!-- 章节列表 -->
     <div class="experiment-dialog">
-      <el-empty v-if="data.containerList.length === 0" description="暂无容器信息"/>
-      <el-table v-if="data.containerList.length !== 0" :data="data.studyProgressList" stripe border style="width: 100%">
+      <el-empty
+        v-if="data.containerList.length === 0"
+        description="暂无容器信息"
+      />
+      <el-table
+        v-if="data.containerList.length !== 0"
+        :data="data.studyProgressList"
+        stripe
+        border
+        style="width: 100%"
+      >
         <el-table-column label="序号">
           <template v-slot="scope">
-            <span>{{ scope.$index+1 }}</span>
+            <span>{{ scope.$index + 1 }}</span>
           </template>
         </el-table-column>
-        <el-table-column prop="id_number" label="学号"/>
-        <el-table-column prop="user_name" label="姓名"/>
-        <el-table-column prop="image_name" label="镜像"/>
-        <el-table-column prop="container_status" label="状态"/>
+        <el-table-column prop="id_number" label="学号" />
+        <el-table-column prop="user_name" label="姓名" />
+        <el-table-column prop="image_name" label="镜像" />
+        <el-table-column prop="container_status" label="状态" />
         <!-- 右侧固定列 展示详情信息 -->
         <el-table-column fixed="right" label="操作">
           <template v-slot="scope">
-            <el-button v-if="scope.row.container_status != 'delete' && scope.row.container_status != 'exited'" link type="primary" size="small" @click="enterContainer(scope.row.addr)">进入容器</el-button>
-            <el-button v-if="scope.row.container_status != 'exited' && scope.row.container_status != 'delete'" link type="primary" size="small" @click="ceaseContainer(scope.row.id)">停止容器</el-button>
-            <el-button v-if="scope.row.container_status == 'exited' && scope.row.container_status != 'delete'" link type="primary" size="small" @click="launchContainer(scope.row.id)">启动容器</el-button>
-            <el-button v-if="scope.row.container_status != 'delete'" link type="primary" size="small" @click="removeContainer(scope.row.id)">删除容器</el-button>
+            <el-button
+              v-if="
+                scope.row.container_status != 'delete' &&
+                scope.row.container_status != 'exited'
+              "
+              link
+              type="primary"
+              size="small"
+              @click="enterContainer(scope.row.addr)"
+              >进入容器</el-button
+            >
+            <el-button
+              v-if="
+                scope.row.container_status != 'exited' &&
+                scope.row.container_status != 'delete'
+              "
+              link
+              type="primary"
+              size="small"
+              @click="ceaseContainer(scope.row.id)"
+              >停止容器</el-button
+            >
+            <el-button
+              v-if="
+                scope.row.container_status == 'exited' &&
+                scope.row.container_status != 'delete'
+              "
+              link
+              type="primary"
+              size="small"
+              @click="launchContainer(scope.row.id)"
+              >启动容器</el-button
+            >
+            <el-button
+              v-if="scope.row.container_status != 'delete'"
+              link
+              type="primary"
+              size="small"
+              @click="removeContainer(scope.row.id)"
+              >删除容器</el-button
+            >
           </template>
         </el-table-column>
       </el-table>
       <el-pagination
         v-if="data.containerList.length !== 0"
-        background 
+        background
         layout="prev, pager, next"
-        :total="data.containerTotal" 
+        :total="data.containerTotal"
         :page-size="data.containerCount"
         @size-change="containerSizeChange"
         @current-change="containerCurrentChange"
@@ -1196,7 +1689,7 @@ onMounted(() => {
   border-radius: 10px;
   overflow: hidden;
   border: #d1d5db solid 1px;
-  transition: all .2s;
+  transition: all 0.2s;
 }
 .experiment-card:hover {
   transform: scale(1.05);

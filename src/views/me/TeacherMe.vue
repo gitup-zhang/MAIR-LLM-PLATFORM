@@ -126,6 +126,7 @@ const getAndStoreUserData = async () => {
 
 // 提交修改
 const userInfoEditSubmit = async () => {
+  await userInfoFormRef.value.validate();
   data.userInfoEditSubmitLoading = true;
   const res = await editUserInfo(userInfoForm, userStore.id);
   if(res.status === 0){
@@ -270,6 +271,38 @@ const handleCurrentChange = (val: any) => {
   getUserApplyRoleList();
 }
 
+// 创建表单引用
+const userInfoFormRef = ref(null); 
+// 表单检查
+const rules = reactive({
+  name: [
+    { required: true, message: '请输入昵称', trigger: 'blur' },
+    { min: 2, max: 12, message: '长度在 2 到 12 个字符', trigger: 'blur' }
+  ],
+  email: [
+    { required: true, message: '请输入邮箱地址', trigger: 'blur' },
+    { type: 'email', message: '请输入正确的邮箱地址', trigger: ['blur', 'change'] }
+  ],
+  user_name: [
+    { required: true, message: '请输入真实姓名', trigger: 'blur' },
+    { pattern: /^[\u4e00-\u9fa5]{2,10}$/, message: '请输入2-10个中文字符', trigger: 'blur' }
+  ],
+  area_id: [
+    { required: true, message: '请选择所属地区', trigger: 'change' }
+  ],
+  idcard: [
+    { required: true, message: '请输入身份证号', trigger: 'blur' },
+    { pattern: /(^\d{15}$)|(^\d{18}$)|(^\d{17}(\d|X|x)$)/, message: '请输入正确的身份证号', trigger: 'blur' }
+  ]
+});
+// 关闭对话框回调函数
+const handleDialogClose = () => {
+  // 重置表单校验状态
+  if (userInfoFormRef.value) {
+    userInfoFormRef.value.resetFields();
+  }
+};
+
 onMounted(async() => {
   // 挂载用户数据
   getAndStoreUserData();
@@ -396,11 +429,24 @@ onMounted(async() => {
   </div>
 
   <!-- 修改个人信息框 -->
-  <el-dialog v-model="systemStore.userInfoEditVisible" title="修改我的信息" width="400" center>
+  <!-- eslint-disable vue/no-multiple-template-root -->
+  <el-dialog 
+    v-model="systemStore.userInfoEditVisible" 
+    title="修改我的信息" 
+    width="400" 
+    center
+    @close="handleDialogClose"
+  >
     <div class="edit-dialog">
-      <el-form :model="userInfoForm" class="w-[20rem]">
+      <el-form 
+        :model="userInfoForm"
+        label-width="auto" 
+        class="w-[20rem]"
+        :rules="rules"
+        ref="userInfoFormRef"
+        >
         <!-- 昵称 -->
-        <el-form-item label="昵称">
+        <el-form-item label="昵称" prop="name">
           <el-input v-model="userInfoForm.name" placeholder="请输入昵称">
           <!-- 图标 -->
             <template #prefix>
@@ -422,7 +468,7 @@ onMounted(async() => {
           </el-input>
         </el-form-item>
         <!-- 邮箱 -->
-        <el-form-item label="邮箱">
+        <el-form-item label="邮箱" prop="email">
           <el-input v-model="userInfoForm.email" placeholder="请输入邮箱">
             <!-- 图标 -->
             <template #prefix>
@@ -455,7 +501,7 @@ onMounted(async() => {
           </el-input>
         </el-form-item>
         <!-- 真实姓名 -->
-        <el-form-item label="姓名">
+        <el-form-item label="姓名" prop="user_name">
           <el-input v-model="userInfoForm.user_name" placeholder="请输入真实姓名">
             <!-- 图标 -->
             <template #prefix>
@@ -466,7 +512,7 @@ onMounted(async() => {
           </el-input>
         </el-form-item>
         <!-- 所属地区 -->
-        <el-form-item label="地区">
+        <el-form-item label="地区" prop="area_id">
           <el-cascader v-model="userInfoForm.area_id" :options="data.locationOptions" style="width:100%" clearable placeholder="请选择所属地区">
             <!-- 图标 -->
             <template #prefix>
@@ -476,9 +522,8 @@ onMounted(async() => {
             </template>
           </el-cascader>
         </el-form-item>
-
         <!-- 身份证号 -->
-        <el-form-item label="身份">
+        <el-form-item label="身份" prop="idcard">
           <el-input v-model="userInfoForm.idcard" placeholder="请输入您的身份证号">
             <!-- 图标 -->
             <template #prefix>
@@ -488,7 +533,6 @@ onMounted(async() => {
             </template>
           </el-input>
         </el-form-item>
-
         <!-- 注册按钮 -->
         <el-form-item>
           <el-button class="w-[20rem]" type="primary" @click="userInfoEditSubmit()" :loading="data.userInfoEditSubmitLoading">提交修改</el-button>

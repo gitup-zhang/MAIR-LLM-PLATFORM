@@ -1,30 +1,4 @@
 import { createRouter, createWebHistory } from 'vue-router'
-import Login from '@/views/Login.vue'
-import Window from '@/views/Window.vue'
-// 个人首页
-import StudentMe from '@/views/me/StudentMe.vue'
-import TeacherMe from '@/views/me/TeacherMe.vue'
-import AdminMe from '@/views/me/AdminMe.vue'
-// 班级
-import AdminClass from '@/views/class/AdminClass.vue'
-import StudentClass from '@/views/class/StudentClass.vue'
-import TeacherClass from '@/views/class/TeacherClass.vue'
-// 实验
-import StudentExperiment from '@/views/experiment/StudentExperiment.vue'
-import ExperimentIndex from '@/views/experiment/ExperimentIndex.vue'
-// 报告
-import StudentReport from '@/views/report/StudentReport.vue'
-import TeacherReport from '@/views/report/TeacherReport.vue'
-// 考试
-import ExamArrange from '@/views/exam/ExamArrange.vue'
-import ExamResult from '@/views/exam/ExamResult.vue'
-import ExamPaperDetail from '@/views/exam/ExamPaperDetail.vue'
-// 教务管理
-import UserManage from '@/views/manage/UserManage.vue'
-import EducationManage from '@/views/manage/EducationManage.vue'
-import CourseManage from '@/views/manage/CourseManage.vue'
-import ExamManage from '@/views/manage/ExamManage.vue'
-import ExperimentManage from '@/views/manage/ExperimentManage.vue'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -32,105 +6,105 @@ const router = createRouter({
     {
       path: '/',
       name: 'newlogin',
-      component: Login
+      component: () => import('@/views/Login.vue'),
     },
     {
       path: '/window',
       name: 'window',
-      component: Window,
+      component: () => import('@/views/Window.vue'),
       children: [
         {
           path: '/studentMe',
           name: 'studentMe',
-          component: StudentMe
+          component: () => import('@/views/me/StudentMe.vue'),
         },
         {
           path: '/teacherMe',
           name: 'teacherMe',
-          component: TeacherMe
+          component: () => import('@/views/me/TeacherMe.vue'),
         },
         {
           path: '/adminMe',
           name: 'adminMe',
-          component: AdminMe
+          component: import('@/views/me/AdminMe.vue'),
         },
         {
           path: '/studentClass',
           name: 'studentClass',
-          component: StudentClass
+          component: () => import('@/views/class/StudentClass.vue'),
         },
         {
-          path: '/adminClass',          
+          path: '/adminClass',
           name: 'adminClass',
-          component: AdminClass
+          component: () => import('@/views/class/AdminClass.vue'),
         },
         {
-          path: '/teacherClass',          
+          path: '/teacherClass',
           name: 'teacherClass',
-          component: TeacherClass
+          component: () => import('@/views/class/TeacherClass.vue'),
         },
         {
-          path: '/studentExperiment',          
+          path: '/studentExperiment',
           name: 'studentExperiment',
-          component: StudentExperiment
+          component: () => import('@/views/experiment/StudentExperiment.vue'),
         },
         {
-          path: '/experimentIndex',          
+          path: '/experimentIndex',
           name: 'experimentIndex',
-          component: ExperimentIndex,
+          component: () => import('@/views/experiment/ExperimentIndex.vue'),
         },
         // 考试
         {
-          path: '/examArrange',          
+          path: '/examArrange',
           name: 'examArrange',
-          component: ExamArrange
+          component: () => import('@/views/exam/ExamArrange.vue'),
         },
         {
-          path: '/examResult',          
+          path: '/examResult',
           name: 'examResult',
-          component:ExamResult
+          component: () => import('@/views/exam/ExamResult.vue'),
         },
         {
-          path: '/examPaperDetail/',          
+          path: '/examPaperDetail/',
           name: 'examPaperDetail',
-          component: ExamPaperDetail
+          component: () => import('@/views/exam/ExamPaperDetail.vue'),
         },
         // 报告
         {
-          path: '/teacherReport',          
+          path: '/teacherReport',
           name: 'teacherReport',
-          component: TeacherReport
+          component: () => import('@/views/report/TeacherReport.vue'),
         },
         {
-          path: '/studentReport',          
+          path: '/studentReport',
           name: 'studentReport',
-          component: StudentReport
+          component: () => import('@/views/report/StudentReport.vue'),
         },
         // 教务管理
         {
-          path: '/userManage',          
+          path: '/userManage',
           name: 'userManage',
-          component: UserManage
+          component: () => import('@/views/manage/UserManage.vue'),
         },
         {
-          path: '/educationManage',          
+          path: '/educationManage',
           name: 'educationManage',
-          component: EducationManage
+          component: () => import('@/views/manage/EducationManage.vue'),
         },
         {
-          path: '/courseManage',          
+          path: '/courseManage',
           name: 'courseManage',
-          component: CourseManage
+          component: () => import('@/views/manage/CourseManage.vue'),
         },
         {
-          path: '/examManage',          
+          path: '/examManage',
           name: 'examManage',
-          component: ExamManage,
+          component: () => import('@/views/manage/ExamManage.vue'),
         },
         {
-          path: '/experimentManage',          
+          path: '/experimentManage',
           name: 'experimentManage',
-          component: ExperimentManage
+          component: () => import('@/views/manage/ExperimentManage.vue'),
         }
       ]
     }

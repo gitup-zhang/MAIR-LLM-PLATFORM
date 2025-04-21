@@ -99,6 +99,15 @@ const beforeUpload = (rawFile: any) => {
 }
 // 创建新的课程报告
 const submitCourseReportCreate = async () => {
+  // 输入内容校验，报告标题、内容不能为空
+  if (!data.newCourseReportForm.title || data.newCourseReportForm.title.trim() === '') {
+    ElMessage.error('请输入报告标题');
+    return;
+  }
+  if (!data.newCourseReportForm.content || data.newCourseReportForm.content.trim() === '') {
+    ElMessage.error('请输入报告内容');
+    return;
+  }
   data.submitCourseReportCreateLoading = true;
   const res = await createCourseReport(data.newCourseReportForm);
   console.log(res);

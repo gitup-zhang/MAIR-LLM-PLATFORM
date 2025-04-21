@@ -222,6 +222,7 @@ onMounted(async () => {
   </el-row>
 
   <!-- 报告详情框 -->
+  <!-- eslint-disable vue/no-multiple-template-root -->
   <el-dialog v-model="data.reportDetailModalVisible" title="报告详情" width="600" center>
     <el-descriptions direction="vertical" :column="4" border>
       <el-descriptions-item label="班级名" :span="2">{{ data.currentReportDetail.class_name }}</el-descriptions-item>

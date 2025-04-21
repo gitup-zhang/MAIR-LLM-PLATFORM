@@ -102,6 +102,7 @@ onMounted(async () => {
   </div>
 
   <!-- 报告详情框 -->
+  <!-- eslint-disable vue/no-multiple-template-root -->
   <el-dialog v-model="data.reportDetailModalVisible" title="报告详情" width="600" center>
     <div class="report-dialog">
       <el-descriptions direction="vertical" :column="4" border>

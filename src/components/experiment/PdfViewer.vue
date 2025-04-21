@@ -1,5 +1,7 @@
 <script setup lang="ts">
-import { computed } from 'vue'
+import { computed, onMounted} from 'vue'
+
+
 import VuePdfApp from 'vue3-pdf-app'
 import 'vue3-pdf-app/dist/icons/main.css'
 
@@ -55,6 +57,7 @@ function pagesRendered (pdfApp: any) {
 onMounted(async () => {
 
 });
+
 </script>
 
 <template>

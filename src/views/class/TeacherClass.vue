@@ -722,7 +722,13 @@ const newNotificationFormRules = reactive({
     },
   ],
 });
-
+// 关闭对话框回调函数
+const handleDialogClose = () => {
+  // 重置表单校验状态
+  if (notificationFormRef.value) {
+    notificationFormRef.value.resetFields();
+  }
+};
 onMounted(() => {
   // 初始化
   searchCourse();
@@ -1664,6 +1670,7 @@ onMounted(() => {
     title="创建班级通知"
     width="600"
     center
+    @close="handleDialogClose"
   >
     <div class="experiment-dialog">
       <el-form

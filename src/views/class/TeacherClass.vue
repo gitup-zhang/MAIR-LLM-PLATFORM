@@ -1,6 +1,6 @@
 <script setup lang="ts">
 // 教师课程页
-import { onMounted, reactive } from "vue";
+import { onMounted, reactive, ref } from "vue";
 import { ElMessage } from "element-plus";
 import { Document, Edit, Filter, UploadFilled } from "@element-plus/icons-vue";
 import { getCourseDetailInfo } from "@/apis/experiment";
@@ -51,6 +51,8 @@ const data = reactive({
   searchManageClassText: "",
   currentExperimentId: -1,
   currentSubcourseId: -1,
+  // 判断文件是否上传成功
+  isUploadComplete: false,
   // 全部班级信息
   courseList: [],
   experimentList: [],
@@ -502,6 +504,7 @@ const handleSuccess = (res: any, file: any) => {
     url: res.data.url,
     file_id: res.data.file_id,
   });
+  data.isUploadComplete = true;
 };
 // 上传文件之前的钩子
 const beforeUpload = (rawFile: any) => {
@@ -516,24 +519,36 @@ const beforeUpload = (rawFile: any) => {
 };
 // 提交通知创建
 const submitNotificationCreate = async () => {
-  data.submitNotificationCreateLoading = true;
-  const res = await createNotification(data.newNotificationForm);
-  console.log(res);
-  if (res.status === 0) {
-    ElMessage({
-      message: "消息创建成功",
-      type: "success",
-      plain: true,
-    });
-  } else {
-    ElMessage({
-      message: "消息创建失败",
-      type: "error",
-      plain: true,
-    });
-  }
-  data.submitNotificationCreateLoading = false;
-  searchNotification(data.currentExperimentId);
+  await notificationFormRef.value.validate(async (valid) => {
+    if (valid) {
+      if (data.isUploadComplete === false) {
+        ElMessage({
+          message: "等待文件上传结束，再提交!",
+          type: "error",
+          plain: true,
+        });
+        return;
+      }
+      data.submitNotificationCreateLoading = true;
+      const res = await createNotification(data.newNotificationForm);
+      if (res.status === 0) {
+        ElMessage({
+          message: "消息创建成功",
+          type: "success",
+          plain: true,
+        });
+      } else {
+        ElMessage({
+          message: "消息创建失败",
+          type: "error",
+          plain: true,
+        });
+      }
+      data.submitNotificationCreateLoading = false;
+      data.createNotificationModalVisible = false;
+      searchNotification(data.currentExperimentId);
+    }
+  });
 };
 
 // 进入学生课程报告页面
@@ -693,6 +708,20 @@ const teachExperimentCurrentChange = (val: any) => {
 const downloadFile = (fileUrl: string) => {
   window.open(fileUrl);
 };
+
+// 班级通知校验
+const notificationFormRef = ref(null);
+const newNotificationFormRules = reactive({
+  content: [
+    { required: true, message: "通知标题不能为空", trigger: "blur" },
+    {
+      min: 2,
+      max: 50,
+      message: "通知标题长度需在2到50个字符之间",
+      trigger: "blur",
+    },
+  ],
+});
 
 onMounted(() => {
   // 初始化
@@ -1181,44 +1210,6 @@ onMounted(() => {
           />
         </div>
       </el-tab-pane>
-      <!-- <el-tab-pane label="容器管理" name="seventh" class="experiment-pane">
-        <div class="search-box">
-          <div class="search-title">容器管理</div>
-          <div class="select-exam">
-            <el-input v-model="data.inputContainer" class="mr-3 w-[30vw] h-[2rem]" placeholder="请输入容器名称" />
-            <el-button type="primary" class="mr-3 h-[2rem]" @click="searchManagedContainer()">搜索</el-button>
-          </div>
-        </div>
-        <div class="show-list">
-          <el-empty v-if="data.managedContainerList.length === 0" description="暂无容器信息"/>
-          <el-table v-if="data.managedContainerList.length !== 0" :data="data.containerList" border style="width: 100%" max-height="400">
-            <el-table-column prop="image_name" label="名称" min-width="200"/>
-            <el-table-column prop="user_id_number" label="ID" min-width="200"/>
-            <el-table-column prop="user_name" label="用户" min-width="200"/>
-            <el-table-column prop="class_name" label="班级" min-width="200"/>
-            <el-table-column prop="subcourse_name" label="章节" min-width="200"/>
-            <el-table-column prop="status" label="状态" min-width="200"/>
-            <el-table-column fixed="right" label="操作" min-width="300">
-              <template v-slot="scope">
-                <el-button v-if="scope.row.status != 'delete' && scope.row.status != 3" link type="primary" size="small" @click="enterContainer(scope.row.addr)">进入容器</el-button>
-                <el-button v-if="scope.row.status != 'delete' && scope.row.status != 3" link type="primary" size="small" @click="ceaseContainer(scope.row.container_id)">停止容器</el-button>
-                <el-button v-if="scope.row.status != 'delete' && scope.row.status == 3" link type="primary" size="small" @click="launchContainer(scope.row.container_id)">启动容器</el-button>
-                <el-button v-if="scope.row.status != 'delete'" link type="primary" size="small" @click="removeContainer(scope.row.container_id)">删除容器</el-button>
-              </template>
-            </el-table-column>
-          </el-table>
-          <el-pagination 
-            v-if="data.containerList.length !== 0"
-            background 
-            layout="prev, pager, next"
-            :total="data.containerTotal" 
-            :page-size="data.containerCount"
-            @size-change="containerSizeChange"
-            @current-change="containerCurrentChange"
-            class="mt-4 mx-auto"
-          />
-        </div>
-      </el-tab-pane> -->
     </el-tabs>
   </div>
 
@@ -1675,9 +1666,14 @@ onMounted(() => {
     center
   >
     <div class="experiment-dialog">
-      <el-form :model="data.newNotificationForm" class="w-[30rem]">
+      <el-form
+        :model="data.newNotificationForm"
+        class="w-[30rem]"
+        :rules="newNotificationFormRules"
+        ref="notificationFormRef"
+      >
         <!-- 输入通知标题 -->
-        <el-form-item>
+        <el-form-item prop="content">
           <el-input
             v-model="data.newNotificationForm.content"
             placeholder="请输入通知标题"

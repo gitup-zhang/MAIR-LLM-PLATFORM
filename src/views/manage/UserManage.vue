@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { reactive, onMounted } from "vue";
+import { reactive, onMounted, ref } from "vue";
 import { ElMessage } from "element-plus";
 import {
   User,
@@ -41,7 +41,7 @@ const data = reactive({
     phone: "",
     type: 1,
     user_name: "",
-    area_id: 0,
+    area_id: null,
     idcard: "",
     password: "",
     checkPass: "",
@@ -135,53 +135,30 @@ const openCreateUserModal = async () => {
 
 // 创建用户
 const createNewUser = async () => {
-  data.createNewUserLoading = true;
-  // 检查非空
-  if (data.newUserForm.password === "" || data.newUserForm.checkPass === "") {
-    ElMessage({
-      message: "请输入密码",
-      type: "warning",
-      plain: true,
-    });
-  } else if (
-    !validatePassword(data.newUserForm.password) ||
-    !validatePassword(data.newUserForm.checkPass)
-  ) {
-    // 检查类型
-    ElMessage({
-      message: "密码由字母与数字组成",
-      type: "warning",
-      plain: true,
-    });
-  } else if (
-    !checkPassword(data.newUserForm.password, data.newUserForm.checkPass)
-  ) {
-    // 检查两次输入是否一致
-    ElMessage({
-      message: "两次输入密码不一致",
-      type: "warning",
-      plain: true,
-    });
-  } else {
-    const res = await createUser(data.newUserForm);
-    //  输出新用户创建成功或失败提示
-    if (res.status === 0) {
-      ElMessage({
-        message: "新用户创建成功",
-        type: "success",
-        plain: true,
-      });
-    } else {
-      ElMessage({
-        message: "新用户创建失败",
-        type: "error",
-        plain: true,
-      });
+  userFormRef.value.validate(async (valid) => {
+    if (valid) {
+      data.createNewUserLoading = true;
+      // 检查非空
+      const res = await createUser(data.newUserForm);
+      //  输出新用户创建成功或失败提示
+      if (res.status === 0) {
+        ElMessage({
+          message: "新用户创建成功",
+          type: "success",
+          plain: true,
+        });
+      } else {
+        ElMessage({
+          message: "新用户创建失败",
+          type: "error",
+          plain: true,
+        });
+      }
+      data.createUserModalVisible = false;
+      searchUser();
+      data.createNewUserLoading = false;
     }
-    data.createUserModalVisible = false;
-    searchUser();
-  }
-  data.createNewUserLoading = false;
+  });
 };
 // 检查密码格式
 const validatePassword = (password: string) => {
@@ -330,6 +307,75 @@ const rejectRoleApply = async (currentRoleApply: any) => {
   }
   data.rejectRoleApplyLoading = false;
   searchApplyList();
+};
+
+// 用户创建表单校验
+const userFormRef = ref(null);
+// 密码验证方法
+const validatePass2 = (rule, value, callback) => {
+  if (value === "") {
+    callback(new Error("请再次输入密码"));
+  } else if (value !== data.newUserForm.password) {
+    callback(new Error("两次输入密码不一致!"));
+  } else {
+    callback();
+  }
+};
+const createUserFormRules = reactive({
+  name: [
+    { required: true, message: "请输入昵称", trigger: "blur" },
+    { min: 2, max: 20, message: "长度在 2 到 20 个字符", trigger: "blur" },
+  ],
+  user_name: [
+    { required: true, message: "请输入姓名", trigger: "blur" },
+    { min: 2, max: 20, message: "长度在 2 到 20 个字符", trigger: "blur" },
+  ],
+  email: [
+    { required: true, message: "请输入邮箱地址", trigger: "blur" },
+    {
+      type: "email",
+      message: "请输入正确的邮箱地址",
+      trigger: ["blur", "change"],
+    },
+  ],
+  phone: [
+    { required: true, message: "请输入手机号码", trigger: "blur" },
+    {
+      pattern: /^1[3-9]\d{9}$/,
+      message: "请输入正确的手机号码",
+      trigger: "blur",
+    },
+  ],
+  type: [{ required: true, message: "请选择角色", trigger: "change" }],
+  area_id: [{ required: true, message: "请选择地区", trigger: "change" }],
+  idcard: [
+    { required: true, message: "请输入身份证号码", trigger: "blur" },
+    {
+      pattern:
+        /^[1-9]\d{5}(18|19|20)\d{2}(0[1-9]|1[0-2])(0[1-9]|[12]\d|3[01])\d{3}[\dXx]$/,
+      message: "请输入正确的身份证号码",
+      trigger: "blur",
+    },
+  ],
+  password: [
+    { required: true, message: "请输入密码", trigger: "blur" },
+    { min: 6, max: 20, message: "长度在 6 到 20 个字符", trigger: "blur" },
+    {
+      pattern: /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)[^]{6,20}$/,
+      message: "密码必须包含大小写字母和数字",
+      trigger: "blur",
+    },
+  ],
+  checkPass: [
+    { required: true, message: "请再次输入密码", trigger: "blur" },
+    { validator: validatePass2, trigger: "blur" },
+  ],
+});
+const handleUserCreateDialogClose = () => {
+  // 重置表单校验状态
+  if (userFormRef.value) {
+    userFormRef.value.resetFields();
+  }
 };
 
 onMounted(async () => {
@@ -561,11 +607,18 @@ onMounted(async () => {
     title="创建新用户"
     width="500"
     center
+    @close="handleUserCreateDialogClose"
   >
     <div class="user-dialog">
-      <el-form :model="data.newUserForm" label-width="auto" class="w-[25rem]">
+      <el-form
+        :model="data.newUserForm"
+        label-width="auto"
+        class="w-[25rem]"
+        :rules="createUserFormRules"
+        ref="userFormRef"
+      >
         <!-- 昵称 -->
-        <el-form-item label="昵称">
+        <el-form-item label="昵称" prop="name">
           <el-input
             v-model="data.newUserForm.name"
             placeholder="请输入昵称(不能超过20个字)"
@@ -581,7 +634,7 @@ onMounted(async () => {
           </el-input>
         </el-form-item>
         <!-- 姓名 -->
-        <el-form-item label="姓名">
+        <el-form-item label="姓名" prop="user_name">
           <el-input
             v-model="data.newUserForm.user_name"
             placeholder="请输入姓名(不能超过20个字)"
@@ -597,7 +650,7 @@ onMounted(async () => {
           </el-input>
         </el-form-item>
         <!-- 邮箱 -->
-        <el-form-item label="邮箱">
+        <el-form-item label="邮箱" prop="email">
           <el-input
             v-model="data.newUserForm.email"
             placeholder="请输入邮箱(不能超过30个字)"
@@ -613,7 +666,7 @@ onMounted(async () => {
           </el-input>
         </el-form-item>
         <!-- 手机号码 -->
-        <el-form-item label="手机">
+        <el-form-item label="手机" prop="phone">
           <el-input
             v-model="data.newUserForm.phone"
             placeholder="请输入手机号码"
@@ -627,7 +680,7 @@ onMounted(async () => {
           </el-input>
         </el-form-item>
         <!-- 角色 -->
-        <el-form-item label="角色">
+        <el-form-item label="角色" prop="type">
           <el-select
             v-model="data.newUserForm.type"
             placeholder="请选择角色"
@@ -649,7 +702,7 @@ onMounted(async () => {
           </el-select>
         </el-form-item>
         <!-- 所属地区 -->
-        <el-form-item label="地区">
+        <el-form-item label="地区" prop="area_id">
           <el-cascader
             v-model="data.newUserForm.area_id"
             :options="data.locationOptions"
@@ -667,7 +720,7 @@ onMounted(async () => {
           </el-cascader>
         </el-form-item>
         <!-- 身份证号码 -->
-        <el-form-item label="身份">
+        <el-form-item label="身份" prop="idcard">
           <el-input
             v-model="data.newUserForm.idcard"
             placeholder="请输入身份证号码(不能超过18个字)"
@@ -683,7 +736,7 @@ onMounted(async () => {
           </el-input>
         </el-form-item>
         <!-- 密码 -->
-        <el-form-item label="密码">
+        <el-form-item label="密码" prop="password">
           <el-input
             v-model="data.newUserForm.password"
             placeholder="请输入密码"
@@ -697,7 +750,7 @@ onMounted(async () => {
           </el-input>
         </el-form-item>
         <!-- 确认密码 -->
-        <el-form-item label="确认密码">
+        <el-form-item label="确认密码" prop="checkPass">
           <el-input
             v-model="data.newUserForm.checkPass"
             placeholder="请确认密码"

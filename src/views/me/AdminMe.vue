@@ -21,7 +21,7 @@ import {
 } from "@/apis/user";
 import { getRoleApplyList, evaluateRoleApply } from "@/apis/role";
 import { getLocationOption } from "@/apis/location";
-import type { FormInstance, FormRules } from 'element-plus'
+import type { FormInstance, FormRules } from "element-plus";
 
 const userStore = useUserStore();
 const systemStore = useSystemStore();
@@ -274,28 +274,38 @@ const submitPasswordModify = async () => {
 };
 
 // 创建表单引用
-const userInfoFormRef = ref(null); 
+const userInfoFormRef = ref(null);
 // 表单检查
 const rules = reactive({
   name: [
-    { required: true, message: '请输入昵称', trigger: 'blur' },
-    { min: 2, max: 12, message: '长度在 2 到 12 个字符', trigger: 'blur' }
+    { required: true, message: "请输入昵称", trigger: "blur" },
+    { min: 2, max: 12, message: "长度在 2 到 12 个字符", trigger: "blur" },
   ],
   email: [
-    { required: true, message: '请输入邮箱地址', trigger: 'blur' },
-    { type: 'email', message: '请输入正确的邮箱地址', trigger: ['blur', 'change'] }
+    { required: true, message: "请输入邮箱地址", trigger: "blur" },
+    {
+      type: "email",
+      message: "请输入正确的邮箱地址",
+      trigger: ["blur", "change"],
+    },
   ],
   user_name: [
-    { required: true, message: '请输入真实姓名', trigger: 'blur' },
-    { pattern: /^[\u4e00-\u9fa5]{2,10}$/, message: '请输入2-10个中文字符', trigger: 'blur' }
+    { required: true, message: "请输入真实姓名", trigger: "blur" },
+    {
+      pattern: /^[\u4e00-\u9fa5]{2,10}$/,
+      message: "请输入2-10个中文字符",
+      trigger: "blur",
+    },
   ],
-  area_id: [
-    { required: true, message: '请选择所属地区', trigger: 'change' }
-  ],
+  area_id: [{ required: true, message: "请选择所属地区", trigger: "change" }],
   idcard: [
-    { required: true, message: '请输入身份证号', trigger: 'blur' },
-    { pattern: /(^\d{15}$)|(^\d{18}$)|(^\d{17}(\d|X|x)$)/, message: '请输入正确的身份证号', trigger: 'blur' }
-  ]
+    { required: true, message: "请输入身份证号", trigger: "blur" },
+    {
+      pattern: /(^\d{15}$)|(^\d{18}$)|(^\d{17}(\d|X|x)$)/,
+      message: "请输入正确的身份证号",
+      trigger: "blur",
+    },
+  ],
 });
 // 关闭对话框回调函数
 const handleDialogClose = () => {
@@ -338,7 +348,7 @@ onMounted(async () => {
           >
         </el-descriptions-item>
         <el-descriptions-item label="用户名">{{
-          userStore.nickname
+          userStore.name
         }}</el-descriptions-item>
         <el-descriptions-item label="手机号">{{
           userStore.phone
@@ -424,9 +434,9 @@ onMounted(async () => {
     @close="handleDialogClose"
   >
     <div class="edit-dialog">
-      <el-form 
-        :model="userInfoForm" 
-        label-width="auto" 
+      <el-form
+        :model="userInfoForm"
+        label-width="auto"
         class="w-[20rem]"
         :rules="rules"
         ref="userInfoFormRef"

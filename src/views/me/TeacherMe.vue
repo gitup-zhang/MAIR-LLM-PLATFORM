@@ -139,29 +139,39 @@ const getAndStoreUserData = async () => {
   userStore.areaId = userData.data.area_id;
 };
 
-// 提交修改
 const userInfoEditSubmit = async () => {
-  await userInfoFormRef.value.validate();
-  data.userInfoEditSubmitLoading = true;
-  const res = await editUserInfo(userInfoForm, userStore.id);
-  if (res.status === 0) {
-    ElMessage({
-      message: "修改成功",
-      type: "success",
-      plain: true,
-    });
-  } else {
-    ElMessage({
-      message: "修改失败",
-      type: "error",
-      plain: true,
-    });
+  if (!userInfoFormRef.value) {
+    console.error("表单引用未正确初始化");
+    return;
   }
-  // 关闭模态框
-  systemStore.userInfoEditVisible = false;
-  // 刷新数据
-  getAndStoreUserData();
-  data.userInfoEditSubmitLoading = false;
+  await userInfoFormRef.value.validate(async (valid) => {
+    if (valid) {
+      data.userInfoEditSubmitLoading = true;
+      const res = await editUserInfo(userInfoForm, userStore.id);
+      if (res.status === 0) {
+        ElMessage({
+          message: "修改成功",
+          type: "success",
+          plain: true,
+        });
+      } else {
+        ElMessage({
+          message: "修改失败",
+          type: "error",
+          plain: true,
+        });
+      }
+      systemStore.userInfoEditVisible = false;
+      getAndStoreUserData();
+      data.userInfoEditSubmitLoading = false;
+    } else {
+      ElMessage({
+        message: "表单校验失败，请检查输入内容",
+        type: "warning",
+        plain: true,
+      });
+    }
+  });
 };
 
 // 提交角色修改
@@ -316,6 +326,14 @@ const rules = reactive({
     {
       type: "email",
       message: "请输入正确的邮箱地址",
+      trigger: ["blur", "change"],
+    },
+  ],
+  phone: [
+    { required: true, message: "请输入手机号", trigger: "blur" },
+    {
+      pattern: /^1[3-9]\d{9}$/,
+      message: "请输入正确的手机号格式",
       trigger: ["blur", "change"],
     },
   ],
@@ -578,7 +596,7 @@ onMounted(async () => {
           </el-input>
         </el-form-item>
         <!-- 手机号 -->
-        <el-form-item label="手机">
+        <el-form-item label="手机" prop="phone">
           <el-input v-model="userInfoForm.phone" placeholder="请输入手机号">
             <!-- 图标 -->
             <template #prefix>

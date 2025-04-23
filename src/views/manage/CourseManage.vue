@@ -498,7 +498,7 @@ const downloadFile = (fileUrl: string) => {
   window.open(fileUrl);
 };
 // 创建新章节表单引用
-const chapterFormRef = ref(null); 
+const chapterFormRef = ref(null);
 // 表单校验数据
 const chapterRules = reactive({
   name: [
@@ -536,7 +536,7 @@ const chapterRules = reactive({
       },
       trigger: "change",
     },
-  ]
+  ],
 });
 // 创建新章节对话框关闭
 const handleCreateChapterModalClose = () => {
@@ -544,7 +544,7 @@ const handleCreateChapterModalClose = () => {
   if (chapterFormRef.value) {
     chapterFormRef.value.resetFields();
   }
-}
+};
 
 onMounted(async () => {
   // 挂载数据

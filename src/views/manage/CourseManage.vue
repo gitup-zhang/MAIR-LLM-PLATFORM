@@ -41,6 +41,9 @@ const data = reactive({
   chapterList: [],
   courseList: [],
   courseChapterList: [],
+  // 标识文件是否上传成功
+  isUploadComplete: true,
+  isSupplementComplete: true,
   // 表单
   newChapterForm: {
     name: "",
@@ -129,24 +132,33 @@ const openChapterCreateModal = async () => {
 // 提交章节创建
 const submitChapterCreate = async () => {
   await chapterFormRef.value.validate();
-  data.submitChapterCreateLoading = true;
-  const res = await createChapter(data.newChapterForm);
-  if (res.status === 0) {
-    ElMessage({
-      message: "新章节创建成功",
-      type: "success",
-      plain: true,
-    });
+  if (data.isUploadComplete && data.isSupplementComplete) {
+    data.submitChapterCreateLoading = true;
+    const res = await createChapter(data.newChapterForm);
+    if (res.status === 0) {
+      ElMessage({
+        message: "新章节创建成功",
+        type: "success",
+        plain: true,
+      });
+    } else {
+      ElMessage({
+        message: "新章节创建失败",
+        type: "error",
+        plain: true,
+      });
+    }
+    data.submitChapterCreateLoading = false;
+    data.createChapterModalVisible = false;
+    data.isUploadComplete = false;
+    searchChapter();
   } else {
     ElMessage({
-      message: "新章节创建失败",
+      message: "请等待文件上传完成！",
       type: "error",
       plain: true,
     });
   }
-  data.submitChapterCreateLoading = false;
-  data.createChapterModalVisible = false;
-  searchChapter();
 };
 // 文件移除时的钩子
 const handleRemove = async (uploadFile: any, uploadFiles: any) => {
@@ -184,20 +196,13 @@ const handleSuccess = (res: any, file: any) => {
       file_id: res.data.file_id,
     },
   ];
+  data.isUploadComplete = true;
 };
 // 上传文件之前的钩子
 const beforeUpload = (rawFile: any) => {
   // 检查文件类型
-  // const checkFileType = rawFile.name.substring(rawFile.name.lastIndexOf('.') + 1) === 'pdf' || rawFile.name.substring(rawFile.name.lastIndexOf('.') + 1) === 'pptx';
-  // if(!checkFileType) {
-  //   ElMessage({
-  //     message: '只接收PDF或PPTX类型的文件',
-  //     type: 'warning',
-  //     plain: true,
-  //   })
-  //   return false;
-  // }
   const isLimit20MB = rawFile.size / 1024 / 1024 < 20;
+  data.isUploadComplete = false;
   if (!isLimit20MB) {
     ElMessage({
       message: "上传单个文件且大小不能超过20MB",
@@ -233,19 +238,11 @@ const handleSuccessSupplement = (res: any, file: any) => {
       file_id: res.data.file_id,
     },
   ];
+  data.isSupplementComplete = true;
 };
 // 上传文件之前的钩子
 const beforeUploadSupplement = (rawFile: any) => {
-  // 检查文件类型
-  //  const checkFileType = rawFile.name.substring(rawFile.name.lastIndexOf('.') + 1) === 'pdf' || rawFile.name.substring(rawFile.name.lastIndexOf('.') + 1) === 'pptx';
-  //if(!checkFileType) {
-  // ElMessage({
-  //message: '只接收PDF或PPTX类型的文件',
-  //type: 'warning',
-  //plain: true,
-  //})
-  //return false;
-  // }
+  data.isSupplementComplete = false;
   const isLimit20MB = rawFile.size / 1024 / 1024 < 20;
   if (!isLimit20MB) {
     ElMessage({
@@ -464,6 +461,7 @@ const handleSuccessModifyFile = (res: any, file: any) => {
       file_id: res.data.file_id,
     },
   ];
+  data.isUploadComplete = true;
 };
 
 // 文件移除时的钩子
@@ -512,7 +510,6 @@ const chapterRules = reactive({
   image_id: [{ required: true, message: "请选择镜像", trigger: "change" }],
   use_time: [
     { required: true, message: "请输入课时", trigger: "blur" },
-    { type: "number", message: "课时必须为数字", trigger: "blur" },
     {
       validator: (rule, value, callback) => {
         if (value <= 0) {
@@ -792,7 +789,7 @@ onMounted(async () => {
             :autosize="{ minRows: 2, maxRows: 4 }"
             type="textarea"
             maxlength="500"
-            show-word-limit="true"
+            show-word-limit
           >
             <!-- 图标 -->
             <template #prefix>

@@ -1,14 +1,14 @@
 <script setup lang="ts">
-import { reactive, ref, toRefs } from 'vue'
-import { useRouter } from "vue-router"
-import { Iphone, Lock, User, Document } from '@element-plus/icons-vue'
-import { ElMessage, ElMessageBox } from 'element-plus'
-import { getUserData } from '@/apis/login'
-import { registerUserData } from '@/apis/login'
-import { useSystemStore } from '@/stores/system'
+import { reactive, ref, toRefs } from "vue";
+import { useRouter } from "vue-router";
+import { Iphone, Lock, User, Document, Phone } from "@element-plus/icons-vue";
+import { ElMessage, ElMessageBox } from "element-plus";
+import { getUserData } from "@/apis/login";
+import { registerUserData } from "@/apis/login";
+import { useSystemStore } from "@/stores/system";
 // 引入国际化组件
 import { useI18n } from "vue-i18n";
-import type { Action } from 'element-plus'
+import type { Action } from "element-plus";
 
 const { t } = useI18n();
 const router = useRouter();
@@ -19,89 +19,106 @@ const data = reactive({
   registerVisible: false,
   forgetVisible: false,
   loginLoading: false,
-})
-const { registerVisible, forgetVisible } = toRefs(data)
+});
+const { registerVisible, forgetVisible } = toRefs(data);
+
+//登录和注册的验证信息
+const Phonemessage = ref("");
+const Passwordmessage = ref("");
 
 // 登录表单
 const loginForm = ref({
-  phone:'',
-  password:''
-})
+  phone: "",
+  password: "",
+});
 
 // 注册表单
 const registerForm = ref({
-  name: '',
-  phone: '',
-  password: '',
-  confirmPassword: '',
-  verifyCode: ''
-})
+  name: "",
+  phone: "",
+  password: "",
+  confirmPassword: "",
+  verifyCode: "",
+});
 
 // 修改密码表单
 const forgetForm = ref({
-  phone: '',
-  password: '',
-  confirmPassword: '',
-  verifyCode: ''
-})
+  phone: "",
+  password: "",
+  confirmPassword: "",
+  verifyCode: "",
+});
 
 // 检查手机号格式
 const validatePhone = (phone: string) => {
-  let reg = /^1[3|4|5|6|7|8|9][0-9]{9}$/
-  if(!reg.test(phone)){
+  if (phone === "") {
+    Phonemessage.value = "手机号码不能为空";
+    return false;
+  }
+  let reg = /^1[3|4|5|6|7|8|9][0-9]{9}$/;
+  if (!reg.test(phone)) {
+    Phonemessage.value = "手机号码格式错误";
     return false;
   } else {
+    Phonemessage.value = "";
     return true;
   }
-}
+};
 
 // 检查密码格式
 const validatePassword = (password: string) => {
-  let reg = /^[a-z|A-Z|0-9]*$/
-  if(!reg.test(password)){
+  if (password === "") {
+    Passwordmessage.value = "密码不能为空";
+    return false;
+  }
+  let reg = /^[a-z|A-Z|0-9]*$/;
+  if (!reg.test(password)) {
+    Passwordmessage.value = "密码格式错误，密码由字母与数字组成"
     return false;
   } else {
+    Passwordmessage.value = "";
     return true;
   }
-}
+};
+
 
 // 检查两次输入密码
 const checkPass = (confirmPassword: string) => {
-  if(confirmPassword != registerForm.value.password){
+  if (confirmPassword != registerForm.value.password) {
     return false;
   } else {
     return true;
   }
-}
+};
 
 // 登录
 const loginSubmit = async () => {
   // 等待
   data.loginLoading = true;
   // 检查手机号格式
-  if(loginForm.value.phone === "" || loginForm.value.password === ""){
-    data.loginLoading = false;
-      ElMessage({
-      message: '请输入登录信息',
-      type: 'warning',
-      plain: true,
-    })
-  } else if(!validatePhone(loginForm.value.phone)){
+  if (loginForm.value.phone === "" || loginForm.value.password === "") {
     data.loginLoading = false;
     ElMessage({
-      message: '手机号码格式错误',
-      type: 'warning',
+      message: "请输入登录信息",
+      type: "warning",
       plain: true,
-    })
+    });
+  } else if (!validatePhone(loginForm.value.phone)) {
+    data.loginLoading = false;
+    ElMessage({
+      message: "手机号码格式错误",
+      type: "warning",
+      plain: true,
+    });
   } else if (!validatePassword(loginForm.value.password)) {
     data.loginLoading = false;
     ElMessage({
-      message: '密码格式错误，密码由字母与数字组成',
-      type: 'warning',
+      message: "密码格式错误，密码由字母与数字组成",
+      type: "warning",
       plain: true,
-    })
+    });
   } else {
-    try{
+    try {
       const userData = await getUserData(
         loginForm.value.phone,
         loginForm.value.password
@@ -109,16 +126,16 @@ const loginSubmit = async () => {
       if (userData.status == 0) {
         data.loginLoading = false;
         ElMessage({
-          message: '登录成功',
-          type: 'success',
+          message: "登录成功",
+          type: "success",
           plain: true,
-        })
+        });
       } else {
         ElMessage({
-          message: '登录失败',
-          type: 'error',
+          message: "登录失败",
+          type: "error",
           plain: true,
-        })     
+        });
       }
       // 等待
       if (userData.data) {
@@ -131,59 +148,59 @@ const loginSubmit = async () => {
         sessionStorage.userName = userData.data.user_name;
         sessionStorage.idcard = userData.data.idcard;
         // 设置登录状态
-        localStorage.setItem('loginflag', 'true');
-        localStorage.setItem('userId', userData.data.id);
+        localStorage.setItem("loginflag", "true");
+        localStorage.setItem("userId", userData.data.id);
         // 设置当前页激活
-        if(sessionStorage.userType === '1'){
-          systemStore.currentPage = 'studentMe';
-        } else if (sessionStorage.userType === '2') {
-          systemStore.currentPage = 'teacherMe';
-        } else if (sessionStorage.userType === '3') {
-          systemStore.currentPage = 'adminMe';
+        if (sessionStorage.userType === "1") {
+          systemStore.currentPage = "studentMe";
+        } else if (sessionStorage.userType === "2") {
+          systemStore.currentPage = "teacherMe";
+        } else if (sessionStorage.userType === "3") {
+          systemStore.currentPage = "adminMe";
         }
       }
       // 跳转到相应页面
-      if(sessionStorage.userType === '3'){
-        router.push('/adminMe');
-      } else if (sessionStorage.userType === '2') {
-        router.push('/teacherMe');
-      } else if (sessionStorage.userType === '1') {
-        router.push('/studentMe');
+      if (sessionStorage.userType === "3") {
+        router.push("/adminMe");
+      } else if (sessionStorage.userType === "2") {
+        router.push("/teacherMe");
+      } else if (sessionStorage.userType === "1") {
+        router.push("/studentMe");
       }
-    }catch (e){
-      ElMessageBox.alert('系统正在维护中，请稍后再试！', '消息提醒', {
-        confirmButtonText: '好的',
-      })
+    } catch (e) {
+      ElMessageBox.alert("系统正在维护中，请稍后再试！", "消息提醒", {
+        confirmButtonText: "好的",
+      });
     }
   }
-}
+};
 
 // 注册
 const registerSubmit = async () => {
   // 检查手机号格式
-  if(!validatePhone(registerForm.value.phone)){
+  if (!validatePhone(registerForm.value.phone)) {
     ElMessage({
-      message: '手机号码格式错误',
-      type: 'warning',
+      message: "手机号码格式错误",
+      type: "warning",
       plain: true,
-    })
+    });
   } else if (!validatePassword(registerForm.value.password)) {
     ElMessage({
-      message: '密码格式错误，密码由字母与数字组成',
-      type: 'warning',
+      message: "密码格式错误，密码由字母与数字组成",
+      type: "warning",
       plain: true,
-    })
-  } else if(!checkPass(registerForm.value.confirmPassword)) {
+    });
+  } else if (!checkPass(registerForm.value.confirmPassword)) {
     ElMessage({
-      message: '两次输入的密码不一致',
-      type: 'warning',
+      message: "两次输入的密码不一致",
+      type: "warning",
       plain: true,
-    })
+    });
   } else {
     const newUserData = await registerUserData(registerForm);
-    registerVisible.value = false
-  } 
-}
+    registerVisible.value = false;
+  }
+};
 </script>
 
 <template>
@@ -192,8 +209,10 @@ const registerSubmit = async () => {
     <el-col :lg="16" :md="12" class="login-left">
       <div>
         <!-- 平台介绍 -->
-        <div class="platform-name">{{$t('login.platformName')}}</div>
-        <div class="platform-introduction">{{$t('login.platformInstruction')}}</div>
+        <div class="platform-name">{{ $t("login.platformName") }}</div>
+        <div class="platform-introduction">
+          {{ $t("login.platformInstruction") }}
+        </div>
       </div>
     </el-col>
     <!-- 右侧 -->
@@ -201,24 +220,33 @@ const registerSubmit = async () => {
       <h2 class="login-welcome">欢迎回来</h2>
       <div class="login-notice">
         <span class="h-[0.15rem] w-16 bg-gray-200"></span>
-          <span>请输入登录信息</span>
+        <span>请输入登录信息</span>
         <span class="h-[0.15rem] w-16 bg-gray-200"></span>
       </div>
       <el-form :model="loginForm" class="w-[20rem]">
         <!-- 输入手机号 -->
-        <el-form-item>
-            <el-input v-model="loginForm.phone" :placeholder="$t('login.inputPhone')">
-              <!-- 图标 -->
-              <template #prefix>
-                <el-icon color="#0850f8" class="no-inherit">
-                    <Iphone />
-                </el-icon>
-              </template>
-            </el-input>
+        <el-form-item :error="Phonemessage">
+          <el-input
+            v-model="loginForm.phone"
+            :placeholder="$t('login.inputPhone')"
+            @blur="validatePhone(loginForm.phone)"
+          >
+            <!-- 图标 -->
+            <template #prefix>
+              <el-icon color="#0850f8" class="no-inherit">
+                <Iphone />
+              </el-icon>
+            </template>
+          </el-input>
         </el-form-item>
         <!-- 输入密码 -->
-        <el-form-item>
-          <el-input type="password" v-model="loginForm.password" :placeholder="$t('login.inputPassword')">
+        <el-form-item :error="Passwordmessage">
+          <el-input
+            type="password"
+            v-model="loginForm.password"
+            :placeholder="$t('login.inputPassword')"
+            @blur="validatePassword(loginForm.password)"
+          >
             <!-- 图标 -->
             <template #prefix>
               <el-icon color="#0850f8" class="no-inherit">
@@ -228,13 +256,30 @@ const registerSubmit = async () => {
           </el-input>
         </el-form-item>
         <el-form-item>
-          <el-button class="w-[20rem]" color="#0850f8" round :loading="data.loginLoading" @click="loginSubmit">{{$t('login.login')}}</el-button>
+          <el-button
+            class="w-[20rem]"
+            color="#0850f8"
+            round
+            :loading="data.loginLoading"
+            @click="loginSubmit"
+            >{{ $t("login.login") }}</el-button
+          >
         </el-form-item>
       </el-form>
       <!-- 注册与忘记密码 -->
       <div class="login-link">
-        <el-link class="login-link-item" type="primary" @click="registerVisible = true">注册</el-link>
-        <el-link class="login-link-item" type="primary" @click="forgetVisible = true">忘记密码</el-link>
+        <el-link
+          class="login-link-item"
+          type="primary"
+          @click="registerVisible = true"
+          >注册</el-link
+        >
+        <el-link
+          class="login-link-item"
+          type="primary"
+          @click="forgetVisible = true"
+          >忘记密码</el-link
+        >
       </div>
     </el-col>
   </el-row>
@@ -281,7 +326,10 @@ const registerSubmit = async () => {
         </el-form-item>
         <!-- 确认密码 -->
         <el-form-item>
-          <el-input v-model="registerForm.confirmPassword" placeholder="请确认密码">
+          <el-input
+            v-model="registerForm.confirmPassword"
+            placeholder="请确认密码"
+          >
             <!-- 图标 -->
             <template #prefix>
               <el-icon color="#0850f8" class="no-inherit">
@@ -295,7 +343,10 @@ const registerSubmit = async () => {
           <el-col :span="16">
             <!-- 输入框 -->
             <el-form-item>
-              <el-input v-model="registerForm.verifyCode" placeholder="请输入验证码">
+              <el-input
+                v-model="registerForm.verifyCode"
+                placeholder="请输入验证码"
+              >
                 <!-- 图标 -->
                 <template #prefix>
                   <el-icon color="#0850f8" class="no-inherit">
@@ -312,10 +363,12 @@ const registerSubmit = async () => {
         </el-row>
         <!-- 注册按钮 -->
         <el-form-item>
-          <el-button class="w-[20rem]" color="#0850f8" @click="registerSubmit">注册</el-button>
+          <el-button class="w-[20rem]" color="#0850f8" @click="registerSubmit"
+            >注册</el-button
+          >
         </el-form-item>
-        </el-form>
-      </div>
+      </el-form>
+    </div>
   </el-dialog>
 
   <!-- 忘记密码框 -->
@@ -347,7 +400,10 @@ const registerSubmit = async () => {
         </el-form-item>
         <!-- 确认密码 -->
         <el-form-item>
-          <el-input v-model="forgetForm.confirmPassword" placeholder="请确认密码">
+          <el-input
+            v-model="forgetForm.confirmPassword"
+            placeholder="请确认密码"
+          >
             <!-- 图标 -->
             <template #prefix>
               <el-icon color="#0850f8" class="no-inherit">
@@ -361,7 +417,10 @@ const registerSubmit = async () => {
           <el-col :span="16">
             <!-- 输入框 -->
             <el-form-item>
-              <el-input v-model="forgetForm.verifyCode" placeholder="请输入验证码">
+              <el-input
+                v-model="forgetForm.verifyCode"
+                placeholder="请输入验证码"
+              >
                 <!-- 图标 -->
                 <template #prefix>
                   <el-icon color="#0850f8" class="no-inherit">
@@ -378,10 +437,15 @@ const registerSubmit = async () => {
         </el-row>
         <!-- 密码按钮 -->
         <el-form-item>
-          <el-button class="w-[20rem]" color="#0850f8" @click="forgetVisible = false">密码修改</el-button>
+          <el-button
+            class="w-[20rem]"
+            color="#0850f8"
+            @click="forgetVisible = false"
+            >密码修改</el-button
+          >
         </el-form-item>
       </el-form>
-      </div>
+    </div>
   </el-dialog>
 </template>
 
@@ -391,7 +455,7 @@ const registerSubmit = async () => {
   height: 100vh;
 }
 .login-left {
-  background-image: url('../assets/img/background.png');
+  background-image: url("../assets/img/background.png");
   @apply flex items-center justify-center;
 }
 .platform-name {
@@ -408,7 +472,7 @@ const registerSubmit = async () => {
   @apply font-bold text-3xl text-gray-800;
 }
 .login-notice {
-  @apply  flex items-center justify-center my-5 text-gray-300 text-2xl space-x-2;
+  @apply flex items-center justify-center my-5 text-gray-300 text-2xl space-x-2;
 }
 .login-link {
   @apply flex-row;

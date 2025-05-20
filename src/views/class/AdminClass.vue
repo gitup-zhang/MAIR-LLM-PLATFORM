@@ -1,6 +1,6 @@
 <script setup lang="ts">
 // 教师课程页
-import { onMounted, reactive } from "vue";
+import { onMounted, reactive, ref } from "vue";
 import { ElMessage } from "element-plus";
 import { Document, Edit, Filter, UploadFilled } from "@element-plus/icons-vue";
 import { getCourseDetailInfo } from "@/apis/experiment";
@@ -351,6 +351,14 @@ const removeImage = async (index: number) => {
 };
 // 创建镜像
 const submitImageCreate = async () => {
+  if (data.newImageForm.image_id === "") {
+    ElMessage({
+      message: "请选择源镜像",
+      type: "error",
+      plain: true,
+    });
+    return;
+  }
   const res = await createImage(data.newImageForm.image_id);
   if (res.status === 0) {
     ElMessage({
@@ -371,6 +379,7 @@ const submitImageCreate = async () => {
 };
 // 保存镜像
 const saveImageCreate = async () => {
+  await imageFormRef.value.validate();
   if (data.containerAddr === "") {
     ElMessage({
       message: "请设置镜像",
@@ -510,6 +519,7 @@ const beforeUpload = (rawFile: any) => {
 };
 // 提交通知创建
 const submitNotificationCreate = async () => {
+  await notificationFormRef.value.validate();
   const res = await createNotification(data.newNotificationForm);
   if (res.status === 0) {
     ElMessage({
@@ -667,6 +677,55 @@ const teachExperimentCurrentChange = (val: any) => {
   searchTeachedExperiment();
 };
 
+// 表单引用
+const imageFormRef = ref(null);
+const notificationFormRef = ref(null);
+const imageRules = reactive({
+  name: [
+    { required: true, message: "请输入镜像名称", trigger: "blur" },
+    { min: 2, max: 30, message: "长度在 2 到 30 个字符", trigger: "blur" },
+  ],
+  desc: [
+    { required: true, message: "请输入镜像描述", trigger: "blur" },
+    { min: 5, max: 200, message: "长度在 5 到 200 个字符", trigger: "blur" },
+  ],
+});
+const notificationRules = reactive({
+  content: [
+    { required: true, message: "请输入通知内容", trigger: "blur" },
+    {
+      min: 5,
+      max: 500,
+      message: "通知内容长度在5到500个字符之间",
+      trigger: "blur",
+    },
+  ],
+  files_info: [
+    {
+      validator: (rule, value, callback) => {
+        if (value && value.length > 0) {
+          callback();
+        } else {
+          callback(new Error("请至少上传一个文件"));
+        }
+      },
+      trigger: "change",
+    },
+  ],
+});
+
+const handleDialogClose = () => {
+  // 重置表单校验状态
+  if (imageFormRef.value) {
+    imageFormRef.value.resetFields();
+  }
+};
+const handleNotificationDialogClose = () => {
+  // 重置表单校验状态
+  if (notificationFormRef.value) {
+    notificationFormRef.value.resetFields();
+  }
+};
 onMounted(() => {
   // 初始化
   searchCourse();
@@ -1243,11 +1302,17 @@ onMounted(() => {
     title="创建镜像"
     width="600"
     center
+    @close="handleDialogClose"
   >
     <div class="experiment-dialog">
-      <el-form :model="data.newImageForm" class="w-[30rem]">
+      <el-form
+        :model="data.newImageForm"
+        class="w-[30rem]"
+        :rules="imageRules"
+        ref="imageFormRef"
+      >
         <!-- 选择源镜像 -->
-        <el-form-item>
+        <el-form-item prop="image_id">
           <el-select
             v-model="data.newImageForm.image_id"
             placeholder="请选择源镜像"
@@ -1277,7 +1342,7 @@ onMounted(() => {
           >
         </el-form-item>
         <!-- 镜像名称 -->
-        <el-form-item>
+        <el-form-item prop="name">
           <el-input
             v-model="data.newImageForm.name"
             placeholder="请输入镜像名称"
@@ -1291,7 +1356,7 @@ onMounted(() => {
           </el-input>
         </el-form-item>
         <!-- 镜像描述 -->
-        <el-form-item>
+        <el-form-item prop="desc">
           <el-input
             v-model="data.newImageForm.desc"
             placeholder="请输入镜像描述"
@@ -1319,11 +1384,17 @@ onMounted(() => {
     title="修改镜像"
     width="600"
     center
+    @close="handleDialogClose"
   >
     <div class="experiment-dialog">
-      <el-form :model="data.newImageForm" class="w-[30rem]">
+      <el-form
+        :model="data.newImageForm"
+        class="w-[30rem]"
+        :rules="imageRules"
+        ref="imageFormRef"
+      >
         <!-- 选择源镜像 -->
-        <el-form-item>
+        <el-form-item prop="image_id">
           <el-select
             v-model="data.newImageForm.image_id"
             placeholder="请选择源镜像"
@@ -1353,7 +1424,7 @@ onMounted(() => {
           >
         </el-form-item>
         <!-- 镜像名称 -->
-        <el-form-item>
+        <el-form-item prop="name">
           <el-input
             v-model="data.newImageForm.name"
             placeholder="请输入镜像名称"
@@ -1367,7 +1438,7 @@ onMounted(() => {
           </el-input>
         </el-form-item>
         <!-- 镜像描述 -->
-        <el-form-item>
+        <el-form-item prop="desc">
           <el-input
             v-model="data.newImageForm.desc"
             placeholder="请输入镜像描述"
@@ -1463,9 +1534,15 @@ onMounted(() => {
     title="创建班级通知"
     width="600"
     center
+    @close="handleNotificationDialogClose"
   >
     <div class="experiment-dialog">
-      <el-form :model="data.newNotificationForm" class="w-[30rem]">
+      <el-form
+        :model="data.newNotificationForm"
+        class="w-[30rem]"
+        :rules="notificationRules"
+        ref="notificationFormRef"
+      >
         <!-- 输入通知标题 -->
         <el-form-item>
           <el-input
